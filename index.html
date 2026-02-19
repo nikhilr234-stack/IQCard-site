@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IQ Card</title>
+  <style>
+    :root{
+      --bg:#0f0f0f;
+      --fg:#ffffff;
+      --btnbg:#ffffff;
+      --btnfg:#0f0f0f;
+      --muted:rgba(255,255,255,.70);
+      --r:16px;
+    }
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+      background:var(--bg);
+      color:var(--fg);
+    }
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:72px 24px;
+      box-sizing:border-box;
+    }
+    .card{
+      width:min(420px,100%);
+      text-align:center;
+    }
+    h1{
+      margin:0;
+      font-size:34px;
+      font-weight:600;
+      letter-spacing:-0.2px;
+    }
+    p{
+      margin:10px 0 24px;
+      font-size:15px;
+      color:var(--muted);
+    }
+    a.btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:52px;
+      border-radius:var(--r);
+      background:var(--btnbg);
+      color:var(--btnfg);
+      text-decoration:none;
+      font-weight:600;
+      margin:12px 0;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .foot{
+      margin-top:18px;
+      font-size:12px;
+      color:var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>Nikhil Rakesh</h1>
+      <p>Urban Designer · Architect</p>
+
+      <a class="btn" href="/nikhil.vcf">Save Contact</a>
+      <a class="btn" href="https://www.linkedin.com/in/nikhil-rakesh-41871b155/" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="btn" href="https://drive.google.com/file/d/1V9SBD3BWk1Gdr_2viMyqvixNV82IKy-l/view?usp=drive_link" target="_blank" rel="noopener">Portfolio</a>
+
+      <div class="foot">Powered by IQ Card</div>
+    </section>
+  </main>
+</body>
+</html>
