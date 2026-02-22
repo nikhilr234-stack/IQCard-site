@@ -5,62 +5,74 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>IQ Card</title>
   <style>
-    :root{
-      --bg:#0f0f0f;
-      --fg:#ffffff;
-      --btnbg:#ffffff;
-      --btnfg:#0f0f0f;
-      --muted:rgba(255,255,255,.70);
-      --r:16px;
-    }
-    body{
-      margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
-      background:var(--bg);
-      color:var(--fg);
-    }
-    .wrap{
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:72px 24px;
-      box-sizing:border-box;
-    }
-    .card{
-      width:min(420px,100%);
-      text-align:center;
-    }
-    h1{
-      margin:0;
-      font-size:34px;
-      font-weight:600;
-      letter-spacing:-0.2px;
-    }
-    p{
-      margin:10px 0 24px;
-      font-size:15px;
-      color:var(--muted);
-    }
-    a.btn{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      height:52px;
-      border-radius:var(--r);
-      background:var(--btnbg);
-      color:var(--btnfg);
-      text-decoration:none;
-      font-weight:600;
-      margin:12px 0;
-      -webkit-tap-highlight-color:transparent;
-    }
-    .foot{
-      margin-top:18px;
-      font-size:12px;
-      color:var(--muted);
-    }
-  </style>
+  :root{
+    --bg:#0b0b0c;
+    --fg:#ffffff;
+    --muted:rgba(255,255,255,0.62);
+    --border:rgba(255,255,255,0.18);
+    --r:14px;
+  }
+
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--fg);
+  }
+
+  .wrap{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:84px 24px;
+    box-sizing:border-box;
+  }
+
+  .card{
+    width:min(420px,100%);
+    text-align:center;
+  }
+
+  h1{
+    font-size:36px;
+    font-weight:600;
+    margin:0;
+    letter-spacing:-0.35px;
+  }
+
+  p{
+    margin:10px 0 34px;
+    font-size:14px;
+    color:var(--muted);
+    letter-spacing:0.2px;
+  }
+
+  a.btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:52px;
+    border-radius:var(--r);
+    border:1px solid var(--border);
+    background:transparent;
+    color:var(--fg);
+    text-decoration:none;
+    font-weight:500;
+    margin:12px 0;
+    transition:background .18s ease, color .18s ease, border-color .18s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  a.btn:hover{
+    background:#ffffff;
+    color:#0b0b0c;
+    border-color:#ffffff;
+  }
+
+  /* Optional: hide the footer completely */
+  .foot{ display:none; }
+</style>
 </head>
 <body>
   <main class="wrap">
