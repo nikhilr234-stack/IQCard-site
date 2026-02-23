@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IQ Card</title>
+  <style>
+    :root{ --bg:#0b0b0c; --fg:#fff; --muted:rgba(255,255,255,.65); --border:rgba(255,255,255,.18); --r:14px; }
+    body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif; background:var(--bg); color:var(--fg); }
+    .wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:72px 22px; box-sizing:border-box; }
+    .card{ width:min(520px,100%); }
+    h1{ font-size:34px; margin:0 0 10px; letter-spacing:-0.4px; }
+    p{ margin:0 0 24px; color:var(--muted); line-height:1.5; font-size:15px; }
+    a.btn{ display:flex; align-items:center; justify-content:center; height:52px; border-radius:var(--r); border:1px solid var(--border);
+           text-decoration:none; color:var(--fg); font-weight:500; margin:12px 0; }
+    a.btn:hover{ background:#fff; color:#0b0b0c; border-color:#fff; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>IQ Card</h1>
+      <p>Tap-to-share identity. Contact, LinkedIn, Portfolio — in one card.</p>
+      <a class="btn" href="/">Back to Home</a>
+      <a class="btn" href="mailto:hello@iqcard.in">Get an IQ Card</a>
+    </section>
+  </main>
+</body>
+</html>
