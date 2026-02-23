@@ -1,29 +1,132 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>IQ Card</title>
-  <style>
-    :root{ --bg:#0b0b0c; --fg:#fff; --muted:rgba(255,255,255,.65); --border:rgba(255,255,255,.18); --r:14px; }
-    body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif; background:var(--bg); color:var(--fg); }
-    .wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:72px 22px; box-sizing:border-box; }
-    .card{ width:min(520px,100%); }
-    h1{ font-size:34px; margin:0 0 10px; letter-spacing:-0.4px; }
-    p{ margin:0 0 24px; color:var(--muted); line-height:1.5; font-size:15px; }
-    a.btn{ display:flex; align-items:center; justify-content:center; height:52px; border-radius:var(--r); border:1px solid var(--border);
-           text-decoration:none; color:var(--fg); font-weight:500; margin:12px 0; }
-    a.btn:hover{ background:#fff; color:#0b0b0c; border-color:#fff; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IQ Card</title>
+
+<style>
+:root{
+  --bg:#0b0b0c;
+  --fg:#fff;
+  --muted:rgba(255,255,255,.65);
+  --border:rgba(255,255,255,.18);
+  --r:14px;
+}
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+}
+
+.wrap{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:80px 22px;
+  box-sizing:border-box;
+}
+
+.card{
+  width:min(560px,100%);
+}
+
+.logo{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  letter-spacing:4px;
+  font-weight:600;
+  margin-bottom:30px;
+
+  background: linear-gradient(135deg,#c6a43c,#f1d875);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+
+  border:1px solid rgba(212,175,55,0.4);
+}
+
+h1{
+  font-size:38px;
+  margin:0 0 12px;
+  letter-spacing:-0.5px;
+}
+
+p{
+  margin:0 0 30px;
+  color:var(--muted);
+  line-height:1.6;
+  font-size:16px;
+}
+
+.features{
+  margin:0 0 32px;
+  padding-left:18px;
+  color:var(--muted);
+  line-height:1.8;
+}
+
+a.btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:54px;
+  border-radius:var(--r);
+  border:1px solid var(--border);
+  text-decoration:none;
+  color:var(--fg);
+  font-weight:500;
+  margin:14px 0;
+  transition:.2s ease;
+}
+
+a.btn:hover{
+  background:#fff;
+  color:#0b0b0c;
+  border-color:#fff;
+}
+
+.price{
+  margin-top:18px;
+  font-size:14px;
+  color:rgba(255,255,255,0.5);
+}
+</style>
 </head>
+
 <body>
-  <main class="wrap">
-    <section class="card">
-      <h1>IQ Card</h1>
-      <p>Tap-to-share identity. Contact, LinkedIn, Portfolio — in one card.</p>
-      <a class="btn" href="/">Back to Home</a>
-      <a class="btn" href="mailto:hello@iqcard.in">Get an IQ Card</a>
-    </section>
-  </main>
+<main class="wrap">
+<section class="card">
+
+<div class="logo">IQ</div>
+
+<h1>Networking, Reimagined.</h1>
+
+<p>
+IQ Card is a premium NFC identity card that shares your contact, LinkedIn and portfolio with one tap.
+No apps. No paper cards. Just tap and connect.
+</p>
+
+<ul class="features">
+<li>Works on iPhone & Android</li>
+<li>Instant contact saving</li>
+<li>Custom personal profile page</li>
+<li>Minimal, premium design</li>
+</ul>
+
+<a class="btn" href="/">Back to Profile</a>
+<a class="btn" href="mailto:hello@iqcard.in">Order an IQ Card</a>
+
+<div class="price">Starting ₹3999 · Made in India</div>
+
+</section>
+</main>
 </body>
 </html>
