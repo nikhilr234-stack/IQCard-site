@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>IQ Card</title>
+
   <style>
   :root{
     --bg:#0b0b0c;
@@ -70,13 +71,46 @@
     border-color:#ffffff;
   }
 
-  /* Optional: hide the footer completely */
-  .foot{ display:none; }
-</style>
+  /* IQ Logo */
+
+  .logo-wrap{
+    display:flex;
+    justify-content:center;
+    margin-top:28px;
+    text-decoration:none;
+  }
+
+  .logo{
+    width:54px;
+    height:54px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    letter-spacing:4px;
+    font-weight:600;
+
+    background: linear-gradient(135deg, #d4af37, #f5d76e);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+
+    border:1px solid rgba(212,175,55,0.4);
+    transition:transform .2s ease, opacity .2s ease;
+  }
+
+  .logo:hover{
+    transform:scale(1.05);
+    opacity:0.85;
+  }
+
+  </style>
 </head>
+
 <body>
   <main class="wrap">
     <section class="card">
+
       <h1>Nikhil Rakesh</h1>
       <p>Urban Designer · Architect</p>
 
@@ -84,7 +118,11 @@
       <a class="btn" href="https://www.linkedin.com/in/nikhil-rakesh-41871b155/" target="_blank" rel="noopener">LinkedIn</a>
       <a class="btn" href="https://drive.google.com/file/d/1V9SBD3BWk1Gdr_2viMyqvixNV82IKy-l/view?usp=drive_link" target="_blank" rel="noopener">Portfolio</a>
 
-      <div class="foot">Powered by IQ Card</div>
+      <!-- IQ Logo -->
+      <a class="logo-wrap" href="/iq" aria-label="About IQ Card">
+        <div class="logo">IQ</div>
+      </a>
+
     </section>
   </main>
 </body>
