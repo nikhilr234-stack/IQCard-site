@@ -37,7 +37,13 @@
     }
     body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif; background:var(--bg); color:var(--fg); }
     .wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:84px 24px; box-sizing:border-box; }
-    .card{ width:min(420px,100%); text-align:center; }
+   .card{
+  width:min(420px,100%);
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  min-height:70vh;
+}
     h1{ font-size:36px; font-weight:600; margin:0; letter-spacing:-0.35px; }
     p{ margin:10px 0 34px; font-size:14px; color:var(--muted); letter-spacing:0.2px; }
     a.btn{
