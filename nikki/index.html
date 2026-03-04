@@ -1,150 +1,124 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>IQ Card</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IQ Card</title>
 
-<style>
+  <style>
+    :root{
+      --bg:#0b0b0c;
+      --fg:#ffffff;
+      --muted:rgba(255,255,255,0.62);
+      --border:rgba(255,255,255,0.18);
+      --r:14px;
+    }
 
-:root{
-  --bg:#0b0b0c;
-  --fg:#ffffff;
-  --muted:rgba(255,255,255,0.62);
-  --border:rgba(255,255,255,0.18);
-  --r:14px;
-}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+      background:var(--bg);
+      color:var(--fg);
+    }
 
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
-  background:var(--bg);
-  color:var(--fg);
-}
+    /* Keep content nicely positioned, but not vertically centered */
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      padding:84px 24px;
+      box-sizing:border-box;
+    }
 
-/* Page container */
+    .card{
+      width:min(420px,100%);
+      text-align:center;
+      display:flex;
+      flex-direction:column;
+      min-height:calc(100vh - 168px); /* 84 top + 84 bottom padding */
+    }
 
-.wrap{
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  padding:84px 24px;
-  box-sizing:border-box;
-}
+    h1{
+      font-size:36px;
+      font-weight:600;
+      margin:0;
+      letter-spacing:-0.35px;
+    }
 
-/* Card */
+    p{
+      margin:10px 0 34px;
+      font-size:14px;
+      color:var(--muted);
+      letter-spacing:0.2px;
+    }
 
-.card{
-  width:min(420px,100%);
-  text-align:center;
-  display:flex;
-  flex-direction:column;
-  min-height:calc(100vh - 168px);
-}
+    a.btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:52px;
+      border-radius:var(--r);
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--fg);
+      text-decoration:none;
+      font-weight:500;
+      margin:12px 0;
+      transition:background .18s ease, color .18s ease, border-color .18s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
 
-/* Typography */
+    a.btn:hover{
+      background:#ffffff;
+      color:#0b0b0c;
+      border-color:#ffffff;
+    }
 
-h1{
-  font-size:36px;
-  font-weight:600;
-  margin:0;
-  letter-spacing:-0.35px;
-}
+    /* EXACT same logo styling as Nikhil page */
+    .logo-wrap{
+      display:flex;
+      justify-content:center;
+      margin-top:auto;      /* pushes to bottom */
+      padding-top:40px;
+      text-decoration:none;
+    }
 
-p{
-  margin:10px 0 34px;
-  font-size:14px;
-  color:var(--muted);
-  letter-spacing:0.2px;
-}
+    .logo-img{
+      width:64px;
+      height:64px;
+      border-radius:18px;   /* rounded square like Nikhil */
+      transition:transform .2s ease;
+    }
 
-/* Buttons */
-
-a.btn{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  height:52px;
-  border-radius:var(--r);
-  border:1px solid var(--border);
-  background:transparent;
-  color:var(--fg);
-  text-decoration:none;
-  font-weight:500;
-  margin:12px 0;
-  transition:background .18s ease,color .18s ease,border-color .18s ease;
-  -webkit-tap-highlight-color:transparent;
-}
-
-a.btn:hover{
-  background:#ffffff;
-  color:#0b0b0c;
-  border-color:#ffffff;
-}
-
-/* IQ logo */
-
-.logo-wrap{
-  display:flex;
-  justify-content:center;
-  margin-top:auto;
-  padding-top:40px;
-  text-decoration:none;
-}
-
-.logo{
-  width:64px;
-  height:64px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  letter-spacing:4px;
-  font-weight:600;
-
-  background:linear-gradient(135deg,#d4af37,#f5d76e);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-
-  border:1px solid rgba(212,175,55,0.4);
-}
-
-</style>
+    .logo-img:hover{
+      transform:scale(1.05);
+    }
+  </style>
 </head>
 
 <body>
+  <main class="wrap">
+    <section class="card">
 
-<main class="wrap">
+      <h1>Nikki</h1>
+      <p>Millionaire Playboy</p>
 
-<section class="card">
+      <a class="btn" href="/nikhil.vcf">Save Contact</a>
 
-<h1>Nikki</h1>
-<p>Millionaire Playboy</p>
+      <a class="btn" href="https://www.instagram.com/nikhilrakesh23/" target="_blank" rel="noopener">
+        Instagram
+      </a>
 
-<a class="btn" href="./nikhil.vcf">Save Contact</a>
+      <a class="btn" href="https://music.youtube.com/channel/UClCggzbrPW4u3qcAD2Oz__Q" target="_blank" rel="noopener">
+        Playlist
+      </a>
 
-<a class="btn"
-href="https://www.instagram.com/nikhilrakesh23/"
-target="_blank"
-rel="noopener">
-Instagram
-</a>
+      <!-- IMPORTANT: use /logo.png (root path) so it works from ANY folder -->
+      <a class="logo-wrap" href="/iq" aria-label="About IQ Card">
+        <img src="/logo.png" alt="IQ Card" class="logo-img">
+      </a>
 
-<a class="btn"
-href="https://music.youtube.com/channel/UClCggzbrPW4u3qcAD2Oz__Q"
-target="_blank"
-rel="noopener">
-Playlist
-</a>
-
-<a class="logo-wrap" href="/iq" aria-label="About IQ Card">
-<div class="logo">IQ</div>
-</a>
-
-</section>
-
-</main>
-
+    </section>
+  </main>
 </body>
 </html>
