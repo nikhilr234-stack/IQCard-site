@@ -1,1 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IQ Card</title>
+  <style>
+   .logo-wrap{
+  display:flex;
+  justify-content:center;
+  margin-top:26px;
+  text-decoration:none;
+}
+.logo{
+  width:54px;
+  height:54px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  letter-spacing:4px;
+  font-weight:600;
 
+  background: linear-gradient(135deg, #d4af37, #f5d76e);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+
+  border:1px solid rgba(212,175,55,0.4);
+}
+    :root{
+      --bg:#0b0b0c;
+      --fg:#ffffff;
+      --muted:rgba(255,255,255,0.62);
+      --border:rgba(255,255,255,0.18);
+      --r:14px;
+    }
+    body{ margin:0; font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif; background:var(--bg); color:var(--fg); }
+    .wrap{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:84px 24px; box-sizing:border-box; }
+    .card{ width:min(420px,100%); text-align:center; }
+    h1{ font-size:36px; font-weight:600; margin:0; letter-spacing:-0.35px; }
+    p{ margin:10px 0 34px; font-size:14px; color:var(--muted); letter-spacing:0.2px; }
+    a.btn{
+      display:flex; align-items:center; justify-content:center;
+      height:52px; border-radius:var(--r);
+      border:1px solid var(--border);
+      background:transparent; color:var(--fg);
+      text-decoration:none; font-weight:500; margin:12px 0;
+      transition:background .18s ease, color .18s ease, border-color .18s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
+    a.btn:hover{ background:#ffffff; color:#0b0b0c; border-color:#ffffff; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      
+      <h1>Nikki</h1>
+      <p>Millionaire Playboy</p>
+      <a class="btn" href="./nikhil.vcf">Save Contact</a>
+      <a class="btn" href="https://www.linkedin.com/in/mithul-avinash/" target="_blank" rel="noopener">Instagram</a>
+      <a class="btn" href="https://arjunkumar.com" target="_blank" rel="noopener">Playlist</a>
+      <a class="logo-wrap" href="/iq" aria-label="About IQ Card">
+  <div class="logo">IQ</div>
+</a>
+    </section>
+  </main>
+</body>
+</html>
