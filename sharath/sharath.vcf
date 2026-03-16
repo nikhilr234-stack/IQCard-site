@@ -1,8 +1,9 @@
 BEGIN:VCARD
 VERSION:3.0
-N:Sharath;;
-FN:Sharath
-TITLE: Tech Guide
+N:Rao H N;Sharath;;;
+FN:Sharath Rao H N
+TITLE:Tech Guide
+ORG:Computer's World
 TEL;TYPE=CELL:+919591953246
-EMAIL:computerworlds1@gmail.com
+EMAIL;TYPE=INTERNET:computerworlds1@gmail.com
 END:VCARD
