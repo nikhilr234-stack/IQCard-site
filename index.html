@@ -45,6 +45,10 @@
       color:inherit;
     }
 
+    button{
+      font:inherit;
+    }
+
     .wrap{
       min-height:100vh;
       display:flex;
@@ -233,37 +237,6 @@
       border-color:var(--border-strong);
     }
 
-    .stats-strip{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-      margin-top:14px;
-    }
-
-    .stat{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,0.03);
-      border-radius:14px;
-      padding:12px 0;
-      text-align:center;
-    }
-
-    .stat strong{
-      display:block;
-      font-size:16px;
-      font-weight:600;
-      letter-spacing:-0.3px;
-    }
-
-    .stat span{
-      display:block;
-      margin-top:4px;
-      font-size:10px;
-      color:var(--muted-2);
-      text-transform:uppercase;
-      letter-spacing:.5px;
-    }
-
     .quick-actions{
       display:grid;
       grid-template-columns:repeat(3,1fr);
@@ -401,6 +374,172 @@
       letter-spacing:0.3px;
     }
 
+    .analytics-modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      z-index:999;
+    }
+
+    .analytics-modal.active{
+      display:block;
+    }
+
+    .analytics-backdrop{
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,0.58);
+      backdrop-filter:blur(6px);
+      -webkit-backdrop-filter:blur(6px);
+      opacity:0;
+      transition:opacity .22s ease;
+    }
+
+    .analytics-modal.active .analytics-backdrop{
+      opacity:1;
+    }
+
+    .analytics-panel{
+      position:absolute;
+      left:50%;
+      top:0;
+      transform:translate(-50%,-24px);
+      width:min(94vw, 460px);
+      border:1px solid var(--border-strong);
+      background:
+        radial-gradient(circle at top, rgba(244,197,66,0.08), transparent 38%),
+        linear-gradient(180deg, rgba(18,18,20,0.98), rgba(10,10,12,0.98));
+      border-radius:0 0 26px 26px;
+      padding:14px 16px 18px;
+      box-shadow:0 24px 70px rgba(0,0,0,0.42);
+      opacity:0;
+      transition:transform .24s ease, opacity .24s ease;
+    }
+
+    .analytics-modal.active .analytics-panel{
+      transform:translate(-50%,0);
+      opacity:1;
+    }
+
+    .analytics-handle{
+      width:52px;
+      height:5px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.14);
+      margin:0 auto 14px;
+    }
+
+    .analytics-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .analytics-sub{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted-2);
+    }
+
+    .analytics-close{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      color:var(--fg);
+      font-size:22px;
+      line-height:1;
+      cursor:pointer;
+    }
+
+    .analytics-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+    }
+
+    .analytics-stat{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      border-radius:16px;
+      padding:16px 10px;
+      text-align:center;
+    }
+
+    .analytics-stat strong{
+      display:block;
+      font-size:18px;
+      font-weight:600;
+      letter-spacing:-0.4px;
+    }
+
+    .analytics-stat span{
+      display:block;
+      margin-top:5px;
+      font-size:11px;
+      color:var(--muted-2);
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+
+    .analytics-chart-card{
+      margin-top:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      border-radius:18px;
+      padding:14px;
+    }
+
+    .analytics-chart-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    .analytics-chart-note{
+      font-size:11px;
+      color:var(--muted-2);
+    }
+
+    .mini-chart{
+      height:120px;
+      border-radius:14px;
+      background:
+        linear-gradient(to top, rgba(255,255,255,0.04) 1px, transparent 1px) 0 100% / 100% 25%,
+        linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:14px 10px 8px;
+      overflow:hidden;
+    }
+
+    .chart-bars{
+      height:100%;
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:8px;
+      align-items:end;
+    }
+
+    .chart-bar{
+      height:100%;
+      display:flex;
+      align-items:flex-end;
+    }
+
+    .chart-bar span{
+      display:block;
+      width:100%;
+      border-radius:999px 999px 6px 6px;
+      background:linear-gradient(180deg, rgba(244,197,66,0.95), rgba(244,197,66,0.32));
+      box-shadow:0 10px 24px rgba(244,197,66,0.14);
+      min-height:10px;
+      transition:height .28s ease;
+    }
+
     @media (max-width:420px){
       .wrap{
         padding:18px 14px 28px;
@@ -429,9 +568,22 @@
       }
 
       .grid,
-      .stats-strip,
       .quick-actions{
         grid-template-columns:1fr;
+      }
+
+      .analytics-panel{
+        width:calc(100vw - 12px);
+        border-radius:0 0 22px 22px;
+        padding:12px 12px 16px;
+      }
+
+      .analytics-grid{
+        grid-template-columns:1fr;
+      }
+
+      .mini-chart{
+        height:104px;
       }
     }
   </style>
@@ -468,21 +620,6 @@
 
         <div class="primary-actions">
           <a class="btn btn-primary" href="/nikhil.vcf" data-track="save_contact">Save Contact</a>
-        </div>
-
-        <div class="stats-strip">
-          <div class="stat">
-            <strong id="viewCount">0</strong>
-            <span>Views</span>
-          </div>
-          <div class="stat">
-            <strong id="clickCount">0</strong>
-            <span>Clicks</span>
-          </div>
-          <div class="stat">
-            <strong id="contactCount">0</strong>
-            <span>Saves</span>
-          </div>
         </div>
 
         <div class="quick-actions">
@@ -525,6 +662,18 @@
           </div>
         </div>
 
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">Insights</div>
+          </div>
+          <div class="mini-links">
+            <a class="mini-link" href="#" id="openAnalytics">
+              <span>Analytics</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </div>
+
         <div class="footer">
           <a class="logo-wrap" href="/iq" aria-label="IQ Card Home">
             <img src="logo.png" alt="IQ Card" class="logo-img">
@@ -535,6 +684,56 @@
       </div>
     </section>
   </main>
+
+  <div class="analytics-modal" id="analyticsModal" aria-hidden="true">
+    <div class="analytics-backdrop" id="analyticsBackdrop"></div>
+
+    <div class="analytics-panel" role="dialog" aria-modal="true" aria-labelledby="analyticsTitle">
+      <div class="analytics-handle"></div>
+
+      <div class="analytics-top">
+        <div>
+          <div class="section-title" id="analyticsTitle">Analytics</div>
+          <div class="analytics-sub">Profile activity overview</div>
+        </div>
+        <button class="analytics-close" id="closeAnalytics" aria-label="Close analytics">×</button>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="analytics-stat">
+          <strong id="viewCount">0</strong>
+          <span>Views</span>
+        </div>
+        <div class="analytics-stat">
+          <strong id="clickCount">0</strong>
+          <span>Clicks</span>
+        </div>
+        <div class="analytics-stat">
+          <strong id="contactCount">0</strong>
+          <span>Saves</span>
+        </div>
+      </div>
+
+      <div class="analytics-chart-card">
+        <div class="analytics-chart-head">
+          <div class="section-title">Activity</div>
+          <div class="analytics-chart-note">Recent events</div>
+        </div>
+
+        <div class="mini-chart">
+          <div class="chart-bars">
+            <div class="chart-bar"><span></span></div>
+            <div class="chart-bar"><span></span></div>
+            <div class="chart-bar"><span></span></div>
+            <div class="chart-bar"><span></span></div>
+            <div class="chart-bar"><span></span></div>
+            <div class="chart-bar"><span></span></div>
+            <div class="chart-bar"><span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     const PROFILE_ID = "iq_profile_nikhil_rakesh";
@@ -553,8 +752,9 @@
       localStorage.setItem(PROFILE_ID, JSON.stringify(data));
     }
 
-    function updateUI() {
+    function updateCounts() {
       const d = getData();
+
       const viewEl = document.getElementById("viewCount");
       const clickEl = document.getElementById("clickCount");
       const contactEl = document.getElementById("contactCount");
@@ -562,6 +762,40 @@
       if (viewEl) viewEl.textContent = d.views || 0;
       if (clickEl) clickEl.textContent = d.clicks || 0;
       if (contactEl) contactEl.textContent = d.save_contact || 0;
+    }
+
+    function updateChart() {
+      const d = getData();
+      const bars = document.querySelectorAll(".chart-bar span");
+      if (!bars.length) return;
+
+      const recent = (d.events || []).slice(-7);
+
+      if (!recent.length) {
+        const fallback = [18, 32, 24, 48, 38, 62, 80];
+        bars.forEach((bar, i) => {
+          bar.style.height = fallback[i] + "%";
+        });
+        return;
+      }
+
+      const bucket = new Array(7).fill(0);
+      recent.forEach((event, index) => {
+        bucket[index] += 1;
+      });
+
+      const max = Math.max(...bucket, 1);
+
+      bars.forEach((bar, i) => {
+        const value = bucket[i] || 0;
+        const height = Math.max(12, Math.round((value / max) * 100));
+        bar.style.height = height + "%";
+      });
+    }
+
+    function updateUI() {
+      updateCounts();
+      updateChart();
     }
 
     function track(type, label) {
@@ -596,6 +830,23 @@
       updateUI();
     }
 
+    function openAnalyticsModal() {
+      const modal = document.getElementById("analyticsModal");
+      if (modal) {
+        updateUI();
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
+      }
+    }
+
+    function closeAnalyticsModal() {
+      const modal = document.getElementById("analyticsModal");
+      if (modal) {
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
       track("view");
 
@@ -603,6 +854,31 @@
         el.addEventListener("click", function () {
           track("click", el.dataset.track);
         });
+      });
+
+      const openBtn = document.getElementById("openAnalytics");
+      const closeBtn = document.getElementById("closeAnalytics");
+      const backdrop = document.getElementById("analyticsBackdrop");
+
+      if (openBtn) {
+        openBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          openAnalyticsModal();
+        });
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener("click", closeAnalyticsModal);
+      }
+
+      if (backdrop) {
+        backdrop.addEventListener("click", closeAnalyticsModal);
+      }
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          closeAnalyticsModal();
+        }
       });
 
       updateUI();
