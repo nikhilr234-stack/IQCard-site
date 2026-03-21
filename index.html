@@ -45,7 +45,9 @@
       color:inherit;
     }
 
-    button{
+    button,
+    input,
+    textarea{
       font:inherit;
     }
 
@@ -79,18 +81,33 @@
       margin-bottom:18px;
     }
 
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:0;
-  text-decoration:none;
-}
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      text-decoration:none;
+    }
 
-.brand:hover .brand-mark{
-  background:linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
-  border-color:var(--border-strong);
-}
+    .brand-mark{
+      width:40px;
+      height:40px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.04);
+      font-size:13px;
+      font-weight:700;
+      letter-spacing:.6px;
+      transition:all .18s ease;
+    }
+
+    .brand:hover .brand-mark{
+      background:linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+      border-color:var(--border-strong);
+    }
 
     .brand-copy{
       min-width:0;
@@ -326,6 +343,90 @@
     .mini-link span:last-child{
       color:var(--muted-2);
       font-size:16px;
+    }
+
+    .request-update{
+      margin-top:16px;
+      border:1px solid var(--border);
+      border-radius:20px;
+      background:var(--panel);
+      padding:16px;
+    }
+
+    .request-update-title{
+      margin:0;
+      font-size:12px;
+      font-weight:600;
+      letter-spacing:1.1px;
+      text-transform:uppercase;
+      color:var(--muted-2);
+    }
+
+    .request-update-copy{
+      margin:10px 0 0;
+      font-size:14px;
+      line-height:1.6;
+      color:var(--muted);
+    }
+
+    .update-form{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .update-form input,
+    .update-form textarea{
+      width:100%;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      color:var(--fg);
+      padding:14px 14px;
+      outline:none;
+      transition:border-color .18s ease, background .18s ease;
+      resize:vertical;
+    }
+
+    .update-form input::placeholder,
+    .update-form textarea::placeholder{
+      color:var(--muted-2);
+    }
+
+    .update-form input:focus,
+    .update-form textarea:focus{
+      border-color:var(--border-strong);
+      background:rgba(255,255,255,0.05);
+    }
+
+    .update-submit{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:50px;
+      border-radius:14px;
+      border:1px solid var(--fg);
+      background:var(--fg);
+      color:#0b0b0c;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      transition:transform .18s ease, opacity .18s ease;
+    }
+
+    .update-submit:hover{
+      opacity:.94;
+    }
+
+    .update-submit:active{
+      transform:scale(.985);
+    }
+
+    .disclaimer{
+      margin:2px 0 0;
+      font-size:11px;
+      line-height:1.5;
+      color:var(--muted-2);
     }
 
     .footer{
@@ -586,16 +687,16 @@
     <section class="card">
       <div class="shell">
 
-<div class="topbar">
-  <a class="brand" href="/iq" aria-label="Go to IQ Card home">
-    <div class="brand-mark">IQ</div>
-    <div class="brand-copy">
-      <strong>IQ Card</strong>
-      <span>Tap to connect</span>
-    </div>
-  </a>
-  <div class="status">Professional Profile</div>
-</div>
+        <div class="topbar">
+          <a class="brand" href="/iq" aria-label="Go to IQ Card home">
+            <div class="brand-mark">IQ</div>
+            <div class="brand-copy">
+              <strong>IQ Card</strong>
+              <span>Tap to connect</span>
+            </div>
+          </a>
+          <div class="status">Professional Profile</div>
+        </div>
 
         <div class="hero">
           <div class="avatar-wrap">
@@ -614,7 +715,7 @@
           <a class="btn btn-primary" href="/nikhil.vcf" data-track="save_contact">Save Contact</a>
         </div>
 
-                <div class="grid">
+        <div class="grid">
           <a class="btn btn-secondary" href="https://www.linkedin.com/in/nikhil-rakesh-41871b155/" target="_blank" rel="noopener" data-track="linkedin">LinkedIn</a>
           <a class="btn btn-secondary" href="https://drive.google.com/file/d/1V9SBD3BWk1Gdr_2viMyqvixNV82IKy-l/view?usp=drive_link" target="_blank" rel="noopener" data-track="portfolio">Portfolio</a>
         </div>
@@ -624,8 +725,6 @@
           <a href="mailto:nikhilr234@gmail.com" data-track="email">Email</a>
           <a href="https://wa.me/918971572389" target="_blank" rel="noopener" data-track="whatsapp">WhatsApp</a>
         </div>
-
-
 
         <div class="section">
           <div class="section-head">
@@ -666,6 +765,30 @@
               <span>↗</span>
             </a>
           </div>
+        </div>
+
+        <div class="request-update">
+          <div class="section-head">
+            <div class="request-update-title">Request an Update</div>
+          </div>
+
+          <p class="request-update-copy">
+            Need to change a button, link, or profile detail? Send a request below.
+          </p>
+
+          <form class="update-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+            <input type="text" name="name" placeholder="Your name" required>
+            <input type="text" name="field_to_update" placeholder="What would you like to update? (e.g. LinkedIn button)" required>
+            <input type="text" name="new_button_text" placeholder="What should the button say?">
+            <input type="url" name="new_link" placeholder="What should the new link be?">
+            <textarea name="notes" rows="4" placeholder="Any extra details?"></textarea>
+
+            <button type="submit" class="update-submit">Send Request</button>
+
+            <p class="disclaimer">
+              All requests and links will be reviewed before being updated.
+            </p>
+          </form>
         </div>
 
         <div class="footer">
@@ -728,299 +851,201 @@
       </div>
     </div>
   </div>
-<script>
-  const PROFILE_ID = "iq_profile_nikhil_rakesh";
-  const DEVICE_KEY = "iq_device_id";
-  const VIEWED_KEY = PROFILE_ID + "_viewed";
-  const LAST_SEEN_KEY = PROFILE_ID + "_last_seen";
 
-  function getOrCreateDeviceId() {
-    let id = localStorage.getItem(DEVICE_KEY);
-    if (!id) {
-      id = "dev_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-      localStorage.setItem(DEVICE_KEY, id);
-    }
-    return id;
-  }
+  <script>
+    const PROFILE_ID = "iq_profile_nikhil_rakesh";
+    const DEVICE_KEY = "iq_device_id";
+    const VIEWED_KEY = PROFILE_ID + "_viewed";
+    const LAST_SEEN_KEY = PROFILE_ID + "_last_seen";
 
-  function getData() {
-    const raw = localStorage.getItem(PROFILE_ID);
-    return raw ? JSON.parse(raw) : {
-      views: 0,
-      clicks: 0,
-      save_contact: 0,
-      unique_devices: [],
-      events: []
-    };
-  }
-
-  function setData(data) {
-    localStorage.setItem(PROFILE_ID, JSON.stringify(data));
-  }
-
-  function updateCounts() {
-    const d = getData();
-
-    const viewEl = document.getElementById("viewCount");
-    const clickEl = document.getElementById("clickCount");
-    const contactEl = document.getElementById("contactCount");
-
-    if (viewEl) viewEl.textContent = d.views || 0;
-    if (clickEl) clickEl.textContent = d.clicks || 0;
-    if (contactEl) contactEl.textContent = d.save_contact || 0;
-  }
-
-  function updateChart() {
-    const d = getData();
-    const bars = document.querySelectorAll(".chart-bar span");
-    if (!bars.length) return;
-
-    const recent = (d.events || []).slice(-7);
-
-    if (!recent.length) {
-      const fallback = [18, 32, 24, 48, 38, 62, 80];
-      bars.forEach((bar, i) => {
-        bar.style.height = fallback[i] + "%";
-      });
-      return;
-    }
-
-    const bucket = new Array(7).fill(0);
-    recent.forEach((event, index) => {
-      bucket[index] += 1;
-    });
-
-    const max = Math.max(...bucket, 1);
-
-    bars.forEach((bar, i) => {
-      const value = bucket[i] || 0;
-      const height = Math.max(12, Math.round((value / max) * 100));
-      bar.style.height = height + "%";
-    });
-  }
-
-  function updateUI() {
-    updateCounts();
-    updateChart();
-  }
-
-  function trackClick(label) {
-    const d = getData();
-    const deviceId = getOrCreateDeviceId();
-
-    d.clicks = (d.clicks || 0) + 1;
-
-    if (label === "save_contact") {
-      d.save_contact = (d.save_contact || 0) + 1;
-    }
-
-    d.events = d.events || [];
-    d.events.push({
-      type: "click",
-      label: label || null,
-      deviceId: deviceId,
-      timestamp: new Date().toISOString(),
-      page: window.location.pathname,
-      referrer: document.referrer || "direct",
-      device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "mobile" : "desktop"
-    });
-
-    if (d.events.length > 100) {
-      d.events = d.events.slice(-100);
-    }
-
-    setData(d);
-    updateUI();
-  }
-
-  function trackUniqueView() {
-    const d = getData();
-    const deviceId = getOrCreateDeviceId();
-    const alreadyViewed = localStorage.getItem(VIEWED_KEY);
-
-    d.unique_devices = d.unique_devices || [];
-
-    if (!d.unique_devices.includes(deviceId)) {
-      d.unique_devices.push(deviceId);
-    }
-
-    if (!alreadyViewed) {
-      d.views = (d.views || 0) + 1;
-      localStorage.setItem(VIEWED_KEY, "true");
-    }
-
-    d.events = d.events || [];
-    d.events.push({
-      type: "view",
-      label: "unique_view_check",
-      deviceId: deviceId,
-      timestamp: new Date().toISOString(),
-      page: window.location.pathname,
-      referrer: document.referrer || "direct",
-      device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "mobile" : "desktop"
-    });
-
-    if (d.events.length > 100) {
-      d.events = d.events.slice(-100);
-    }
-
-    localStorage.setItem(LAST_SEEN_KEY, new Date().toISOString());
-    setData(d);
-    updateUI();
-  }
-
-  function openAnalyticsModal() {
-    const modal = document.getElementById("analyticsModal");
-    if (modal) {
-      updateUI();
-      modal.classList.add("active");
-      modal.setAttribute("aria-hidden", "false");
-    }
-  }
-
-  function closeAnalyticsModal() {
-    const modal = document.getElementById("analyticsModal");
-    if (modal) {
-      modal.classList.remove("active");
-      modal.setAttribute("aria-hidden", "true");
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    trackUniqueView();
-
-    document.querySelectorAll("[data-track]").forEach(function (el) {
-      el.addEventListener("click", function () {
-        trackClick(el.dataset.track);
-      });
-    });
-
-    const openBtn = document.getElementById("openAnalytics");
-    const closeBtn = document.getElementById("closeAnalytics");
-    const backdrop = document.getElementById("analyticsBackdrop");
-
-    if (openBtn) {
-      openBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        openAnalyticsModal();
-      });
-    }
-
-    if (closeBtn) {
-      closeBtn.addEventListener("click", closeAnalyticsModal);
-    }
-
-    if (backdrop) {
-      backdrop.addEventListener("click", closeAnalyticsModal);
-    }
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
-        closeAnalyticsModal();
+    function getOrCreateDeviceId() {
+      let id = localStorage.getItem(DEVICE_KEY);
+      if (!id) {
+        id = "dev_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem(DEVICE_KEY, id);
       }
+      return id;
+    }
+
+    function getData() {
+      const raw = localStorage.getItem(PROFILE_ID);
+      return raw ? JSON.parse(raw) : {
+        views: 0,
+        clicks: 0,
+        save_contact: 0,
+        unique_devices: [],
+        events: []
+      };
+    }
+
+    function setData(data) {
+      localStorage.setItem(PROFILE_ID, JSON.stringify(data));
+    }
+
+    function updateCounts() {
+      const d = getData();
+
+      const viewEl = document.getElementById("viewCount");
+      const clickEl = document.getElementById("clickCount");
+      const contactEl = document.getElementById("contactCount");
+
+      if (viewEl) viewEl.textContent = d.views || 0;
+      if (clickEl) clickEl.textContent = d.clicks || 0;
+      if (contactEl) contactEl.textContent = d.save_contact || 0;
+    }
+
+    function updateChart() {
+      const d = getData();
+      const bars = document.querySelectorAll(".chart-bar span");
+      if (!bars.length) return;
+
+      const recent = (d.events || []).slice(-7);
+
+      if (!recent.length) {
+        const fallback = [18, 32, 24, 48, 38, 62, 80];
+        bars.forEach((bar, i) => {
+          bar.style.height = fallback[i] + "%";
+        });
+        return;
+      }
+
+      const bucket = new Array(7).fill(0);
+      recent.forEach((event, index) => {
+        bucket[index] += 1;
+      });
+
+      const max = Math.max(...bucket, 1);
+
+      bars.forEach((bar, i) => {
+        const value = bucket[i] || 0;
+        const height = Math.max(12, Math.round((value / max) * 100));
+        bar.style.height = height + "%";
+      });
+    }
+
+    function updateUI() {
+      updateCounts();
+      updateChart();
+    }
+
+    function trackClick(label) {
+      const d = getData();
+      const deviceId = getOrCreateDeviceId();
+
+      d.clicks = (d.clicks || 0) + 1;
+
+      if (label === "save_contact") {
+        d.save_contact = (d.save_contact || 0) + 1;
+      }
+
+      d.events = d.events || [];
+      d.events.push({
+        type: "click",
+        label: label || null,
+        deviceId: deviceId,
+        timestamp: new Date().toISOString(),
+        page: window.location.pathname,
+        referrer: document.referrer || "direct",
+        device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "mobile" : "desktop"
+      });
+
+      if (d.events.length > 100) {
+        d.events = d.events.slice(-100);
+      }
+
+      setData(d);
+      updateUI();
+    }
+
+    function trackUniqueView() {
+      const d = getData();
+      const deviceId = getOrCreateDeviceId();
+      const alreadyViewed = localStorage.getItem(VIEWED_KEY);
+
+      d.unique_devices = d.unique_devices || [];
+
+      if (!d.unique_devices.includes(deviceId)) {
+        d.unique_devices.push(deviceId);
+      }
+
+      if (!alreadyViewed) {
+        d.views = (d.views || 0) + 1;
+        localStorage.setItem(VIEWED_KEY, "true");
+      }
+
+      d.events = d.events || [];
+      d.events.push({
+        type: "view",
+        label: "unique_view_check",
+        deviceId: deviceId,
+        timestamp: new Date().toISOString(),
+        page: window.location.pathname,
+        referrer: document.referrer || "direct",
+        device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "mobile" : "desktop"
+      });
+
+      if (d.events.length > 100) {
+        d.events = d.events.slice(-100);
+      }
+
+      localStorage.setItem(LAST_SEEN_KEY, new Date().toISOString());
+      setData(d);
+      updateUI();
+    }
+
+    function openAnalyticsModal() {
+      const modal = document.getElementById("analyticsModal");
+      if (modal) {
+        updateUI();
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
+      }
+    }
+
+    function closeAnalyticsModal() {
+      const modal = document.getElementById("analyticsModal");
+      if (modal) {
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      trackUniqueView();
+
+      document.querySelectorAll("[data-track]").forEach(function (el) {
+        el.addEventListener("click", function () {
+          trackClick(el.dataset.track);
+        });
+      });
+
+      const openBtn = document.getElementById("openAnalytics");
+      const closeBtn = document.getElementById("closeAnalytics");
+      const backdrop = document.getElementById("analyticsBackdrop");
+
+      if (openBtn) {
+        openBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          openAnalyticsModal();
+        });
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener("click", closeAnalyticsModal);
+      }
+
+      if (backdrop) {
+        backdrop.addEventListener("click", closeAnalyticsModal);
+      }
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+          closeAnalyticsModal();
+        }
+      });
+
+      updateUI();
     });
-
-    updateUI();
-  });
-</script>
-  
-</body><section class="request-update">
-  <div class="section-head">
-    <h2>Request an Update</h2>
-    <p>Need to change a button, link, or profile detail? Send a request below.</p>
-  </div>
-
-  <form class="update-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-    <input type="text" name="name" placeholder="Your name" required>
-    
-    <input type="text" name="field_to_update" placeholder="What would you like to update? (e.g. LinkedIn button)" required>
-    
-    <input type="text" name="new_button_text" placeholder="What should the button say?">
-    
-    <input type="url" name="new_link" placeholder="What should the new link be?">
-    
-    <textarea name="notes" rows="4" placeholder="Any extra details?"></textarea>
-
-    <button type="submit">Send Request</button>
-
-    <p class="disclaimer">
-      All requests and links will be reviewed before being updated.
-    </p>
-  </form>
-  .request-update{
-  margin-top:24px;
-  padding:20px;
-  border:1px solid rgba(255,255,255,0.12);
-  border-radius:18px;
-  background:rgba(255,255,255,0.03);
-  backdrop-filter:blur(8px);
-}
-
-.request-update .section-head h2{
-  margin:0 0 6px;
-  font-size:20px;
-  font-weight:600;
-}
-
-.request-update .section-head p{
-  margin:0 0 16px;
-  font-size:14px;
-  color:rgba(255,255,255,0.65);
-  line-height:1.5;
-}
-
-.update-form{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-.update-form input,
-.update-form textarea{
-  width:100%;
-  padding:14px 16px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,0.12);
-  background:rgba(255,255,255,0.04);
-  color:#fff;
-  font-size:14px;
-  outline:none;
-  box-sizing:border-box;
-}
-
-.update-form input::placeholder,
-.update-form textarea::placeholder{
-  color:rgba(255,255,255,0.42);
-}
-
-.update-form input:focus,
-.update-form textarea:focus{
-  border-color:rgba(255,255,255,0.28);
-  background:rgba(255,255,255,0.06);
-}
-
-.update-form button{
-  padding:14px 16px;
-  border:none;
-  border-radius:12px;
-  background:#fff;
-  color:#000;
-  font-size:14px;
-  font-weight:600;
-  cursor:pointer;
-  transition:transform .18s ease, opacity .18s ease;
-}
-
-.update-form button:hover{
-  transform:translateY(-1px);
-  opacity:.92;
-}
-
-.disclaimer{
-  margin:2px 0 0;
-  font-size:11px;
-  line-height:1.4;
-  color:rgba(255,255,255,0.45);
-}
-</section>
+  </script>
+</body>
 </html>
