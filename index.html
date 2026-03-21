@@ -132,22 +132,30 @@
       padding:14px 6px 8px;
     }
 
-    .avatar{
-      width:84px;
-      height:84px;
-      border-radius:24px;
+    .avatar-wrap{
+      position:relative;
+      width:100px;
+      height:100px;
       margin:0 auto 18px;
+    }
+
+    .avatar{
+      width:100%;
+      height:100%;
+      border-radius:24px;
+      object-fit:cover;
+      object-position:center 28%;
       border:1px solid var(--border-strong);
-      background:
-        linear-gradient(135deg, rgba(244,197,66,0.16), rgba(255,255,255,0.05)),
-        rgba(255,255,255,0.04);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:28px;
-      font-weight:600;
-      letter-spacing:-0.5px;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);
+      display:block;
+      background:#161616;
+    }
+
+    .avatar-ring{
+      position:absolute;
+      inset:-6px;
+      border-radius:28px;
+      border:1px solid rgba(244,197,66,0.14);
+      pointer-events:none;
     }
 
     h1{
@@ -223,6 +231,67 @@
     .btn-secondary:hover{
       background:rgba(255,255,255,0.08);
       border-color:var(--border-strong);
+    }
+
+    .stats-strip{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .stat{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      border-radius:14px;
+      padding:12px 0;
+      text-align:center;
+    }
+
+    .stat strong{
+      display:block;
+      font-size:16px;
+      font-weight:600;
+      letter-spacing:-0.3px;
+    }
+
+    .stat span{
+      display:block;
+      margin-top:4px;
+      font-size:10px;
+      color:var(--muted-2);
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+
+    .quick-actions{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .quick-actions a{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:46px;
+      border-radius:14px;
+      font-size:13px;
+      text-decoration:none;
+      color:var(--fg);
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      transition:all .18s ease;
+    }
+
+    .quick-actions a:active{
+      transform:scale(.97);
+    }
+
+    .quick-actions a:hover{
+      background:rgba(255,255,255,0.08);
+      border-color:rgba(255,255,255,0.18);
     }
 
     .grid{
@@ -346,14 +415,22 @@
         font-size:30px;
       }
 
-      .avatar{
-        width:76px;
-        height:76px;
-        border-radius:22px;
-        margin-bottom:16px;
+      .avatar-wrap{
+        width:90px;
+        height:90px;
       }
 
-      .grid{
+      .avatar{
+        border-radius:22px;
+      }
+
+      .avatar-ring{
+        border-radius:26px;
+      }
+
+      .grid,
+      .stats-strip,
+      .quick-actions{
         grid-template-columns:1fr;
       }
     }
@@ -376,24 +453,47 @@
           <div class="status">Professional Profile</div>
         </div>
 
-       <div class="hero">
-  <div class="avatar-wrap">
-    <img src="nikhil.jpg" alt="Nikhil Rakesh" class="avatar">
-    <div class="avatar-ring"></div>
-  </div>
+        <div class="hero">
+          <div class="avatar-wrap">
+            <img src="nikhil.jpg" alt="Nikhil Rakesh" class="avatar">
+            <div class="avatar-ring"></div>
+          </div>
+
+          <h1>Nikhil Rakesh</h1>
           <div class="title">Urban Designer · Architect</div>
           <div class="tagline">
-            Jack off all
+            Jack of all trades
           </div>
         </div>
 
         <div class="primary-actions">
-          <a class="btn btn-primary" href="/nikhil.vcf">Save Contact</a>
+          <a class="btn btn-primary" href="/nikhil.vcf" data-track="save_contact">Save Contact</a>
+        </div>
+
+        <div class="stats-strip">
+          <div class="stat">
+            <strong id="viewCount">0</strong>
+            <span>Views</span>
+          </div>
+          <div class="stat">
+            <strong id="clickCount">0</strong>
+            <span>Clicks</span>
+          </div>
+          <div class="stat">
+            <strong id="contactCount">0</strong>
+            <span>Saves</span>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <a href="tel:+918971572389" data-track="call">Call</a>
+          <a href="mailto:nikhilr234@gmail.com" data-track="email">Email</a>
+          <a href="https://wa.me/918971572389" target="_blank" rel="noopener" data-track="whatsapp">WhatsApp</a>
         </div>
 
         <div class="grid">
-          <a class="btn btn-secondary" href="https://www.linkedin.com/in/nikhil-rakesh-41871b155/" target="_blank" rel="noopener">LinkedIn</a>
-          <a class="btn btn-secondary" href="https://drive.google.com/file/d/1V9SBD3BWk1Gdr_2viMyqvixNV82IKy-l/view?usp=drive_link" target="_blank" rel="noopener">Portfolio</a>
+          <a class="btn btn-secondary" href="https://www.linkedin.com/in/nikhil-rakesh-41871b155/" target="_blank" rel="noopener" data-track="linkedin">LinkedIn</a>
+          <a class="btn btn-secondary" href="https://drive.google.com/file/d/1V9SBD3BWk1Gdr_2viMyqvixNV82IKy-l/view?usp=drive_link" target="_blank" rel="noopener" data-track="portfolio">Portfolio</a>
         </div>
 
         <div class="section">
@@ -410,15 +510,15 @@
             <div class="section-title">Quick Links</div>
           </div>
           <div class="mini-links">
-            <a class="mini-link" href="mailto:nikhilr234@gmail.com">
+            <a class="mini-link" href="mailto:nikhilr234@gmail.com" data-track="email_secondary">
               <span>Email</span>
               <span>↗</span>
             </a>
-            <a class="mini-link" href="tel:+918971572389">
+            <a class="mini-link" href="tel:+918971572389" data-track="call_secondary">
               <span>Call</span>
               <span>↗</span>
             </a>
-            <a class="mini-link" href="https://www.instagram.com/nikhilrakesh23/"_blank" rel="noopener">
+            <a class="mini-link" href="https://www.instagram.com/nikhilrakesh23/" target="_blank" rel="noopener" data-track="instagram">
               <span>Instagram</span>
               <span>↗</span>
             </a>
@@ -435,5 +535,78 @@
       </div>
     </section>
   </main>
+
+  <script>
+    const PROFILE_ID = "iq_profile_nikhil_rakesh";
+
+    function getData() {
+      const raw = localStorage.getItem(PROFILE_ID);
+      return raw ? JSON.parse(raw) : {
+        views: 0,
+        clicks: 0,
+        save_contact: 0,
+        events: []
+      };
+    }
+
+    function setData(data) {
+      localStorage.setItem(PROFILE_ID, JSON.stringify(data));
+    }
+
+    function updateUI() {
+      const d = getData();
+      const viewEl = document.getElementById("viewCount");
+      const clickEl = document.getElementById("clickCount");
+      const contactEl = document.getElementById("contactCount");
+
+      if (viewEl) viewEl.textContent = d.views || 0;
+      if (clickEl) clickEl.textContent = d.clicks || 0;
+      if (contactEl) contactEl.textContent = d.save_contact || 0;
+    }
+
+    function track(type, label) {
+      const d = getData();
+
+      if (type === "view") {
+        d.views = (d.views || 0) + 1;
+      }
+
+      if (type === "click") {
+        d.clicks = (d.clicks || 0) + 1;
+        if (label === "save_contact") {
+          d.save_contact = (d.save_contact || 0) + 1;
+        }
+      }
+
+      d.events = d.events || [];
+      d.events.push({
+        type: type,
+        label: label || null,
+        timestamp: new Date().toISOString(),
+        page: window.location.pathname,
+        referrer: document.referrer || "direct",
+        device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "mobile" : "desktop"
+      });
+
+      if (d.events.length > 100) {
+        d.events = d.events.slice(-100);
+      }
+
+      setData(d);
+      updateUI();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      track("view");
+
+      document.querySelectorAll("[data-track]").forEach(function (el) {
+        el.addEventListener("click", function () {
+          track("click", el.dataset.track);
+        });
+      });
+
+      updateUI();
+    });
+  </script>
 </body>
 </html>
