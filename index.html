@@ -79,26 +79,18 @@
       margin-bottom:18px;
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  text-decoration:none;
+}
 
-    .brand-mark{
-      width:34px;
-      height:34px;
-      border-radius:11px;
-      border:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:13px;
-      font-weight:600;
-      letter-spacing:0.4px;
-    }
+.brand:hover .brand-mark{
+  background:linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05));
+  border-color:var(--border-strong);
+}
 
     .brand-copy{
       min-width:0;
@@ -594,16 +586,16 @@
     <section class="card">
       <div class="shell">
 
-        <div class="topbar">
-          <div class="brand">
-            <div class="brand-mark">IQ</div>
-            <div class="brand-copy">
-              <strong>IQ Card</strong>
-              <span>Tap to connect</span>
-            </div>
-          </div>
-          <div class="status">Professional Profile</div>
-        </div>
+<div class="topbar">
+  <a class="brand" href="/iq" aria-label="Go to IQ Card home">
+    <div class="brand-mark">IQ</div>
+    <div class="brand-copy">
+      <strong>IQ Card</strong>
+      <span>Tap to connect</span>
+    </div>
+  </a>
+  <div class="status">Professional Profile</div>
+</div>
 
         <div class="hero">
           <div class="avatar-wrap">
@@ -736,155 +728,200 @@
       </div>
     </div>
   </div>
+<script>
+  const PROFILE_ID = "iq_profile_nikhil_rakesh";
+  const DEVICE_KEY = "iq_device_id";
+  const VIEWED_KEY = PROFILE_ID + "_viewed";
+  const LAST_SEEN_KEY = PROFILE_ID + "_last_seen";
 
-  <script>
-    const PROFILE_ID = "iq_profile_nikhil_rakesh";
-
-    function getData() {
-      const raw = localStorage.getItem(PROFILE_ID);
-      return raw ? JSON.parse(raw) : {
-        views: 0,
-        clicks: 0,
-        save_contact: 0,
-        events: []
-      };
+  function getOrCreateDeviceId() {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (!id) {
+      id = "dev_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem(DEVICE_KEY, id);
     }
+    return id;
+  }
 
-    function setData(data) {
-      localStorage.setItem(PROFILE_ID, JSON.stringify(data));
-    }
+  function getData() {
+    const raw = localStorage.getItem(PROFILE_ID);
+    return raw ? JSON.parse(raw) : {
+      views: 0,
+      clicks: 0,
+      save_contact: 0,
+      unique_devices: [],
+      events: []
+    };
+  }
 
-    function updateCounts() {
-      const d = getData();
+  function setData(data) {
+    localStorage.setItem(PROFILE_ID, JSON.stringify(data));
+  }
 
-      const viewEl = document.getElementById("viewCount");
-      const clickEl = document.getElementById("clickCount");
-      const contactEl = document.getElementById("contactCount");
+  function updateCounts() {
+    const d = getData();
 
-      if (viewEl) viewEl.textContent = d.views || 0;
-      if (clickEl) clickEl.textContent = d.clicks || 0;
-      if (contactEl) contactEl.textContent = d.save_contact || 0;
-    }
+    const viewEl = document.getElementById("viewCount");
+    const clickEl = document.getElementById("clickCount");
+    const contactEl = document.getElementById("contactCount");
 
-    function updateChart() {
-      const d = getData();
-      const bars = document.querySelectorAll(".chart-bar span");
-      if (!bars.length) return;
+    if (viewEl) viewEl.textContent = d.views || 0;
+    if (clickEl) clickEl.textContent = d.clicks || 0;
+    if (contactEl) contactEl.textContent = d.save_contact || 0;
+  }
 
-      const recent = (d.events || []).slice(-7);
+  function updateChart() {
+    const d = getData();
+    const bars = document.querySelectorAll(".chart-bar span");
+    if (!bars.length) return;
 
-      if (!recent.length) {
-        const fallback = [18, 32, 24, 48, 38, 62, 80];
-        bars.forEach((bar, i) => {
-          bar.style.height = fallback[i] + "%";
-        });
-        return;
-      }
+    const recent = (d.events || []).slice(-7);
 
-      const bucket = new Array(7).fill(0);
-      recent.forEach((event, index) => {
-        bucket[index] += 1;
-      });
-
-      const max = Math.max(...bucket, 1);
-
+    if (!recent.length) {
+      const fallback = [18, 32, 24, 48, 38, 62, 80];
       bars.forEach((bar, i) => {
-        const value = bucket[i] || 0;
-        const height = Math.max(12, Math.round((value / max) * 100));
-        bar.style.height = height + "%";
+        bar.style.height = fallback[i] + "%";
       });
+      return;
     }
 
-    function updateUI() {
-      updateCounts();
-      updateChart();
-    }
-
-    function track(type, label) {
-      const d = getData();
-
-      if (type === "view") {
-        d.views = (d.views || 0) + 1;
-      }
-
-      if (type === "click") {
-        d.clicks = (d.clicks || 0) + 1;
-        if (label === "save_contact") {
-          d.save_contact = (d.save_contact || 0) + 1;
-        }
-      }
-
-      d.events = d.events || [];
-      d.events.push({
-        type: type,
-        label: label || null,
-        timestamp: new Date().toISOString(),
-        page: window.location.pathname,
-        referrer: document.referrer || "direct",
-        device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "mobile" : "desktop"
-      });
-
-      if (d.events.length > 100) {
-        d.events = d.events.slice(-100);
-      }
-
-      setData(d);
-      updateUI();
-    }
-
-    function openAnalyticsModal() {
-      const modal = document.getElementById("analyticsModal");
-      if (modal) {
-        updateUI();
-        modal.classList.add("active");
-        modal.setAttribute("aria-hidden", "false");
-      }
-    }
-
-    function closeAnalyticsModal() {
-      const modal = document.getElementById("analyticsModal");
-      if (modal) {
-        modal.classList.remove("active");
-        modal.setAttribute("aria-hidden", "true");
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-      track("view");
-
-      document.querySelectorAll("[data-track]").forEach(function (el) {
-        el.addEventListener("click", function () {
-          track("click", el.dataset.track);
-        });
-      });
-
-      const openBtn = document.getElementById("openAnalytics");
-      const closeBtn = document.getElementById("closeAnalytics");
-      const backdrop = document.getElementById("analyticsBackdrop");
-
-      if (openBtn) {
-        openBtn.addEventListener("click", function (e) {
-          e.preventDefault();
-          openAnalyticsModal();
-        });
-      }
-
-      if (closeBtn) {
-        closeBtn.addEventListener("click", closeAnalyticsModal);
-      }
-
-      if (backdrop) {
-        backdrop.addEventListener("click", closeAnalyticsModal);
-      }
-
-      document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
-          closeAnalyticsModal();
-        }
-      });
-
-      updateUI();
+    const bucket = new Array(7).fill(0);
+    recent.forEach((event, index) => {
+      bucket[index] += 1;
     });
-  </script>
+
+    const max = Math.max(...bucket, 1);
+
+    bars.forEach((bar, i) => {
+      const value = bucket[i] || 0;
+      const height = Math.max(12, Math.round((value / max) * 100));
+      bar.style.height = height + "%";
+    });
+  }
+
+  function updateUI() {
+    updateCounts();
+    updateChart();
+  }
+
+  function trackClick(label) {
+    const d = getData();
+    const deviceId = getOrCreateDeviceId();
+
+    d.clicks = (d.clicks || 0) + 1;
+
+    if (label === "save_contact") {
+      d.save_contact = (d.save_contact || 0) + 1;
+    }
+
+    d.events = d.events || [];
+    d.events.push({
+      type: "click",
+      label: label || null,
+      deviceId: deviceId,
+      timestamp: new Date().toISOString(),
+      page: window.location.pathname,
+      referrer: document.referrer || "direct",
+      device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "mobile" : "desktop"
+    });
+
+    if (d.events.length > 100) {
+      d.events = d.events.slice(-100);
+    }
+
+    setData(d);
+    updateUI();
+  }
+
+  function trackUniqueView() {
+    const d = getData();
+    const deviceId = getOrCreateDeviceId();
+    const alreadyViewed = localStorage.getItem(VIEWED_KEY);
+
+    d.unique_devices = d.unique_devices || [];
+
+    if (!d.unique_devices.includes(deviceId)) {
+      d.unique_devices.push(deviceId);
+    }
+
+    if (!alreadyViewed) {
+      d.views = (d.views || 0) + 1;
+      localStorage.setItem(VIEWED_KEY, "true");
+    }
+
+    d.events = d.events || [];
+    d.events.push({
+      type: "view",
+      label: "unique_view_check",
+      deviceId: deviceId,
+      timestamp: new Date().toISOString(),
+      page: window.location.pathname,
+      referrer: document.referrer || "direct",
+      device: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? "mobile" : "desktop"
+    });
+
+    if (d.events.length > 100) {
+      d.events = d.events.slice(-100);
+    }
+
+    localStorage.setItem(LAST_SEEN_KEY, new Date().toISOString());
+    setData(d);
+    updateUI();
+  }
+
+  function openAnalyticsModal() {
+    const modal = document.getElementById("analyticsModal");
+    if (modal) {
+      updateUI();
+      modal.classList.add("active");
+      modal.setAttribute("aria-hidden", "false");
+    }
+  }
+
+  function closeAnalyticsModal() {
+    const modal = document.getElementById("analyticsModal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    trackUniqueView();
+
+    document.querySelectorAll("[data-track]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        trackClick(el.dataset.track);
+      });
+    });
+
+    const openBtn = document.getElementById("openAnalytics");
+    const closeBtn = document.getElementById("closeAnalytics");
+    const backdrop = document.getElementById("analyticsBackdrop");
+
+    if (openBtn) {
+      openBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        openAnalyticsModal();
+      });
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeAnalyticsModal);
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener("click", closeAnalyticsModal);
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeAnalyticsModal();
+      }
+    });
+
+    updateUI();
+  });
+</script>
 </body>
 </html>
