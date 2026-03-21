@@ -1,1 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IQ Card - Ravichandra</title>
 
+<style>
+:root{
+  --bg:#0b0b0c;
+  --fg:#ffffff;
+  --muted:rgba(255,255,255,0.6);
+  --border:rgba(255,255,255,0.14);
+  --card:rgba(255,255,255,0.04);
+  --accent:#f4c430;
+  --r:18px;
+}
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+}
+
+.wrap{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:40px 16px;
+}
+
+.container{
+  width:100%;
+  max-width:420px;
+}
+
+/* TOP BAR */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:24px;
+}
+
+.logo{
+  font-weight:600;
+  font-size:14px;
+  color:var(--muted);
+  text-decoration:none;
+}
+
+.logo span{
+  color:var(--accent);
+}
+
+/* CARD */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:24px;
+  backdrop-filter: blur(10px);
+}
+
+/* PROFILE */
+.avatar{
+  width:88px;
+  height:88px;
+  border-radius:50%;
+  margin:auto;
+  display:block;
+  object-fit:cover;
+  border:1px solid var(--border);
+}
+
+h1{
+  text-align:center;
+  margin:14px 0 4px;
+  font-size:24px;
+}
+
+.role{
+  text-align:center;
+  color:var(--muted);
+  font-size:14px;
+}
+
+/* BUTTON */
+.primary{
+  display:block;
+  margin:18px auto;
+  padding:12px;
+  text-align:center;
+  border-radius:12px;
+  text-decoration:none;
+  color:black;
+  background:var(--accent);
+  font-weight:600;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.btn{
+  padding:12px;
+  text-align:center;
+  border-radius:12px;
+  text-decoration:none;
+  color:var(--fg);
+  border:1px solid var(--border);
+  font-size:14px;
+}
+
+/* SECTION */
+.section{
+  margin-top:16px;
+}
+
+.section h2{
+  font-size:14px;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+
+/* ANALYTICS BUTTON */
+.analytics-btn{
+  margin-top:16px;
+  padding:12px;
+  text-align:center;
+  border-radius:12px;
+  border:1px solid var(--border);
+  cursor:pointer;
+  font-size:14px;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-content{
+  background:#111;
+  padding:20px;
+  border-radius:14px;
+  width:90%;
+  max-width:320px;
+  border:1px solid var(--border);
+}
+
+.close{
+  text-align:right;
+  cursor:pointer;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+<div class="container">
+
+<!-- TOP -->
+<div class="topbar">
+<a href="#" class="logo">IQ Card <span>• tap to connect</span></a>
+</div>
+
+<!-- MAIN CARD -->
+<div class="card">
+
+<img src="ravi.jpg" class="avatar" alt="Ravichandra">
+
+<h1>Ravichandra</h1>
+<div class="role">Event Planner • Event Management</div>
+
+<a class="primary" href="tel:+919880273773">Call Now</a>
+
+<div class="grid">
+  <a class="btn" href="https://www.linkedin.com/in/ravi-chandra-946251130/?originalSubdomain=in">LinkedIn</a>
+  <a class="btn" href="https://audioplus.co.in/">Website</a>
+  <a class="btn" href="mailto:ravichandra@audioplus.co.in">Email</a>
+  <a class="btn" href="https://wa.me/919880273773">WhatsApp</a>
+</div>
+
+<div class="analytics-btn" onclick="openModal()">Analytics</div>
+
+</div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="close" onclick="closeModal()">Close</div>
+
+    <h3>Analytics</h3>
+    <p style="color:var(--muted);font-size:14px;">
+      Views: 128 <br>
+      Clicks: 64 <br>
+      Saves: 21
+    </p>
+
+    <hr style="border-color:var(--border);margin:16px 0;">
+
+    <h3>Request Update</h3>
+    <p style="color:var(--muted);font-size:13px;">
+      Want to update your profile?<br>
+      Email: nikhilr234@gmail.com
+    </p>
+  </div>
+</div>
+
+<script>
+function openModal(){
+  document.getElementById('modal').style.display='flex';
+}
+
+function closeModal(){
+  document.getElementById('modal').style.display='none';
+}
+</script>
+
+</body>
+</html>
