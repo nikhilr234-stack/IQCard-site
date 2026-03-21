@@ -947,5 +947,80 @@
       All requests and links will be reviewed before being updated.
     </p>
   </form>
+  .request-update{
+  margin-top:24px;
+  padding:20px;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:18px;
+  background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(8px);
+}
+
+.request-update .section-head h2{
+  margin:0 0 6px;
+  font-size:20px;
+  font-weight:600;
+}
+
+.request-update .section-head p{
+  margin:0 0 16px;
+  font-size:14px;
+  color:rgba(255,255,255,0.65);
+  line-height:1.5;
+}
+
+.update-form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.update-form input,
+.update-form textarea{
+  width:100%;
+  padding:14px 16px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.04);
+  color:#fff;
+  font-size:14px;
+  outline:none;
+  box-sizing:border-box;
+}
+
+.update-form input::placeholder,
+.update-form textarea::placeholder{
+  color:rgba(255,255,255,0.42);
+}
+
+.update-form input:focus,
+.update-form textarea:focus{
+  border-color:rgba(255,255,255,0.28);
+  background:rgba(255,255,255,0.06);
+}
+
+.update-form button{
+  padding:14px 16px;
+  border:none;
+  border-radius:12px;
+  background:#fff;
+  color:#000;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:transform .18s ease, opacity .18s ease;
+}
+
+.update-form button:hover{
+  transform:translateY(-1px);
+  opacity:.92;
+}
+
+.disclaimer{
+  margin:2px 0 0;
+  font-size:11px;
+  line-height:1.4;
+  color:rgba(255,255,255,0.45);
+}
 </section>
 </html>
