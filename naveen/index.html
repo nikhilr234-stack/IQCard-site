@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Naveen Samant · IQ Card</title>
+
+<style>
+:root{
+  --bg:#0b0b0c;
+  --panel:rgba(255,255,255,0.04);
+  --fg:#ffffff;
+  --muted:rgba(255,255,255,0.6);
+  --muted-2:rgba(255,255,255,0.4);
+  --border:rgba(255,255,255,0.1);
+  --accent:#f4c542;
+  --r:18px;
+}
+
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+}
+
+.wrap{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:24px;
+}
+
+.card{
+  width:100%;
+  max-width:420px;
+}
+
+.shell{
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:20px;
+  background:var(--panel);
+}
+
+/* TOP */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:18px;
+}
+
+.logo{
+  font-size:13px;
+  color:var(--muted);
+  text-decoration:none;
+}
+
+.status{
+  font-size:11px;
+  color:var(--accent);
+}
+
+/* HERO */
+.hero{
+  text-align:center;
+}
+
+.avatar{
+  width:90px;
+  height:90px;
+  border-radius:20px;
+  margin:auto;
+  display:block;
+  object-fit:cover;
+  background:#111;
+}
+
+h1{
+  margin:12px 0 6px;
+  font-size:28px;
+}
+
+.title{
+  color:var(--muted);
+  font-size:14px;
+}
+
+.tagline{
+  font-size:13px;
+  color:var(--muted-2);
+  margin-top:10px;
+  line-height:1.5;
+}
+
+/* BUTTON */
+.primary{
+  display:block;
+  margin:20px 0;
+  padding:14px;
+  text-align:center;
+  border-radius:14px;
+  background:white;
+  color:black;
+  text-decoration:none;
+  font-weight:600;
+}
+
+/* LINKS */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.btn{
+  padding:12px;
+  text-align:center;
+  border-radius:12px;
+  border:1px solid var(--border);
+  text-decoration:none;
+  color:white;
+}
+
+/* QUICK */
+.quick{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+}
+
+.quick a{
+  padding:10px;
+  text-align:center;
+  border:1px solid var(--border);
+  border-radius:10px;
+  text-decoration:none;
+  color:white;
+  font-size:13px;
+}
+
+/* SECTION */
+.section{
+  margin-top:16px;
+  padding:14px;
+  border-radius:16px;
+  border:1px solid var(--border);
+}
+
+.section h2{
+  font-size:12px;
+  color:var(--muted-2);
+  margin-bottom:8px;
+}
+
+.about{
+  font-size:14px;
+  line-height:1.6;
+  color:var(--muted);
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+<div class="card">
+<div class="shell">
+
+<!-- TOP -->
+<div class="topbar">
+  <a class="logo" href="/iq">IQ Card • Tap to connect</a>
+  <div class="status">Executive Profile</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+
+  <img src="naveen-samant.jpg" alt="Naveen Samant" class="avatar">
+
+  <h1>Naveen Samant</h1>
+  <div class="title">Director - E&C and Corporate · Lam Research</div>
+
+  <div class="tagline">
+    24+ years of legal leadership across global business, compliance, contracts, and corporate governance.
+  </div>
+
+</div>
+
+<!-- SAVE CONTACT -->
+<a class="primary" href="naveen-samant.vcf" download>
+  Save Contact
+</a>
+
+<!-- LINKS -->
+<div class="grid">
+  <a class="btn" href="https://www.linkedin.com/in/naveensamant01/">LinkedIn</a>
+  <a class="btn" href="mailto:naveensamant@gmail.com">Email</a>
+</div>
+
+<!-- QUICK -->
+<div class="quick">
+  <a href="tel:+919845315606">Call</a>
+  <a href="mailto:naveensamant@gmail.com">Email</a>
+  <a href="https://wa.me/919845315606">WhatsApp</a>
+</div>
+
+<!-- ABOUT -->
+<div class="section">
+  <h2>About</h2>
+  <div class="about">
+    An accomplished and seasoned in-house counsel with rich experience in legal drafting and analytical skills. Currently serving as Director - E&C and Corporate, India at Lam Research, providing strategic guidance to global business leaders.
+    <br><br>
+    Expertise in commercial agreements, litigation, compliance, intellectual property, and corporate governance. Recognized among India’s top General Counsels and in-house legal leaders.
+  </div>
+</div>
+
+</div>
+</div>
+</div>
+
+</body>
+</html>
