@@ -345,90 +345,6 @@
       font-size:16px;
     }
 
-    .request-update{
-      margin-top:16px;
-      border:1px solid var(--border);
-      border-radius:20px;
-      background:var(--panel);
-      padding:16px;
-    }
-
-    .request-update-title{
-      margin:0;
-      font-size:12px;
-      font-weight:600;
-      letter-spacing:1.1px;
-      text-transform:uppercase;
-      color:var(--muted-2);
-    }
-
-    .request-update-copy{
-      margin:10px 0 0;
-      font-size:14px;
-      line-height:1.6;
-      color:var(--muted);
-    }
-
-    .update-form{
-      display:grid;
-      gap:10px;
-      margin-top:14px;
-    }
-
-    .update-form input,
-    .update-form textarea{
-      width:100%;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,0.03);
-      color:var(--fg);
-      padding:14px 14px;
-      outline:none;
-      transition:border-color .18s ease, background .18s ease;
-      resize:vertical;
-    }
-
-    .update-form input::placeholder,
-    .update-form textarea::placeholder{
-      color:var(--muted-2);
-    }
-
-    .update-form input:focus,
-    .update-form textarea:focus{
-      border-color:var(--border-strong);
-      background:rgba(255,255,255,0.05);
-    }
-
-    .update-submit{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      min-height:50px;
-      border-radius:14px;
-      border:1px solid var(--fg);
-      background:var(--fg);
-      color:#0b0b0c;
-      font-size:14px;
-      font-weight:600;
-      cursor:pointer;
-      transition:transform .18s ease, opacity .18s ease;
-    }
-
-    .update-submit:hover{
-      opacity:.94;
-    }
-
-    .update-submit:active{
-      transform:scale(.985);
-    }
-
-    .disclaimer{
-      margin:2px 0 0;
-      font-size:11px;
-      line-height:1.5;
-      color:var(--muted-2);
-    }
-
     .footer{
       padding-top:18px;
       text-align:center;
@@ -633,6 +549,66 @@
       transition:height .28s ease;
     }
 
+    .update-form{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .update-form input,
+    .update-form textarea{
+      width:100%;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      color:var(--fg);
+      padding:14px 14px;
+      outline:none;
+      transition:border-color .18s ease, background .18s ease;
+      resize:vertical;
+    }
+
+    .update-form input::placeholder,
+    .update-form textarea::placeholder{
+      color:var(--muted-2);
+    }
+
+    .update-form input:focus,
+    .update-form textarea:focus{
+      border-color:var(--border-strong);
+      background:rgba(255,255,255,0.05);
+    }
+
+    .update-submit{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:50px;
+      border-radius:14px;
+      border:1px solid var(--fg);
+      background:var(--fg);
+      color:#0b0b0c;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      transition:transform .18s ease, opacity .18s ease;
+    }
+
+    .update-submit:hover{
+      opacity:.94;
+    }
+
+    .update-submit:active{
+      transform:scale(.985);
+    }
+
+    .disclaimer{
+      margin:2px 0 0;
+      font-size:11px;
+      line-height:1.5;
+      color:var(--muted-2);
+    }
+
     @media (max-width:420px){
       .wrap{
         padding:18px 14px 28px;
@@ -767,28 +743,16 @@
           </div>
         </div>
 
-        <div class="request-update">
+        <div class="section">
           <div class="section-head">
-            <div class="request-update-title">Request an Update</div>
+            <div class="section-title">Support</div>
           </div>
-
-          <p class="request-update-copy">
-            Need to change a button, link, or profile detail? Send a request below.
-          </p>
-
-          <form class="update-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-            <input type="text" name="name" placeholder="Your name" required>
-            <input type="text" name="field_to_update" placeholder="What would you like to update? (e.g. LinkedIn button)" required>
-            <input type="text" name="new_button_text" placeholder="What should the button say?">
-            <input type="url" name="new_link" placeholder="What should the new link be?">
-            <textarea name="notes" rows="4" placeholder="Any extra details?"></textarea>
-
-            <button type="submit" class="update-submit">Send Request</button>
-
-            <p class="disclaimer">
-              All requests and links will be reviewed before being updated.
-            </p>
-          </form>
+          <div class="mini-links">
+            <a class="mini-link" href="#" id="openUpdateRequest">
+              <span>Request an Update</span>
+              <span>↗</span>
+            </a>
+          </div>
         </div>
 
         <div class="footer">
@@ -849,6 +813,36 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="analytics-modal" id="updateRequestModal" aria-hidden="true">
+    <div class="analytics-backdrop" id="updateRequestBackdrop"></div>
+
+    <div class="analytics-panel" role="dialog" aria-modal="true" aria-labelledby="updateRequestTitle">
+      <div class="analytics-handle"></div>
+
+      <div class="analytics-top">
+        <div>
+          <div class="section-title" id="updateRequestTitle">Request an Update</div>
+          <div class="analytics-sub">Send a change request for buttons, links, or profile details</div>
+        </div>
+        <button class="analytics-close" id="closeUpdateRequest" aria-label="Close update request">×</button>
+      </div>
+
+      <form class="update-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+        <input type="text" name="name" placeholder="Your name" required>
+        <input type="text" name="field_to_update" placeholder="What would you like to update? (e.g. LinkedIn button)" required>
+        <input type="text" name="new_button_text" placeholder="What should the button say?">
+        <input type="url" name="new_link" placeholder="What should the new link be?">
+        <textarea name="notes" rows="4" placeholder="Any extra details?"></textarea>
+
+        <button type="submit" class="update-submit">Send Request</button>
+
+        <p class="disclaimer">
+          All requests and links will be reviewed before being updated.
+        </p>
+      </form>
     </div>
   </div>
 
@@ -1010,6 +1004,22 @@
       }
     }
 
+    function openUpdateRequestModal() {
+      const modal = document.getElementById("updateRequestModal");
+      if (modal) {
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
+      }
+    }
+
+    function closeUpdateRequestModal() {
+      const modal = document.getElementById("updateRequestModal");
+      if (modal) {
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
       trackUniqueView();
 
@@ -1038,9 +1048,29 @@
         backdrop.addEventListener("click", closeAnalyticsModal);
       }
 
+      const openUpdateBtn = document.getElementById("openUpdateRequest");
+      const closeUpdateBtn = document.getElementById("closeUpdateRequest");
+      const updateBackdrop = document.getElementById("updateRequestBackdrop");
+
+      if (openUpdateBtn) {
+        openUpdateBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          openUpdateRequestModal();
+        });
+      }
+
+      if (closeUpdateBtn) {
+        closeUpdateBtn.addEventListener("click", closeUpdateRequestModal);
+      }
+
+      if (updateBackdrop) {
+        updateBackdrop.addEventListener("click", closeUpdateRequestModal);
+      }
+
       document.addEventListener("keydown", function (e) {
         if (e.key === "Escape") {
           closeAnalyticsModal();
+          closeUpdateRequestModal();
         }
       });
 
