@@ -923,5 +923,29 @@
     updateUI();
   });
 </script>
-</body>
+  
+</body><section class="request-update">
+  <div class="section-head">
+    <h2>Request an Update</h2>
+    <p>Need to change a button, link, or profile detail? Send a request below.</p>
+  </div>
+
+  <form class="update-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+    <input type="text" name="name" placeholder="Your name" required>
+    
+    <input type="text" name="field_to_update" placeholder="What would you like to update? (e.g. LinkedIn button)" required>
+    
+    <input type="text" name="new_button_text" placeholder="What should the button say?">
+    
+    <input type="url" name="new_link" placeholder="What should the new link be?">
+    
+    <textarea name="notes" rows="4" placeholder="Any extra details?"></textarea>
+
+    <button type="submit">Send Request</button>
+
+    <p class="disclaimer">
+      All requests and links will be reviewed before being updated.
+    </p>
+  </form>
+</section>
 </html>
