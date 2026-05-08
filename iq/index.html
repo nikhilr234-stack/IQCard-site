@@ -27,9 +27,7 @@
 
     *{box-sizing:border-box}
 
-    html{
-      scroll-behavior:smooth;
-    }
+    html{scroll-behavior:smooth}
 
     body{
       margin:0;
@@ -42,10 +40,7 @@
       overflow-x:hidden;
     }
 
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
+    a{color:inherit;text-decoration:none}
 
     .container{
       width:min(var(--max), calc(100% - 40px));
@@ -108,9 +103,7 @@
       font-size:13px;
     }
 
-    .nav-links a:hover{
-      color:#fff;
-    }
+    .nav-links a:hover{color:#fff}
 
     .nav-cta{
       padding:11px 16px;
@@ -128,27 +121,6 @@
       grid-template-columns:1fr .92fr;
       gap:58px;
       align-items:center;
-    }
-
-    .eyebrow{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.06);
-      color:var(--muted);
-      font-size:13px;
-      margin-bottom:22px;
-    }
-
-    .dot{
-      width:8px;
-      height:8px;
-      border-radius:50%;
-      background:var(--accent);
-      box-shadow:0 0 18px var(--accent);
     }
 
     h1{
@@ -863,7 +835,7 @@
 
   <header class="nav">
     <div class="container nav-inner">
-      <a class="brand" href="/">
+      <a class="brand" href="#top">
         <div class="brand-mark">IQ</div>
         <div class="brand-text">
           <strong>IQ Card</strong>
@@ -881,11 +853,9 @@
     </div>
   </header>
 
-  <section class="hero">
+  <section class="hero" id="top">
     <div class="container hero-grid">
       <div>
-        <div class="eyebrow"><span class="dot"></span> Premium NFC business card</div>
-
         <h1>Your identity, one tap away.</h1>
 
         <p class="lead">
@@ -902,7 +872,7 @@
             Get Your Card
           </a>
 
-          <a class="btn ghost" href="/">
+          <a class="btn ghost" href="#demo">
             See Demo Profile
           </a>
         </div>
@@ -914,7 +884,7 @@
         </div>
       </div>
 
-      <div class="hero-visual">
+      <div class="hero-visual" id="demo">
         <div class="glow"></div>
 
         <div class="phone">
@@ -1259,7 +1229,7 @@
             Get Your IQ Card
           </a>
 
-          <a class="btn" href="/">
+          <a class="btn" href="#demo">
             View Demo Profile
           </a>
         </div>
