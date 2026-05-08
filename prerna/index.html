@@ -10,36 +10,38 @@
       --bg:#fff8ef;
       --fg:#171411;
       --muted:rgba(23,20,17,.62);
-      --border:rgba(23,20,17,.10);
-      --card:rgba(255,255,255,.75);
+      --muted2:rgba(23,20,17,.42);
+      --border:rgba(23,20,17,.12);
+      --card:rgba(255,255,255,.72);
       --accent:#f2a86b;
-      --accent-soft:#ffe2c7;
+      --accent2:#ffd1aa;
       --radius:24px;
     }
 
-    *{
-      box-sizing:border-box;
-    }
+    *{box-sizing:border-box;}
 
     body{
       margin:0;
-      background:var(--bg);
+      background:
+        radial-gradient(circle at top left, rgba(242,168,107,.24), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(255,209,170,.38), transparent 38%),
+        var(--bg);
       color:var(--fg);
       font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
       -webkit-font-smoothing:antialiased;
     }
 
     a{
-      text-decoration:none;
       color:inherit;
+      text-decoration:none;
     }
 
     .wrap{
       width:100%;
       max-width:480px;
       margin:auto;
-      padding:26px 18px 60px;
       min-height:100vh;
+      padding:26px 18px 56px;
     }
 
     .topbar{
@@ -59,14 +61,14 @@
       width:42px;
       height:42px;
       border-radius:14px;
-      background:linear-gradient(135deg,#f2a86b,#ffd6b5);
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
       color:#171411;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight:700;
+      font-weight:750;
       font-size:15px;
-      box-shadow:0 10px 30px rgba(242,168,107,.25);
+      box-shadow:0 10px 30px rgba(242,168,107,.26);
     }
 
     .logo-text{
@@ -76,6 +78,7 @@
     .logo-text strong{
       display:block;
       font-size:14px;
+      letter-spacing:-.2px;
     }
 
     .logo-text span{
@@ -87,16 +90,25 @@
       text-align:center;
     }
 
-    .avatar{
-      width:116px;
-      height:116px;
-      border-radius:34px;
+    .avatar-wrap{
+      width:124px;
+      height:124px;
       margin:0 auto 24px;
+      border-radius:38px;
+      padding:4px;
+      background:linear-gradient(135deg,var(--accent),rgba(255,255,255,.8));
+      box-shadow:0 18px 44px rgba(0,0,0,.08);
+    }
+
+    .avatar{
+      width:100%;
+      height:100%;
+      border-radius:34px;
       background-image:url("prerna.jpg");
       background-size:cover;
       background-position:center;
-      border:1px solid var(--border);
-      box-shadow:0 16px 40px rgba(0,0,0,.08);
+      background-color:#f4dfce;
+      border:1px solid rgba(255,255,255,.7);
     }
 
     h1{
@@ -104,7 +116,7 @@
       font-size:36px;
       line-height:1;
       letter-spacing:-1.4px;
-      font-weight:650;
+      font-weight:680;
     }
 
     .role{
@@ -115,11 +127,11 @@
     }
 
     .bio{
-      margin-top:18px;
+      margin:18px auto 0;
+      max-width:360px;
       font-size:15px;
       line-height:1.7;
       color:#3b312b;
-      padding:0 10px;
     }
 
     .primary-btn{
@@ -127,14 +139,14 @@
       height:58px;
       border-radius:18px;
       margin-top:30px;
-      background:linear-gradient(135deg,#f2a86b,#ffcfaa);
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight:600;
+      font-weight:650;
       font-size:16px;
       color:#171411;
-      box-shadow:0 14px 40px rgba(242,168,107,.25);
+      box-shadow:0 14px 40px rgba(242,168,107,.28);
     }
 
     .grid{
@@ -144,12 +156,20 @@
       margin-top:16px;
     }
 
-    .mini-card{
+    .mini-card,
+    .link-card,
+    .analytics-card,
+    .modal-card{
       background:var(--card);
       border:1px solid var(--border);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+    }
+
+    .mini-card{
       border-radius:22px;
       padding:18px;
-      backdrop-filter:blur(12px);
+      text-align:left;
     }
 
     .mini-card strong{
@@ -182,11 +202,8 @@
       justify-content:space-between;
       padding:18px;
       border-radius:22px;
-      background:var(--card);
-      border:1px solid var(--border);
       margin-bottom:12px;
       transition:.2s ease;
-      backdrop-filter:blur(10px);
     }
 
     .link-card:hover{
@@ -202,6 +219,7 @@
     .link-left span{
       font-size:13px;
       color:var(--muted);
+      line-height:1.4;
     }
 
     .arrow{
@@ -209,41 +227,104 @@
       color:var(--muted);
     }
 
-    .analytics{
-      margin-top:26px;
-      background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.65));
+    .analytics-btn{
+      cursor:pointer;
+      width:100%;
       border:1px solid var(--border);
-      border-radius:28px;
-      padding:22px;
-    }
-
-    .analytics-top{
+      border-radius:22px;
+      padding:18px;
+      background:var(--card);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+      color:var(--fg);
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      margin-bottom:20px;
+      justify-content:space-between;
+      font-family:inherit;
+      text-align:left;
+      margin-top:12px;
     }
 
-    .analytics-top strong{
-      font-size:18px;
+    .analytics-btn strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:4px;
     }
 
-    .analytics-top span{
-      font-size:12px;
+    .analytics-btn span{
+      display:block;
+      font-size:13px;
       color:var(--muted);
     }
 
-    .stats{
+    .modal{
+      position:fixed;
+      inset:0;
+      z-index:50;
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      background:rgba(0,0,0,.38);
+      padding:16px;
+    }
+
+    .modal:target{
+      display:flex;
+    }
+
+    .modal-card{
+      width:100%;
+      max-width:480px;
+      border-radius:28px;
+      padding:22px;
+      background:rgba(255,248,239,.92);
+      box-shadow:0 20px 80px rgba(0,0,0,.22);
+    }
+
+    .modal-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    .modal-head h2{
+      margin:0;
+      font-size:22px;
+      letter-spacing:-.6px;
+    }
+
+    .modal-head p{
+      margin:6px 0 0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .close{
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      border:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--muted);
+      flex:none;
+    }
+
+    .stats-grid{
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:14px;
+      gap:12px;
     }
 
     .stat{
-      background:#fff;
-      border-radius:18px;
+      background:rgba(255,255,255,.62);
+      border:1px solid rgba(23,20,17,.08);
+      border-radius:20px;
       padding:16px;
-      border:1px solid rgba(23,20,17,.06);
     }
 
     .stat-label{
@@ -253,22 +334,88 @@
     }
 
     .stat-value{
-      font-size:24px;
-      font-weight:650;
+      font-size:25px;
+      font-weight:700;
+      letter-spacing:-.6px;
     }
 
-    .update-btn{
+    .chart{
+      margin-top:14px;
+      border-radius:22px;
+      padding:16px;
+      background:rgba(255,255,255,.55);
+      border:1px solid rgba(23,20,17,.08);
+    }
+
+    .chart-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:16px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .bars{
+      height:120px;
+      display:flex;
+      align-items:flex-end;
+      gap:10px;
+    }
+
+    .bar-wrap{
+      flex:1;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-end;
+      gap:8px;
+    }
+
+    .bar{
       width:100%;
-      margin-top:18px;
-      height:56px;
-      border-radius:18px;
-      border:1px solid var(--border);
+      border-radius:999px 999px 8px 8px;
+      background:linear-gradient(180deg,var(--accent),var(--accent2));
+      min-height:18px;
+    }
+
+    .bar-label{
+      font-size:10px;
+      color:var(--muted2);
+    }
+
+    .update-box{
+      margin-top:14px;
+      border-radius:22px;
+      padding:16px;
+      background:rgba(255,255,255,.55);
+      border:1px solid rgba(23,20,17,.08);
+    }
+
+    .update-box strong{
+      display:block;
+      font-size:14px;
+      margin-bottom:6px;
+    }
+
+    .update-box p{
+      margin:0 0 14px;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .update-link{
+      height:50px;
+      border-radius:16px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight:550;
-      background:rgba(255,255,255,.55);
-      backdrop-filter:blur(10px);
+      background:#171411;
+      color:#fff8ef;
+      font-size:14px;
+      font-weight:600;
     }
 
     .footer{
@@ -277,7 +424,6 @@
       color:rgba(23,20,17,.42);
       font-size:12px;
     }
-
   </style>
 </head>
 
@@ -286,25 +432,20 @@
   <div class="wrap">
 
     <div class="topbar">
-
       <a href="https://iqcard.in" class="logo">
-
-        <div class="logo-box">
-          IQ
-        </div>
-
+        <div class="logo-box">IQ</div>
         <div class="logo-text">
           <strong>IQ Card</strong>
           <span>Tap to connect</span>
         </div>
-
       </a>
-
     </div>
 
     <section class="hero">
 
-      <div class="avatar"></div>
+      <div class="avatar-wrap">
+        <div class="avatar"></div>
+      </div>
 
       <h1>Prerna Revankar</h1>
 
@@ -323,21 +464,13 @@
       <div class="grid">
 
         <a class="mini-card" href="mailto:prernavr7@gmail.com">
-
           <strong>Email</strong>
-          <span>
-            Professional inquiries and collaborations.
-          </span>
-
+          <span>Professional inquiries and collaborations.</span>
         </a>
 
         <a class="mini-card" href="tel:+917259706185">
-
           <strong>Call</strong>
-          <span>
-            Direct contact and conversations.
-          </span>
-
+          <span>Direct contact and conversations.</span>
         </a>
 
       </div>
@@ -346,108 +479,61 @@
 
     <section class="section">
 
-      <div class="section-title">
-        Quick Links
-      </div>
+      <div class="section-title">Connect</div>
 
       <a
         class="link-card"
         href="https://prerna-revankar.framer.website/"
         target="_blank"
+        rel="noopener"
       >
-
         <div class="link-left">
           <strong>Website</strong>
-          <span>Explore her work and design stories.</span>
+          <span>Explore her work, case studies, and design stories.</span>
         </div>
-
-        <div class="arrow">
-          ↗
-        </div>
-
-      </a>
-
-      <a
-        class="link-card"
-        href="https://www.linkedin.com/in/prerna-revankar/"
-        target="_blank"
-      >
-
-        <div class="link-left">
-          <strong>LinkedIn</strong>
-          <span>Professional profile and experience.</span>
-        </div>
-
-        <div class="arrow">
-          ↗
-        </div>
-
+        <div class="arrow">↗</div>
       </a>
 
       <a
         class="link-card"
         href="https://www.instagram.com/prernavr/"
         target="_blank"
+        rel="noopener"
       >
-
         <div class="link-left">
           <strong>Instagram</strong>
-          <span>Creative updates and visual explorations.</span>
+          <span>Visual updates, work-in-progress, and creative explorations.</span>
         </div>
-
-        <div class="arrow">
-          ↗
-        </div>
-
+        <div class="arrow">↗</div>
       </a>
 
-    </section>
-
-    <section class="analytics">
-
-      <div class="analytics-top">
-
-        <strong>Insights</strong>
-
-        <span>
-          Preview
-        </span>
-
-      </div>
-
-      <div class="stats">
-
-        <div class="stat">
-
-          <div class="stat-label">
-            Profile Views
-          </div>
-
-          <div class="stat-value">
-            128
-          </div>
-
-        </div>
-
-        <div class="stat">
-
-          <div class="stat-label">
-            Link Clicks
-          </div>
-
-          <div class="stat-value">
-            64
-          </div>
-
-        </div>
-
-      </div>
-
       <a
-        class="update-btn"
-        href="mailto:nikhilr234@gmail.com?subject=Profile%20Update%20Request%20-%20Prerna%20Revankar"
+        class="link-card"
+        href="https://www.linkedin.com/in/prerna-revankar/"
+        target="_blank"
+        rel="noopener"
       >
-        Request Profile Update
+        <div class="link-left">
+          <strong>LinkedIn</strong>
+          <span>Professional profile and experience.</span>
+        </div>
+        <div class="arrow">↗</div>
+      </a>
+
+      <a class="analytics-btn" href="#analytics">
+        <div>
+          <strong>Analytics</strong>
+          <span>View taps, clicks, saves, and engagement.</span>
+        </div>
+        <div class="arrow">↗</div>
+      </a>
+
+      <a class="analytics-btn" href="#update">
+        <div>
+          <strong>Request an Update</strong>
+          <span>Ask to change links, buttons, or profile details.</span>
+        </div>
+        <div class="arrow">↗</div>
       </a>
 
     </section>
@@ -457,6 +543,100 @@
     </div>
 
   </div>
+
+  <section class="modal" id="analytics">
+
+    <div class="modal-card">
+
+      <div class="modal-head">
+        <div>
+          <h2>Profile Analytics</h2>
+          <p>Preview of Prerna’s IQ Card engagement dashboard.</p>
+        </div>
+
+        <a class="close" href="#">×</a>
+      </div>
+
+      <div class="stats-grid">
+
+        <div class="stat">
+          <div class="stat-label">Profile Views</div>
+          <div class="stat-value">128</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Link Clicks</div>
+          <div class="stat-value">64</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Contact Saves</div>
+          <div class="stat-value">21</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Last Tap</div>
+          <div class="stat-value">2h</div>
+        </div>
+
+      </div>
+
+      <div class="chart">
+
+        <div class="chart-head">
+          <strong>Weekly engagement</strong>
+          <span>Mock data</span>
+        </div>
+
+        <div class="bars">
+          <div class="bar-wrap"><div class="bar" style="height:34%;"></div><div class="bar-label">Mon</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:52%;"></div><div class="bar-label">Tue</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:40%;"></div><div class="bar-label">Wed</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:78%;"></div><div class="bar-label">Thu</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:61%;"></div><div class="bar-label">Fri</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:88%;"></div><div class="bar-label">Sat</div></div>
+          <div class="bar-wrap"><div class="bar" style="height:46%;"></div><div class="bar-label">Sun</div></div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <section class="modal" id="update">
+
+    <div class="modal-card">
+
+      <div class="modal-head">
+        <div>
+          <h2>Request an Update</h2>
+          <p>Send a change request for buttons, links, text, or contact details.</p>
+        </div>
+
+        <a class="close" href="#">×</a>
+      </div>
+
+      <div class="update-box">
+
+        <strong>Need to change this profile?</strong>
+
+        <p>
+          Share what you want updated. All links will be checked before publishing.
+        </p>
+
+        <a
+          class="update-link"
+          href="mailto:nikhilr234@gmail.com?subject=Profile%20Update%20Request%20-%20Prerna%20Revankar&body=Hi%20Nikhil%2C%0A%0AI%20would%20like%20to%20update%20the%20following%20on%20Prerna%27s%20IQ%20Card%20profile%3A%0A%0AButton%20or%20section%20to%20change%3A%0ANew%20link%20or%20text%3A%0AReason%20for%20update%3A%0A"
+        >
+          Email Update Request
+        </a>
+
+      </div>
+
+    </div>
+
+  </section>
 
 </body>
 </html>
