@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prerna Revankar — IQ Card</title>
+
+  <style>
+    :root{
+      --bg:#fff8ef;
+      --fg:#171411;
+      --muted:rgba(23,20,17,.62);
+      --border:rgba(23,20,17,.10);
+      --card:rgba(255,255,255,.75);
+      --accent:#f2a86b;
+      --accent-soft:#ffe2c7;
+      --radius:24px;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--fg);
+      font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:480px;
+      margin:auto;
+      padding:26px 18px 60px;
+      min-height:100vh;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:34px;
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logo-box{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:linear-gradient(135deg,#f2a86b,#ffd6b5);
+      color:#171411;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      font-size:15px;
+      box-shadow:0 10px 30px rgba(242,168,107,.25);
+    }
+
+    .logo-text{
+      line-height:1.1;
+    }
+
+    .logo-text strong{
+      display:block;
+      font-size:14px;
+    }
+
+    .logo-text span{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .hero{
+      text-align:center;
+    }
+
+    .avatar{
+      width:116px;
+      height:116px;
+      border-radius:34px;
+      margin:0 auto 24px;
+      background-image:url("prerna.jpg");
+      background-size:cover;
+      background-position:center;
+      border:1px solid var(--border);
+      box-shadow:0 16px 40px rgba(0,0,0,.08);
+    }
+
+    h1{
+      margin:0;
+      font-size:36px;
+      line-height:1;
+      letter-spacing:-1.4px;
+      font-weight:650;
+    }
+
+    .role{
+      margin-top:12px;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.6;
+    }
+
+    .bio{
+      margin-top:18px;
+      font-size:15px;
+      line-height:1.7;
+      color:#3b312b;
+      padding:0 10px;
+    }
+
+    .primary-btn{
+      width:100%;
+      height:58px;
+      border-radius:18px;
+      margin-top:30px;
+      background:linear-gradient(135deg,#f2a86b,#ffcfaa);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:600;
+      font-size:16px;
+      color:#171411;
+      box-shadow:0 14px 40px rgba(242,168,107,.25);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      margin-top:16px;
+    }
+
+    .mini-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:18px;
+      backdrop-filter:blur(12px);
+    }
+
+    .mini-card strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:6px;
+    }
+
+    .mini-card span{
+      font-size:13px;
+      line-height:1.6;
+      color:var(--muted);
+    }
+
+    .section{
+      margin-top:24px;
+    }
+
+    .section-title{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:12px;
+      padding-left:4px;
+      letter-spacing:.2px;
+    }
+
+    .link-card{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:18px;
+      border-radius:22px;
+      background:var(--card);
+      border:1px solid var(--border);
+      margin-bottom:12px;
+      transition:.2s ease;
+      backdrop-filter:blur(10px);
+    }
+
+    .link-card:hover{
+      transform:translateY(-2px);
+    }
+
+    .link-left strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:4px;
+    }
+
+    .link-left span{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .arrow{
+      font-size:18px;
+      color:var(--muted);
+    }
+
+    .analytics{
+      margin-top:26px;
+      background:linear-gradient(180deg,rgba(255,255,255,.8),rgba(255,255,255,.65));
+      border:1px solid var(--border);
+      border-radius:28px;
+      padding:22px;
+    }
+
+    .analytics-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:20px;
+    }
+
+    .analytics-top strong{
+      font-size:18px;
+    }
+
+    .analytics-top span{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .stat{
+      background:#fff;
+      border-radius:18px;
+      padding:16px;
+      border:1px solid rgba(23,20,17,.06);
+    }
+
+    .stat-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:8px;
+    }
+
+    .stat-value{
+      font-size:24px;
+      font-weight:650;
+    }
+
+    .update-btn{
+      width:100%;
+      margin-top:18px;
+      height:56px;
+      border-radius:18px;
+      border:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:550;
+      background:rgba(255,255,255,.55);
+      backdrop-filter:blur(10px);
+    }
+
+    .footer{
+      text-align:center;
+      margin-top:36px;
+      color:rgba(23,20,17,.42);
+      font-size:12px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="wrap">
+
+    <div class="topbar">
+
+      <a href="https://iqcard.in" class="logo">
+
+        <div class="logo-box">
+          IQ
+        </div>
+
+        <div class="logo-text">
+          <strong>IQ Card</strong>
+          <span>Tap to connect</span>
+        </div>
+
+      </a>
+
+    </div>
+
+    <section class="hero">
+
+      <div class="avatar"></div>
+
+      <h1>Prerna Revankar</h1>
+
+      <div class="role">
+        Experience Designer
+      </div>
+
+      <div class="bio">
+        I design AI-powered wellness experiences that feel human, not clinical.
+      </div>
+
+      <a class="primary-btn" href="prerna-revankar.vcf" download>
+        Save Contact
+      </a>
+
+      <div class="grid">
+
+        <a class="mini-card" href="mailto:prernavr7@gmail.com">
+
+          <strong>Email</strong>
+          <span>
+            Professional inquiries and collaborations.
+          </span>
+
+        </a>
+
+        <a class="mini-card" href="tel:+917259706185">
+
+          <strong>Call</strong>
+          <span>
+            Direct contact and conversations.
+          </span>
+
+        </a>
+
+      </div>
+
+    </section>
+
+    <section class="section">
+
+      <div class="section-title">
+        Quick Links
+      </div>
+
+      <a
+        class="link-card"
+        href="https://prerna-revankar.framer.website/"
+        target="_blank"
+      >
+
+        <div class="link-left">
+          <strong>Website</strong>
+          <span>Explore her work and design stories.</span>
+        </div>
+
+        <div class="arrow">
+          ↗
+        </div>
+
+      </a>
+
+      <a
+        class="link-card"
+        href="https://www.linkedin.com/in/prerna-revankar/"
+        target="_blank"
+      >
+
+        <div class="link-left">
+          <strong>LinkedIn</strong>
+          <span>Professional profile and experience.</span>
+        </div>
+
+        <div class="arrow">
+          ↗
+        </div>
+
+      </a>
+
+      <a
+        class="link-card"
+        href="https://www.instagram.com/prernavr/"
+        target="_blank"
+      >
+
+        <div class="link-left">
+          <strong>Instagram</strong>
+          <span>Creative updates and visual explorations.</span>
+        </div>
+
+        <div class="arrow">
+          ↗
+        </div>
+
+      </a>
+
+    </section>
+
+    <section class="analytics">
+
+      <div class="analytics-top">
+
+        <strong>Insights</strong>
+
+        <span>
+          Preview
+        </span>
+
+      </div>
+
+      <div class="stats">
+
+        <div class="stat">
+
+          <div class="stat-label">
+            Profile Views
+          </div>
+
+          <div class="stat-value">
+            128
+          </div>
+
+        </div>
+
+        <div class="stat">
+
+          <div class="stat-label">
+            Link Clicks
+          </div>
+
+          <div class="stat-value">
+            64
+          </div>
+
+        </div>
+
+      </div>
+
+      <a
+        class="update-btn"
+        href="mailto:nikhilr234@gmail.com?subject=Profile%20Update%20Request%20-%20Prerna%20Revankar"
+      >
+        Request Profile Update
+      </a>
+
+    </section>
+
+    <div class="footer">
+      IQ Card — Tap to connect.
+    </div>
+
+  </div>
+
+</body>
+</html>
