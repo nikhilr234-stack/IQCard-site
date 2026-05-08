@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hema Goyal | IQ Card</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0b0b0c;
+      --card:#111214;
+      --fg:#ffffff;
+      --muted:rgba(255,255,255,.62);
+      --border:rgba(255,255,255,.08);
+      --accent:#f4c542;
+      --radius:24px;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--fg);
+      font-family:"Inter",sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    .wrap{
+      width:100%;
+      min-height:100vh;
+      padding:28px 18px 80px;
+      max-width:460px;
+      margin:auto;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:38px;
+    }
+
+    .brand{
+      text-decoration:none;
+      color:white;
+    }
+
+    .brand h2{
+      margin:0;
+      font-size:16px;
+      font-weight:700;
+      letter-spacing:-0.5px;
+    }
+
+    .brand span{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .share{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:#16181b;
+      border:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      text-decoration:none;
+      font-size:18px;
+    }
+
+    .hero{
+      text-align:center;
+      margin-bottom:30px;
+    }
+
+    .avatar{
+      width:118px;
+      height:118px;
+      border-radius:34px;
+      object-fit:cover;
+      background:#1a1b1e;
+      border:1px solid var(--border);
+      margin-bottom:22px;
+    }
+
+    h1{
+      margin:0;
+      font-size:34px;
+      letter-spacing:-1.4px;
+      line-height:1;
+    }
+
+    .title{
+      margin-top:10px;
+      font-size:15px;
+      color:var(--muted);
+    }
+
+    .bio{
+      margin-top:18px;
+      color:rgba(255,255,255,.78);
+      line-height:1.7;
+      font-size:14px;
+      padding:0 8px;
+    }
+
+    .primary-btn{
+      margin-top:28px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      width:100%;
+      background:var(--accent);
+      color:black;
+      text-decoration:none;
+      height:58px;
+      border-radius:20px;
+      font-weight:700;
+      font-size:15px;
+      transition:.2s ease;
+    }
+
+    .primary-btn:hover{
+      transform:translateY(-2px);
+    }
+
+    .grid{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .card-btn{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:18px;
+      text-decoration:none;
+      color:white;
+      min-height:92px;
+      transition:.2s ease;
+    }
+
+    .card-btn:hover{
+      transform:translateY(-2px);
+      border-color:rgba(255,255,255,.18);
+    }
+
+    .card-btn small{
+      display:block;
+      color:var(--muted);
+      margin-bottom:10px;
+      font-size:12px;
+    }
+
+    .card-btn strong{
+      font-size:16px;
+      line-height:1.3;
+      display:block;
+    }
+
+    .section{
+      margin-top:34px;
+    }
+
+    .section-title{
+      font-size:13px;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:14px;
+    }
+
+    .info-card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:22px;
+    }
+
+    .info-row{
+      padding:14px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .info-row:last-child{
+      border-bottom:none;
+      padding-bottom:0;
+    }
+
+    .info-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .info-value{
+      font-size:15px;
+      color:white;
+      text-decoration:none;
+      word-break:break-word;
+    }
+
+    .footer{
+      text-align:center;
+      margin-top:38px;
+      color:rgba(255,255,255,.32);
+      font-size:12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrap">
+
+    <div class="topbar">
+      <a href="https://iqcard.in" class="brand">
+        <h2>IQ Card</h2>
+        <span>Tap to connect</span>
+      </a>
+
+      <a class="share" href="#">
+        ↗
+      </a>
+    </div>
+
+    <div class="hero">
+
+      <!-- ADD IMAGE FILE HERE -->
+      <img src="hema.jpg" alt="Hema Goyal" class="avatar">
+
+      <h1>Hema Goyal</h1>
+
+      <div class="title">
+        Senior Architect
+      </div>
+
+      <div class="bio">
+        Architect focused on thoughtful spatial design, detail-driven execution,
+        and contemporary architectural practice.
+      </div>
+
+      <a class="primary-btn" href="tel:+919711428497">
+        Call Hema
+      </a>
+
+    </div>
+
+    <div class="grid">
+
+      <a class="card-btn" href="mailto:hema@studiochintala.com">
+        <small>Email</small>
+        <strong>hema@studiochintala.com</strong>
+      </a>
+
+      <a class="card-btn" href="https://www.linkedin.com/in/hema-goyal-a62509157/" target="_blank">
+        <small>LinkedIn</small>
+        <strong>View Profile</strong>
+      </a>
+
+      <a class="card-btn" href="https://www.instagram.com/hema_goyal/" target="_blank">
+        <small>Instagram</small>
+        <strong>@hema_goyal</strong>
+      </a>
+
+      <a class="card-btn" href="https://wa.me/919711428497" target="_blank">
+        <small>WhatsApp</small>
+        <strong>Message Now</strong>
+      </a>
+
+    </div>
+
+    <div class="section">
+
+      <div class="section-title">
+        Contact
+      </div>
+
+      <div class="info-card">
+
+        <div class="info-row">
+          <div class="info-label">Phone</div>
+          <a class="info-value" href="tel:+919711428497">
+            +91 97114 28497
+          </a>
+        </div>
+
+        <div class="info-row">
+          <div class="info-label">Email</div>
+          <a class="info-value" href="mailto:hema@studiochintala.com">
+            hema@studiochintala.com
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="footer">
+      Powered by IQ Card
+    </div>
+
+  </div>
+
+</body>
+</html>
