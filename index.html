@@ -245,25 +245,23 @@
     }
 
     .panel{
-      position:absolute;
-      left:50%;
-      top:0;
-      transform:translateX(-50%);
-      width:min(94vw,460px);
-      border:1px solid var(--border-2);
-      border-radius:0 0 26px 26px;
-      background:linear-gradient(180deg,rgba(18,18,20,.98),rgba(9,9,10,.98));
-      padding:14px 16px 18px;
-      box-shadow:0 26px 80px rgba(0,0,0,.48);
-    }
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(var(--max),92vw);
+  border:1px solid var(--border);
+  border-radius:30px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.022));
+  padding:20px;
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
 
-    .handle{
-      width:52px;
-      height:5px;
-      border-radius:999px;
-      background:rgba(255,255,255,.14);
-      margin:0 auto 14px;
-    }
+   .handle{
+  display:none;
+}
 
     .panel-top{
       display:flex;
