@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createServerClient } from '@/lib/supabase/server'
-import { getOwnProfile, getPublishedProfile } from './repository'
+import {
+  getOwnProfile,
+  getOwnProfilePresentation,
+  getPublishedProfile,
+  getPublishedProfilePresentation,
+} from './repository'
+import { DEFAULT_PRESENTATION } from './presentation'
 
 vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn() }))
 
@@ -72,5 +78,79 @@ describe('profile photo delivery URLs', () => {
     await getOwnProfile({ id: 'owner-1', email: 'owner@example.com' })
 
     expect(rpc).toHaveBeenCalledWith('create_own_profile_draft', { p_full_name: null })
+  })
+})
+
+describe('profile presentation readers', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('falls back to Minimal defaults when a legacy profile has no presentation row', async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null })
+    vi.mocked(createServerClient).mockResolvedValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({ maybeSingle })),
+        })),
+      })),
+    } as never)
+
+    await expect(getPublishedProfilePresentation('profile-1')).resolves.toEqual(DEFAULT_PRESENTATION.published)
+  })
+
+  it('does not treat a failed public presentation query as a legacy profile', async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: new Error('presentation query failed') })
+    vi.mocked(createServerClient).mockResolvedValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({ maybeSingle })),
+        })),
+      })),
+    } as never)
+
+    await expect(getPublishedProfilePresentation('profile-1')).rejects.toThrow('presentation query failed')
+  })
+
+  it('normalizes a saved owner draft before returning it', async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: {
+        draft: {
+          template: 'cover',
+          cover: { coverPath: 'owner-1/cover.jpg', overlay: 9, focalY: -3, alignment: 'center' },
+        },
+        published: { template: 'minimal', cover: {} },
+      },
+      error: null,
+    })
+    vi.mocked(createServerClient).mockResolvedValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({ maybeSingle })),
+        })),
+      })),
+    } as never)
+
+    await expect(getOwnProfilePresentation('owner-1')).resolves.toEqual({
+      template: 'cover',
+      cover: {
+        coverPath: 'owner-1/cover.jpg',
+        overlay: 0.7,
+        focalY: 0,
+        alignment: 'center',
+        photoPathOverride: null,
+      },
+    })
+  })
+
+  it('does not treat a failed owner presentation query as a legacy profile', async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: new Error('owner presentation query failed') })
+    vi.mocked(createServerClient).mockResolvedValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({ maybeSingle })),
+        })),
+      })),
+    } as never)
+
+    await expect(getOwnProfilePresentation('owner-1')).rejects.toThrow('owner presentation query failed')
   })
 })
