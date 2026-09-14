@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { requireAuthenticatedAccount } from '@/lib/auth/account'
-import { getOwnProfile } from '@/lib/profile/repository'
-import { PublicProfileCard } from '@/components/public-profile-card'
+import { PublicProfile } from '@/components/public-profile'
+import { getOwnProfile, getOwnProfilePresentation } from '@/lib/profile/repository'
 
 export const dynamic = 'force-dynamic'
 
 export default async function PreviewPage() {
   const account = await requireAuthenticatedAccount()
   const profile = await getOwnProfile(account)
-  return <main className="preview-shell"><div className="preview-toolbar"><Link href="/dashboard">← Back to editor</Link><span>Private preview · only you can see this</span></div><PublicProfileCard profile={profile} preview /></main>
+  const presentation = await getOwnProfilePresentation(account.id)
+  return <main className="preview-shell"><div className="preview-toolbar"><Link href="/dashboard">← Back to editor</Link><span>Private preview · only you can see this</span></div><PublicProfile profile={profile} presentation={presentation} preview /></main>
 }
