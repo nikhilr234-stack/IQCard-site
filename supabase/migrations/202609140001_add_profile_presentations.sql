@@ -44,6 +44,7 @@ declare
   v_profile_id uuid;
   v_cover_path text;
   v_photo_path_override text;
+  v_canonical_draft jsonb;
 begin
   if v_owner_id is null then
     raise sqlstate '42501' using message = 'Authentication required';
@@ -72,6 +73,17 @@ begin
     raise sqlstate '22023' using message = 'Presentation media must belong to the authenticated owner';
   end if;
 
+  v_canonical_draft := pg_catalog.jsonb_build_object(
+    'template', p_draft -> 'template',
+    'cover', pg_catalog.jsonb_build_object(
+      'coverPath', p_draft #> '{cover,coverPath}',
+      'overlay', p_draft #> '{cover,overlay}',
+      'focalY', p_draft #> '{cover,focalY}',
+      'alignment', p_draft #> '{cover,alignment}',
+      'photoPathOverride', p_draft #> '{cover,photoPathOverride}'
+    )
+  );
+
   select profiles.id
   into strict v_profile_id
   from public.profiles
@@ -79,7 +91,7 @@ begin
   for update;
 
   insert into public.profile_presentations (profile_id, draft)
-  values (v_profile_id, p_draft)
+  values (v_profile_id, v_canonical_draft)
   on conflict (profile_id) do update
   set draft = excluded.draft;
 end;
@@ -179,6 +191,7 @@ as $$
 $$;
 
 revoke all on function public.is_published_profile_cover(text) from public, anon, authenticated, service_role;
+grant execute on function public.is_published_profile_cover(text) to anon, authenticated;
 
 create policy "published profile covers are readable"
 on storage.objects for select to anon, authenticated

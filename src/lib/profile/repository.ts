@@ -41,22 +41,28 @@ export async function getPublishedProfile(slug: string): Promise<Profile | null>
 
 export async function getOwnProfilePresentation(ownerId: string): Promise<CoverPresentation> {
   const supabase = await createServerClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('profile_presentations')
     .select('draft, profiles!inner(owner_id)')
     .eq('profiles.owner_id', ownerId)
     .maybeSingle()
 
-  return data ? normalizePresentation({ draft: data.draft }).draft : DEFAULT_PRESENTATION.draft
+  if (error) throw error
+  if (data === null) return DEFAULT_PRESENTATION.draft
+  if (!data) throw new Error('Unable to load your profile presentation')
+  return normalizePresentation({ draft: data.draft }).draft
 }
 
 export async function getPublishedProfilePresentation(profileId: string): Promise<CoverPresentation> {
   const supabase = await createServerClient()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('published_profile_presentations')
     .select('published')
     .eq('profile_id', profileId)
     .maybeSingle()
 
-  return data ? normalizePresentation({ published: data.published }).published : DEFAULT_PRESENTATION.published
+  if (error) throw error
+  if (data === null) return DEFAULT_PRESENTATION.published
+  if (!data) throw new Error('Unable to load published profile presentation')
+  return normalizePresentation({ published: data.published }).published
 }

@@ -40,7 +40,7 @@ describe('profile presentations migration', () => {
     expect(migration).toContain('grant select on table public.published_profile_presentations to anon, authenticated')
   })
 
-  it('validates and saves only the authenticated owner draft through a narrow RPC', () => {
+  it('validates and canonicalizes an authenticated owner draft without arbitrary fields', () => {
     const migration = sql()
     const save = functionBody(migration, 'save_own_profile_presentation')
 
@@ -55,6 +55,12 @@ describe('profile presentations migration', () => {
     expect(save).toContain("v_owner_id::text || '/%'")
     expect(save).toContain('insert into public.profile_presentations (profile_id, draft)')
     expect(save).toContain('on conflict (profile_id) do update')
+    expect(save).toContain('v_canonical_draft := pg_catalog.jsonb_build_object')
+    expect(save).toContain("'template', p_draft -> 'template'")
+    expect(save).toContain("'coverpath', p_draft #> '{cover,coverpath}'")
+    expect(save).toContain("'photopathoverride', p_draft #> '{cover,photopathoverride}'")
+    expect(save).toContain('values (v_profile_id, v_canonical_draft)')
+    expect(save).not.toContain('values (v_profile_id, p_draft)')
     expect(migration).toContain('revoke all on function public.save_own_profile_presentation(jsonb) from public, anon, service_role')
     expect(migration).toContain('grant execute on function public.save_own_profile_presentation(jsonb) to authenticated')
   })
@@ -87,5 +93,6 @@ describe('profile presentations migration', () => {
     expect(media).toContain("profile_presentations.published #>> '{cover,coverpath}' = p_path")
     expect(migration).toContain('public.is_published_profile_cover(storage.objects.name)')
     expect(migration).toContain('revoke all on function public.is_published_profile_cover(text) from public, anon, authenticated, service_role')
+    expect(migration).toContain('grant execute on function public.is_published_profile_cover(text) to anon, authenticated')
   })
 })
