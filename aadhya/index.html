@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aadhya Chintala — IQ Card</title>
+
+  <style>
+    :root{
+      --bg:#0a0a12;
+      --fg:#ffffff;
+      --muted:rgba(255,255,255,0.62);
+      --border:rgba(170,180,255,0.16);
+      --card:rgba(255,255,255,0.045);
+      --accent:#8f9dff;
+      --accent2:#d5dbff;
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at top left, rgba(143,157,255,.24), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(213,219,255,.10), transparent 34%),
+        var(--bg);
+      color:var(--fg);
+      font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:480px;
+      margin:auto;
+      min-height:100vh;
+      padding:28px 18px 60px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:32px;
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .logo-box{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      color:#0a0a12;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:750;
+      font-size:15px;
+      box-shadow:0 12px 34px rgba(143,157,255,.30);
+    }
+
+    .logo-text strong{
+      display:block;
+      font-size:14px;
+    }
+
+    .logo-text span{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .hero{
+      text-align:center;
+    }
+
+    .avatar{
+      width:112px;
+      height:112px;
+      border-radius:32px;
+      background-image:url("aadhya.jpg");
+      background-size:cover;
+      background-position:center;
+      background-color:#141420;
+      margin:0 auto 22px;
+      border:1px solid var(--border);
+      box-shadow:0 18px 50px rgba(0,0,0,.28);
+    }
+
+    h1{
+      margin:0;
+      font-size:34px;
+      letter-spacing:-1.2px;
+      font-weight:650;
+    }
+
+    .role{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.5;
+    }
+
+    .bio{
+      margin:16px auto 0;
+      max-width:360px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+    }
+
+    .primary-btn{
+      margin-top:28px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      height:58px;
+      border-radius:18px;
+      background:linear-gradient(135deg,#ffffff,#e4e8ff);
+      color:#0a0a12;
+      font-weight:650;
+      font-size:16px;
+      box-shadow:0 14px 44px rgba(143,157,255,.18);
+    }
+
+    .grid{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:18px;
+      backdrop-filter:blur(12px);
+      text-align:left;
+    }
+
+    .card strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:6px;
+    }
+
+    .card span{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .section{
+      margin-top:22px;
+    }
+
+    .section-title{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:12px;
+      padding-left:4px;
+    }
+
+    .link-card{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:18px;
+      border-radius:20px;
+      background:var(--card);
+      border:1px solid var(--border);
+      margin-bottom:12px;
+      backdrop-filter:blur(12px);
+    }
+
+    .link-left strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:4px;
+    }
+
+    .link-left span{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .arrow{
+      font-size:18px;
+      color:var(--muted);
+    }
+
+    .footer{
+      margin-top:36px;
+      text-align:center;
+      color:rgba(255,255,255,0.35);
+      font-size:12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrap">
+
+    <div class="topbar">
+      <a href="https://iqcard.in" class="logo">
+        <div class="logo-box">IQ</div>
+        <div class="logo-text">
+          <strong>IQ Card</strong>
+          <span>Tap to connect</span>
+        </div>
+      </a>
+    </div>
+
+    <section class="hero">
+
+      <div class="avatar"></div>
+
+      <h1>Aadhya Chintala</h1>
+
+      <div class="role">
+        Architect | Graphic Designer
+      </div>
+
+      <div class="bio">
+        Blending architecture, graphics, and visual storytelling into experiences that feel bold, expressive, and intentional.
+      </div>
+
+      <a class="primary-btn" href="aadhya.vcf" download>
+        Save Contact
+      </a>
+
+      <div class="grid">
+
+        <a class="card" href="mailto:aadhyachintala@gmail.com">
+          <strong>Email</strong>
+          <span>Professional inquiries and collaborations.</span>
+        </a>
+
+        <a class="card" href="tel:+919949220248">
+          <strong>Call</strong>
+          <span>Direct contact and quick communication.</span>
+        </a>
+
+      </div>
+
+    </section>
+
+    <section class="section">
+
+      <div class="section-title">Quick Links</div>
+
+      <a class="link-card" href="https://linkedin.com/in/aadhyachintala" target="_blank" rel="noopener">
+        <div class="link-left">
+          <strong>LinkedIn</strong>
+          <span>Professional profile and experience.</span>
+        </div>
+        <div class="arrow">↗</div>
+      </a>
+
+      <a class="link-card" href="https://www.behance.net/aadhyachintala" target="_blank" rel="noopener">
+        <div class="link-left">
+          <strong>Portfolio</strong>
+          <span>Explore creative and architectural work.</span>
+        </div>
+        <div class="arrow">↗</div>
+      </a>
+
+      <a class="link-card" href="#analytics">
+        <div class="link-left">
+          <strong>Analytics</strong>
+          <span>View taps, clicks, saves, and engagement.</span>
+        </div>
+        <div class="arrow">↗</div>
+      </a>
+
+      <a class="link-card" href="mailto:nikhilr234@gmail.com?subject=Profile%20Update%20Request%20-%20Aadhya%20Chintala">
+        <div class="link-left">
+          <strong>Request an Update</strong>
+          <span>Change links, buttons, or profile details.</span>
+        </div>
+        <div class="arrow">↗</div>
+      </a>
+
+    </section>
+
+    <section class="section" id="analytics">
+
+
+    
+
+    </section>
+
+    <div class="footer">
+      IQ Card — Tap to connect.
+    </div>
+
+  </div>
+
+</body>
+</html>

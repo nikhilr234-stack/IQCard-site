@@ -1,0 +1,1532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IQ Card — Classic Atelier V8</title>
+<style>
+  :root{
+    --ink:#131315;--muted:#74747a;--line:#e5e5e8;--soft:#f5f5f7;--panel:#fff;
+    --thickness:8px;--radius:38px;--edge-opacity:.10;--mx:50%;--my:35%;--roughness:.64;--specular:.18;
+    --material-base:linear-gradient(125deg,#8f5e2f,#d3a466 46%,#a8733c 78%,#74451f);
+    --grain-pattern:repeating-linear-gradient(103deg,rgba(61,28,9,.17) 0 1px,transparent 1px 7px);
+    --edge-tone:#4b2f1c;--name-color:#14110e;--craft-depth:0px;--logo-size:56px;
+    --adhesive-tone:#d7d1c7;--core-tone:#202124;--stage-a:#ffffff;--stage-b:#f3f3f5;--stage-c:#e8e8ec;--glow-x:50%;--glow-y:46%;
+  }
+  *{box-sizing:border-box}
+  html{background:#fff;color:var(--ink);font-family:Helvetica,Arial,sans-serif}
+  body{margin:0;background:#fff}
+  button,input{font:inherit}
+  button{color:inherit}
+  #iq-atelier{min-height:100vh;background:#fff;overflow:hidden}
+
+  .topbar{height:76px;padding:0 34px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(0,0,0,.055);position:relative;z-index:10;background:rgba(255,255,255,.9);backdrop-filter:blur(18px)}
+  .brand{color:inherit;text-decoration:none;font-size:26px;font-weight:700;letter-spacing:-.11em;line-height:1}.top-status{display:flex;align-items:center;gap:18px;color:var(--muted);font-size:11px}.status-dot{width:6px;height:6px;border-radius:99px;background:#1d1d1f;display:inline-block;margin-right:7px}
+
+  .hero{padding:46px 40px 24px;display:grid;grid-template-columns:minmax(300px,520px) 1fr;gap:34px;align-items:end}
+  .eyebrow{font-size:11px;color:#88888d;letter-spacing:.13em;text-transform:uppercase;margin-bottom:14px}.hero h1{font-size:clamp(48px,6.4vw,94px);line-height:.88;letter-spacing:-.078em;margin:0;font-weight:600;max-width:780px}.hero p{margin:20px 0 0;font-size:16px;line-height:1.45;color:#66666b;max-width:420px}.hero-meta{justify-self:end;text-align:right;color:#8a8a90;font-size:11px;line-height:1.7;padding-bottom:5px}.hero-meta strong{display:block;color:#1d1d1f;font-size:12px;font-weight:600}
+
+  .atelier-shell{display:grid;grid-template-columns:minmax(0,1fr) 350px;min-height:760px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .stage-wrap{position:relative;min-width:0;background:radial-gradient(circle at var(--glow-x) var(--glow-y),rgba(255,255,255,.96) 0 15%,var(--stage-b) 48%,var(--stage-c) 100%);overflow:hidden}
+  .stage-wrap:before{content:"";position:absolute;inset:-12% -10% auto -10%;height:78%;background:radial-gradient(circle at 50% 56%,rgba(255,255,255,.86) 0 18%,rgba(255,255,255,.22) 36%,transparent 66%);pointer-events:none;opacity:.92}
+  .stage-wrap:after{content:"";position:absolute;left:12%;right:12%;bottom:9%;height:14%;background:radial-gradient(ellipse at center,rgba(0,0,0,.16),rgba(0,0,0,0) 66%);filter:blur(22px);opacity:.54;transform:scaleX(.82);pointer-events:none}
+  .stage-kicker{position:absolute;left:28px;top:24px;color:#8a8a90;font-size:10px;letter-spacing:.12em;text-transform:uppercase;z-index:4}.stage-kicker b{color:#1d1d1f;font-weight:600}
+  .view-notes{position:absolute;right:26px;top:24px;z-index:4;display:flex;gap:7px}.exit-final{display:none;position:absolute;right:26px;bottom:24px;z-index:7;border:1px solid rgba(0,0,0,.10);background:rgba(255,255,255,.8);backdrop-filter:blur(18px);border-radius:99px;padding:10px 14px;font-size:10px;cursor:pointer;box-shadow:0 14px 28px rgba(0,0,0,.08)}.final-mode .exit-final{display:block}.view-pill{border:1px solid rgba(0,0,0,.08);border-radius:99px;padding:8px 11px;background:rgba(255,255,255,.62);font-size:10px;color:#777;backdrop-filter:blur(14px)}.mobile-inspection-hint,.inspection-nav{display:none}
+
+  .scroll-track{height:760px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#c7c7cc transparent}.scroll-space{height:1640px;position:relative}.sticky-stage{height:760px;position:sticky;top:0;display:grid;place-items:center;perspective:1450px;perspective-origin:50% 45%;padding:70px 48px}
+  .card-rig{width:min(68vw,560px);aspect-ratio:1.586;position:relative;transform-style:preserve-3d;will-change:transform;transition:transform .7s cubic-bezier(.22,.8,.18,1), filter .35s ease}
+  .iq-card{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform;--card-shadow:0 42px 86px rgba(0,0,0,.20)}
+
+  /* The physical object is a stack of planes. The intermediary planes expose the sandwich when viewed obliquely. */
+  .card-layer,.card-skin,.card-core,.card-edge{position:absolute;inset:0;border-radius:var(--radius);transform-style:preserve-3d}
+  .card-layer{pointer-events:none;box-shadow:none}
+  .layer-front-adhesive{transform:translateZ(calc(var(--thickness)*.24)) scale(.998);background:var(--adhesive-tone)}
+  .layer-front-core{transform:translateZ(calc(var(--thickness)*.08)) scale(.997);background:var(--core-tone)}
+  .card-core{transform:translateZ(0px) scale(.996);background:radial-gradient(circle at 28% 22%,rgba(255,255,255,.07),transparent 24%),repeating-linear-gradient(118deg,rgba(255,255,255,.018) 0 1px,transparent 1px 13px),linear-gradient(135deg,color-mix(in srgb,var(--core-tone) 94%, #000),color-mix(in srgb,var(--core-tone) 96%, #202226) 52%,color-mix(in srgb,var(--core-tone) 94%, #000));box-shadow:inset 0 0 0 1px rgba(255,255,255,.10),inset 0 1px 0 rgba(255,255,255,.08)}
+  .layer-back-core{transform:translateZ(calc(var(--thickness)*-.08)) scale(.997);background:var(--core-tone)}
+  .layer-back-adhesive{transform:translateZ(calc(var(--thickness)*-.24)) scale(.998);background:var(--adhesive-tone)}
+  .card-skin{overflow:hidden;backface-visibility:hidden;box-shadow:var(--card-shadow);background:var(--material-base)}
+  .card-front{transform:translateZ(calc(var(--thickness)/2))}
+  .card-back{transform:rotateY(180deg) translateZ(calc(var(--thickness)/2))}
+  .card-skin:before{content:"";position:absolute;inset:0;background:var(--grain-pattern);opacity:.76;mix-blend-mode:multiply;pointer-events:none}
+  .card-skin:after{content:"";position:absolute;inset:-25%;background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,calc(var(--specular)*1.2)) 0 5%,rgba(255,255,255,calc(var(--specular)*.38)) 17%,transparent 48%),linear-gradient(112deg,transparent 22%,rgba(255,255,255,calc(var(--specular)*.55)) 44%,transparent 61%);transform:translate3d(0,0,1px);filter:blur(calc(var(--roughness)*2.4px));opacity:calc(.42 + var(--specular));transition:opacity .35s ease;pointer-events:none}
+  .finish-gloss .card-skin:after{opacity:.9;filter:blur(.35px)}.finish-satin .card-skin:after{opacity:.62}.finish-matte .card-skin:after{opacity:.28;filter:blur(2.2px)}
+
+  /* Edge rails are deliberately present in addition to the plane stack to sharpen the silhouette. */
+  .card-edge{pointer-events:none;inset:auto;border-radius:999px;opacity:var(--edge-opacity);backface-visibility:visible;transition:opacity .22s ease, filter .22s ease}
+  .edge-top{left:0;top:calc(var(--thickness)/-2);width:100%;height:var(--thickness);transform:rotateX(90deg);background:linear-gradient(180deg,var(--edge-tone) 0 14%,var(--adhesive-tone) 14% 27%,var(--core-tone) 27% 73%,var(--adhesive-tone) 73% 86%,var(--edge-tone) 86% 100%);filter:saturate(.92) blur(.15px)}
+  .edge-bottom{left:0;bottom:calc(var(--thickness)/-2);width:100%;height:var(--thickness);transform:rotateX(90deg);background:linear-gradient(180deg,var(--edge-tone) 0 14%,var(--adhesive-tone) 14% 27%,var(--core-tone) 27% 73%,var(--adhesive-tone) 73% 86%,var(--edge-tone) 86% 100%);filter:saturate(.92) blur(.15px)}
+  .edge-left{left:calc(var(--thickness)/-2);top:0;width:var(--thickness);height:100%;transform:rotateY(90deg);background:linear-gradient(90deg,var(--edge-tone) 0 14%,var(--adhesive-tone) 14% 27%,var(--core-tone) 27% 73%,var(--adhesive-tone) 73% 86%,var(--edge-tone) 86% 100%);filter:saturate(.92) blur(.15px)}
+  .edge-right{right:calc(var(--thickness)/-2);top:0;width:var(--thickness);height:100%;transform:rotateY(90deg);background:linear-gradient(90deg,var(--edge-tone) 0 14%,var(--adhesive-tone) 14% 27%,var(--core-tone) 27% 73%,var(--adhesive-tone) 73% 86%,var(--edge-tone) 86% 100%);filter:saturate(.92) blur(.15px)}
+
+  .card-content{position:absolute;inset:0;z-index:3;transform:translateZ(1px);color:var(--name-color);pointer-events:none}.card-logo{position:absolute;left:34px;top:30px;font-size:var(--logo-size);font-weight:700;letter-spacing:-.11em;line-height:.84;text-transform:lowercase;transition:all .3s ease}.card-name{position:absolute;left:34px;bottom:30px;font-size:clamp(34px,5.6vw,56px);line-height:.88;letter-spacing:-.065em;font-weight:700;max-width:83%;white-space:nowrap;overflow:hidden;text-overflow:clip;text-shadow:0 1px rgba(255,255,255,.13);transform:translate(var(--name-user-x,0px),var(--name-user-y,0px)) scale(var(--name-user-scale,1)) translateZ(var(--craft-depth));transform-origin:left bottom;text-align:var(--name-align,left);transition:font-size .25s ease,left .25s ease,transform .25s ease,text-shadow .25s ease}.card-micro{position:absolute;right:31px;top:31px;font-size:9px;letter-spacing:.17em;text-transform:uppercase;opacity:.62}.card-back .card-content{transform:translateZ(1px)}.tap{position:absolute;left:33px;bottom:34px;font-size:11px;letter-spacing:.11em;font-weight:700;max-width:74%}.back-detail{display:none}
+  .pre-identity-preview .card-content{opacity:0;transition:opacity .28s ease}
+  .logo-none .card-logo{opacity:0;transform:scale(.7)}.logo-small{--logo-size:36px}.logo-standard{--logo-size:46px}.logo-large{--logo-size:56px}
+  .name-small .card-name{font-size:36px}.name-hero .card-name{font-size:clamp(48px,7vw,72px);max-width:91%}
+  .craft-emboss{--craft-depth:2px}.craft-emboss .card-name{text-shadow:-1px -1px 1px rgba(255,255,255,.52),1px 2px 2px rgba(0,0,0,.28)}
+  .craft-deboss{--craft-depth:-1px}.craft-deboss .card-name{text-shadow:1px 1px 1px rgba(255,255,255,.25),-1px -1px 1px rgba(0,0,0,.4);opacity:.88}
+  .craft-foil .card-name{color:#d8bd74;background:linear-gradient(110deg,#786330,#f6e5a2 42%,#b28b3e 64%,#fff0a9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
+  .craft-printed .card-name{color:var(--name-color);text-shadow:none;opacity:1}
+  .card-aura{position:absolute;inset:-16%;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.7) 0 12%,rgba(255,255,255,.08) 34%,transparent 64%);transform:translateZ(-24px);filter:blur(18px);opacity:.5;pointer-events:none}
+  .material-flash .card-skin:after{animation:luxSweep .72s cubic-bezier(.16,.84,.34,1)}
+  @keyframes luxSweep{0%{transform:translate3d(-18%,0,1px);opacity:.18}50%{transform:translate3d(6%,0,1px);opacity:.82}100%{transform:translate3d(18%,0,1px);opacity:calc(.42 + var(--specular))}}
+  .inspection-sweep .card-skin:after{animation:inspectionSweep .88s cubic-bezier(.2,.75,.2,1)}
+  @keyframes inspectionSweep{0%{transform:translate3d(-28%,-2%,1px);opacity:.12}42%{transform:translate3d(-2%,0,1px);opacity:.92}100%{transform:translate3d(24%,2%,1px);opacity:calc(.42 + var(--specular))}}
+  .final-caption{position:absolute;left:28px;bottom:28px;z-index:6;display:none;gap:6px;padding:16px 18px;border-radius:20px;background:rgba(255,255,255,.62);backdrop-filter:blur(18px);border:1px solid rgba(0,0,0,.06);box-shadow:0 16px 30px rgba(0,0,0,.06)}
+  .final-caption span{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#85858b}
+  .final-caption strong{font-size:16px;letter-spacing:-.03em;color:#141418}
+  .final-caption em{font-style:normal;font-size:11px;color:#717178}
+  .final-mode .stage-kicker,.final-mode .view-notes,.final-mode .scroll-labels{opacity:0;pointer-events:none;transition:opacity .2s ease}
+  .final-mode .final-caption{display:grid;background:rgba(255,255,255,.78);box-shadow:0 22px 40px rgba(0,0,0,.08)}
+  .final-mode .stage-wrap{background:radial-gradient(circle at 50% 35%,#ffffff 0 20%,#f2f2f5 52%,#e7e7eb 100%)}
+  .final-mode .stage-wrap:before{opacity:1}
+
+  .scroll-labels{position:absolute;left:28px;bottom:26px;z-index:4;display:grid;gap:8px;color:#8a8a90;font-size:10px}.progress{width:132px;height:2px;background:rgba(0,0,0,.11);position:relative;overflow:hidden;border-radius:4px}.progress > i{position:absolute;inset:0 auto 0 0;width:0;background:#111;border-radius:4px}.angle-readout{font-variant-numeric:tabular-nums;color:#69696e}
+
+  .controls{background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column;min-width:0}.control-head{padding:26px 24px 18px;border-bottom:1px solid var(--line)}.control-head .tiny{font-size:10px;color:#8a8a90;letter-spacing:.12em;text-transform:uppercase}.control-head h3{font-size:24px;letter-spacing:-.045em;margin:9px 0 4px}.control-head p{font-size:12px;line-height:1.45;color:#777;margin:0}
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}.tab{border:0;background:#fff;padding:16px 4px 13px;font-size:11px;color:#8a8a90;cursor:pointer;position:relative}.tab[aria-selected="true"]{color:#111;font-weight:600}.tab[aria-selected="true"]:after{content:"";position:absolute;left:18px;right:18px;bottom:-1px;height:2px;background:#111}
+  .panel{display:none;padding:22px 20px 28px;overflow:auto}.panel.active{display:block}.panel.is-entering{animation:panelEnter .42s cubic-bezier(.22,.8,.18,1)}@keyframes panelEnter{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}.section-label{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#8a8a90;letter-spacing:.08em;text-transform:uppercase;margin:0 0 11px}.section-label span:last-child{letter-spacing:0;text-transform:none;color:#b0b0b4}.selected-material{border:1px solid var(--line);border-radius:20px;padding:15px;display:flex;align-items:center;gap:12px;margin-bottom:18px;background:linear-gradient(180deg,#fcfcfc,#f6f6f7)}.selected-swatch{width:52px;height:52px;border-radius:15px;background:var(--material-base);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 10px 18px rgba(0,0,0,.05);position:relative;overflow:hidden}.selected-swatch:after{content:"";position:absolute;inset:0;background:var(--grain-pattern);opacity:.65;mix-blend-mode:multiply}.selected-copy strong{display:block;font-size:13px}.selected-copy span{font-size:10px;color:#777;line-height:1.3;display:block;margin-top:4px}.material-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.material{border:1px solid var(--line);background:linear-gradient(180deg,#fff,#fbfbfc);padding:10px;border-radius:18px;text-align:left;font-size:10px;color:#777;cursor:pointer;box-shadow:0 6px 12px rgba(0,0,0,.02)}.material-copy strong{display:block;font-size:11px;color:#111;margin-bottom:3px}.material-copy span{display:block;font-size:9px;line-height:1.35;color:#85858b}.swatch{height:74px;border-radius:16px;margin-bottom:9px;background:var(--swatch);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 9px 18px rgba(0,0,0,.05);position:relative;overflow:hidden}.swatch:before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.3),transparent 44%,rgba(255,255,255,.08) 82%);pointer-events:none}.swatch:after{content:"";position:absolute;inset:0;background:var(--grain);opacity:.7;mix-blend-mode:multiply}.material[aria-pressed="true"]{font-weight:700;color:#111;border-color:#111;box-shadow:0 10px 22px rgba(0,0,0,.06)}.material[aria-pressed="true"] .swatch{outline:2px solid #111;outline-offset:2px}.custom-color-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.custom-color{border:1px solid var(--line);background:#fff;border-radius:13px;padding:8px 4px 7px;display:grid;justify-items:center;gap:6px;cursor:pointer;color:#777;font-size:9px;line-height:1.1}.custom-color:hover{border-color:#9d9da3}.custom-color[aria-pressed="true"]{border-color:#111;color:#111;box-shadow:0 7px 14px rgba(0,0,0,.08)}.custom-color[aria-pressed="true"] .custom-color-swatch{outline:2px solid #111;outline-offset:2px}.custom-color-swatch{display:block;width:30px;height:30px;border-radius:50%;background:var(--color);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.08)}.custom-color-reset{border:0;background:transparent;padding:10px 0 0;color:#777;font-size:10px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.custom-color-reset:hover{color:#111}
+  .control-group{padding:18px 0;border-top:1px solid var(--line)}.control-group:first-of-type{border-top:0;padding-top:0}.segmented{display:flex;flex-wrap:wrap;gap:7px}.choice{border:1px solid #dedee1;border-radius:99px;background:#fff;padding:9px 12px;font-size:11px;cursor:pointer}.choice[aria-pressed="true"]{background:#111;color:#fff;border-color:#111}.field label{font-size:10px;color:#89898e;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}.field input{width:100%;border:0;border-bottom:1px solid #d9d9dd;padding:9px 0 11px;outline:0;font-size:17px;background:transparent;color:#111}.field input[aria-invalid="true"]{border-bottom-color:#b83e32}.required-mark{color:#b83e32;font-size:8px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}.fine-note{display:block;margin-top:10px;color:#888;font-size:10px;line-height:1.45}.field-error{display:none;margin-top:8px;color:#9d352b;font-size:10px;line-height:1.45}.field-error.is-visible{display:block}.range-wrap{display:flex;align-items:center;gap:11px}.range-wrap input{width:100%;accent-color:#111}.range-value{font-size:10px;color:#777;width:34px;text-align:right;font-variant-numeric:tabular-nums}
+  .craft-card{border:1px solid var(--line);padding:13px 14px;border-radius:15px;margin-top:11px}.craft-card strong{display:block;font-size:12px}.craft-card span{display:block;margin-top:4px;font-size:10px;color:#7b7b80;line-height:1.4}
+  .control-foot{margin-top:auto;padding:18px 20px;border-top:1px solid var(--line);display:flex;gap:8px}.mobile-running-total{display:none}.secondary,.primary{border-radius:13px;padding:12px 14px;font-size:11px;cursor:pointer}.secondary{border:1px solid #dedee1;background:#fff;flex:0 0 42%}.primary{border:1px solid #111;background:#111;color:#fff;flex:1;box-shadow:0 12px 20px rgba(17,17,17,.12)}.primary:hover{background:#27272a}
+
+  .story{padding:72px 40px 86px;display:grid;grid-template-columns:.8fr 1.2fr;gap:72px}.story h2{font-size:clamp(36px,5vw,70px);line-height:.92;letter-spacing:-.065em;margin:0;max-width:620px}.story-copy{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px}.story-copy h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 12px}.story-copy p{font-size:14px;line-height:1.58;color:#666;margin:0}.sandwich{margin-top:24px;border-top:1px solid var(--line);padding-top:20px;display:grid;gap:7px}.sandwich i{display:block;height:8px;border-radius:99px}.sandwich .skin{background:linear-gradient(90deg,#b47b3e,#e2bd7d)}.sandwich .adh{background:#ded8ce}.sandwich .core{background:#202124;height:18px}.layer-labels{display:flex;justify-content:space-between;font-size:9px;color:#999;margin-top:6px}
+
+  .step-rail{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;padding:15px 20px;border-bottom:1px solid var(--line)}
+  .step-rail i{height:2px;border-radius:9px;background:#e5e5e8;transition:background .2s ease}.step-rail i.is-complete,.step-rail i.is-active{background:#111}
+  .core-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.core-choice{min-width:0;border:1px solid var(--line);border-radius:19px;background:#fff;padding:11px;text-align:left;cursor:pointer}.core-choice[aria-pressed="true"]{border-color:#111;box-shadow:0 10px 24px rgba(0,0,0,.05)}.core-choice strong{display:block;font-size:12px;margin-top:10px}.core-choice span{display:block;color:#888;font-size:9px;line-height:1.35;margin-top:4px}.core-sample{display:block;height:92px;border-radius:17px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 9px 20px rgba(0,0,0,.06)}.core-black{background:linear-gradient(135deg,#050506,#222327 52%,#0c0c0e)}.core-white{background:linear-gradient(135deg,#fff,#efefec 52%,#deded9)}.construction-note{margin-top:18px;padding-top:17px;border-top:1px solid var(--line)}.construction-note strong{display:block;font-size:11px}.construction-note span{display:block;margin-top:5px;color:#85858a;font-size:10px;line-height:1.45}.guided-nav #stepBack:disabled{opacity:.3;cursor:default}
+  .identity-moment{margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#fbfbfc,#f5f5f7)}
+  .identity-moment span{display:block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#96969b}.identity-moment strong{display:block;margin-top:8px;font-size:24px;letter-spacing:-.055em;line-height:.95}.identity-moment em{display:block;margin-top:8px;font-style:normal;font-size:10px;color:#888}
+  .composition-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.composition-choice{border:1px solid var(--line);background:#fff;border-radius:18px;padding:10px;text-align:left;cursor:pointer}.composition-choice[aria-pressed="true"]{border-color:#111;box-shadow:0 10px 22px rgba(0,0,0,.055)}.composition-choice strong{display:block;font-size:11px;margin-top:9px}.composition-choice em{display:block;font-size:9px;color:#85858b;font-style:normal;margin-top:3px}.composition-wide{grid-column:1/-1}
+  .mini-card{position:relative;display:block;width:100%;aspect-ratio:1.586;border-radius:12px;background:linear-gradient(125deg,#8a5528,#d0a064 44%,#89562d);overflow:hidden;color:#15110d;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}.mini-card b,.mini-card span{position:absolute;font-style:normal}.mini-card b{font-size:14px;letter-spacing:-.12em}.mini-card span{font-size:8px;font-weight:700;letter-spacing:-.05em}.mini-signature b{left:10px;top:9px}.mini-signature span{left:10px;bottom:9px}.mini-editorial b{right:9px;top:8px;font-size:9px}.mini-editorial span{left:8px;bottom:8px;font-size:13px;max-width:88%;line-height:.85}.mini-minimal b{left:9px;top:8px;font-size:8px}.mini-minimal span{left:9px;bottom:9px;font-size:6px}.mini-centered b{left:50%;top:10px;transform:translateX(-50%);font-size:8px}.mini-centered span{left:50%;top:50%;transform:translate(-50%,-50%);font-size:8px;white-space:nowrap}.mini-statement b{right:10px;top:9px;font-size:8px}.mini-statement span{left:10px;bottom:5px;font-size:18px;letter-spacing:-.09em;white-space:nowrap}
+  .composition-editorial .card-name{font-size:clamp(52px,7vw,76px);max-width:90%;bottom:27px}.composition-editorial .card-logo{left:auto;right:34px;font-size:34px}.composition-minimal .card-name{font-size:26px;bottom:32px}.composition-minimal .card-logo{font-size:30px}.composition-centered .card-name{left:50%;bottom:auto;top:50%;transform:translate(calc(-50% + var(--name-user-x,0px)),calc(-50% + var(--name-user-y,0px))) scale(var(--name-user-scale,1)) translateZ(var(--craft-depth));transform-origin:center;text-align:var(--name-align,center);max-width:86%}.composition-centered .card-logo{left:50%;right:auto;transform:translateX(-50%);font-size:30px}.composition-statement .card-name{font-size:clamp(58px,8vw,88px);bottom:18px;left:24px;max-width:94%;letter-spacing:-.085em}.composition-statement .card-logo{left:auto;right:30px;font-size:30px}
+  .name-align-center:not(.composition-centered) .card-name{left:50%;right:auto;transform:translate(calc(-50% + var(--name-user-x,0px)),var(--name-user-y,0px)) scale(var(--name-user-scale,1)) translateZ(var(--craft-depth));transform-origin:center bottom;text-align:center}.name-align-right:not(.composition-centered) .card-name{left:auto;right:34px;transform:translate(var(--name-user-x,0px),var(--name-user-y,0px)) scale(var(--name-user-scale,1)) translateZ(var(--craft-depth));transform-origin:right bottom;text-align:right}
+  .fine-tune{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}.fine-tune summary{cursor:pointer;font-size:11px;font-weight:600;list-style:none;padding:8px 0}.fine-tune summary::-webkit-details-marker{display:none}.fine-tune summary:after{content:"+";float:right;color:#8b8b90}.fine-tune[open] summary:after{content:"−"}.fine-tune input[type="range"]{width:100%;accent-color:#111}
+  .upload-card{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:17px;background:#fafafa}.upload-card label{display:block;font-size:11px;font-weight:600;margin-bottom:9px}.upload-card input{display:block;width:100%;font-size:10px}.upload-card span{display:block;margin-top:8px;font-size:9px;color:#8a8a90;line-height:1.4}.custom-logo-preview{position:absolute;left:34px;top:30px;width:68px;height:68px;object-fit:contain;object-position:left top;display:none;transform:translate(var(--logo-user-x,0px),var(--logo-user-y,0px)) scale(var(--logo-user-scale,1));transform-origin:left top;filter:var(--logo-filter,none)}
+  .back-name,.back-iq,.back-custom-logo{position:absolute;display:none}.back-name{left:33px;top:31px;font-size:17px;font-weight:700;letter-spacing:-.045em}.back-iq{right:32px;top:29px;font-size:32px;font-weight:700;letter-spacing:-.12em}.back-custom-logo{right:30px;top:28px;width:66px;height:66px;object-fit:contain;object-position:right top}.back-layout-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.back-layout-choice{border:1px solid var(--line);border-radius:15px;background:#fff;padding:12px;text-align:left;cursor:pointer}.back-layout-choice[aria-pressed="true"]{border-color:#111;background:#fafafa}.back-layout-choice strong{display:block;font-size:11px}.back-layout-choice span{display:block;font-size:9px;color:#888;margin-top:4px;line-height:1.35}.side-switch{margin-bottom:2px}
+  .craft-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.craft-choice{border:1px solid var(--line);border-radius:15px;background:#fff;padding:12px;text-align:left;cursor:pointer}.craft-choice[aria-pressed="true"]{border-color:#111;background:#fafafa}.craft-choice strong{display:block;font-size:11px}.craft-choice span{display:block;font-size:9px;color:#85858b;line-height:1.35;margin-top:4px}.craft-wide{grid-column:1/-1}
+  .final-caption .final-spec{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:baseline}.final-caption .final-spec i{font-style:normal;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#999}.final-caption .final-spec b{font-size:11px;font-weight:600;color:#202024;text-transform:capitalize}.final-mode .final-caption{min-width:220px}
+  .final-mode .final-caption{display:none}
+  .commercial-panel{display:none;position:absolute;right:28px;top:28px;z-index:7;width:min(318px,calc(100% - 56px));padding:20px;border-radius:22px;background:rgba(255,255,255,.82);backdrop-filter:blur(22px);border:1px solid rgba(0,0,0,.07);box-shadow:0 22px 54px rgba(0,0,0,.10);color:#171719}
+  .final-mode .commercial-panel{display:grid;gap:14px}
+  .commercial-eyebrow{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#8b8b91}.commercial-panel h3{font-size:21px;letter-spacing:-.045em;margin:0}.commercial-meta{display:grid;grid-template-columns:78px 1fr;gap:7px 10px;padding:12px 0;border-top:1px solid rgba(0,0,0,.07);border-bottom:1px solid rgba(0,0,0,.07)}.commercial-meta i{font-style:normal;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#9a9aa0}.commercial-meta b{font-size:10px;font-weight:600;text-transform:capitalize}.commercial-total{display:flex;align-items:baseline;justify-content:space-between;gap:16px;color:#171719}.commercial-total span{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#8b8b91}.commercial-total strong{font-family:Georgia,serif;font-size:25px;font-weight:400}
+  .commercial-actions{display:grid;grid-template-columns:1fr 1.15fr;gap:8px}.commercial-actions button,.restore-last{min-height:42px;border-radius:13px;font-size:10px;cursor:pointer}.save-design{border:1px solid #d9d9dd;background:#fff}.continue-checkout{border:1px solid #111;background:#111;color:#fff}.save-status{min-height:16px;font-size:9px;color:#666}.restore-last{display:none;width:100%;border:1px solid #ddd;background:#fff}.restore-last.is-visible{display:block}
+  .order-review-panel{display:none;position:absolute;right:28px;top:28px;z-index:8;width:min(360px,calc(100% - 56px));padding:20px;border-radius:22px;background:rgba(255,255,255,.9);backdrop-filter:blur(24px);border:1px solid rgba(0,0,0,.07);box-shadow:0 24px 60px rgba(0,0,0,.12);color:#171719}
+  .order-review-mode .commercial-panel{display:none}.order-review-mode .order-review-panel{display:grid;gap:14px}.order-review-panel h3{font-size:22px;letter-spacing:-.045em;margin:0}.handoff-copy{font-size:10px;line-height:1.45;color:#66666b}.order-summary{display:grid;gap:8px;padding:12px 0;border-top:1px solid rgba(0,0,0,.07);border-bottom:1px solid rgba(0,0,0,.07)}.order-summary-row{display:flex;justify-content:space-between;gap:12px;font-size:10px}.order-summary-row span{color:#85858b}.order-summary-row strong{font-weight:600;text-align:right}.order-validation{display:none;padding:10px 12px;border-radius:13px;background:#fff3f1;color:#7d2f25;font-size:9px;line-height:1.45}.order-validation.is-visible{display:block}.handoff-field{display:grid;gap:7px;font-size:10px;color:#777}.handoff-field-label{display:flex;align-items:center;justify-content:space-between;gap:10px}.handoff-field input{width:100%;border:1px solid #dedee1;border-radius:12px;padding:11px 12px;background:#fff;outline:0;font-size:12px;color:#171719}.handoff-field input:focus{border-color:#111;box-shadow:0 0 0 3px rgba(17,17,17,.08)}.handoff-field input[aria-invalid="true"]{border-color:#b83e32;box-shadow:0 0 0 3px rgba(184,62,50,.08)}.handoff-message{display:none;font-size:10px;line-height:1.45;color:#4c4c52}.handoff-message.is-visible{display:block}.handoff-message.is-error{color:#7d2f25}.order-actions{display:grid;grid-template-columns:1fr 1.15fr;gap:8px}.order-actions button{min-height:42px;border-radius:13px;font-size:10px;cursor:pointer}.order-actions button:disabled{opacity:.6;cursor:wait}.order-back{border:1px solid #ddd;background:#fff}.order-confirm{border:1px solid #111;background:#111;color:#fff}.payload-wrap{display:none;border-top:1px solid rgba(0,0,0,.07);padding-top:12px}.payload-wrap.is-visible{display:grid;gap:8px}.payload-wrap strong{font-size:10px}.payload-wrap pre{margin:0;max-height:180px;overflow:auto;padding:10px;border-radius:12px;background:#f5f5f7;font:9px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#444;white-space:pre-wrap;word-break:break-word}
+  @media(max-width:980px){.hero{grid-template-columns:1fr}.hero-meta{justify-self:start;text-align:left}.atelier-shell{grid-template-columns:1fr}.controls{border-left:0;border-top:1px solid var(--line)}.scroll-track,.sticky-stage{height:650px}.scroll-space{height:1420px}.story{grid-template-columns:1fr}.story-copy{grid-template-columns:1fr 1fr}.card-rig{width:min(82vw,560px)}}
+  @media(max-width:620px){.topbar{height:60px;padding:0 20px}.top-status span:first-child{display:none}.hero{padding:24px 22px 18px;gap:0}.eyebrow{margin-bottom:10px}.hero h1{font-size:44px}.hero p,.hero-meta{display:none}.atelier-shell{display:block;min-height:auto}.stage-wrap{position:sticky;top:0;height:280px;z-index:5;border-bottom:1px solid var(--line)}.scroll-track{height:280px;overflow:hidden}.scroll-space{height:280px}.sticky-stage{height:280px;position:relative;top:auto;padding:46px 18px 48px;touch-action:pan-y;cursor:grab}.sticky-stage.is-dragging{cursor:grabbing}.sticky-stage.is-dragging .card-rig{transition:none}.stage-kicker{left:20px;top:16px}.view-notes{right:18px;top:14px}.desktop-inspection-hint{display:none}.mobile-inspection-hint{display:inline-flex}.card-rig{width:min(82vw,340px)}.card-logo,.card-name{left:24px}.card-logo{top:24px}.card-name{bottom:23px}.card-micro{top:24px;right:22px}.tap{left:24px;bottom:24px;font-size:9px}.inspection-nav{position:absolute;z-index:7;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:4px;padding:4px;border:1px solid rgba(0,0,0,.08);border-radius:99px;background:rgba(255,255,255,.82);backdrop-filter:blur(16px);box-shadow:0 8px 24px rgba(0,0,0,.08)}.inspection-view{min-width:58px;border:0;border-radius:99px;padding:7px 10px;background:transparent;color:#707075;font-size:10px;cursor:pointer}.inspection-view[aria-pressed="true"]{background:#111;color:#fff}.scroll-labels{display:none}.material-grid{grid-template-columns:repeat(2,1fr)}.story{padding:56px 22px}.story-copy{grid-template-columns:1fr}.controls{min-height:650px;position:relative;z-index:6}.control-foot{position:sticky;bottom:0;z-index:9;display:grid;grid-template-columns:auto minmax(72px,.7fr) minmax(110px,1fr);align-items:center;gap:8px;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.94);backdrop-filter:blur(18px);box-shadow:0 -10px 30px rgba(0,0,0,.06)}.mobile-running-total{display:grid;gap:2px;min-width:62px}.mobile-running-total span{font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#8a8a90}.mobile-running-total strong{font-family:Georgia,serif;font-size:17px;font-weight:400;white-space:nowrap}.control-foot .secondary,.control-foot .primary{min-height:42px;padding:10px 12px}}
+  .webgl-card-stage{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;opacity:0;transition:opacity .45s ease;display:block}
+  .webgl-card-stage canvas{width:100%;height:100%;display:block}
+  .sticky-stage.webgl-ready .webgl-card-stage{opacity:1}
+  .sticky-stage.webgl-ready .card-rig{opacity:0;transition:opacity .28s ease}
+  .sticky-stage.webgl-fallback .webgl-card-stage{display:none}
+  .renderer-badge{position:absolute;right:28px;bottom:26px;z-index:5;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#96969c;opacity:0;transition:opacity .3s ease}
+  .sticky-stage.webgl-ready .renderer-badge{opacity:.65}
+  @media(max-width:620px){.final-mode .commercial-panel,.order-review-mode .order-review-panel{left:18px;right:18px;top:18px;width:auto;max-height:510px;overflow:auto}.commercial-actions{grid-template-columns:1fr}.final-mode .final-caption{display:none}}
+  @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.card-rig,.iq-card{will-change:auto}}
+</style>
+</head>
+<body>
+<main id="iq-atelier">
+  <header class="topbar">
+    <a class="brand" data-iq-brand="primary" href="/" aria-label="IQ Card home">iq</a>
+    <div class="top-status"><span><i class="status-dot"></i>Live object</span><span>01 / Configure</span></div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Craft your physical identity</div>
+      <h1>Design an<br>introduction.</h1>
+      <p>Not a template. A material object tuned to the way you want to be remembered.</p>
+    </div>
+    <div class="hero-meta"><strong>IQ / Classic Atelier 07</strong>Scroll the object. Inspect the edge.<br>Then make it yours.</div>
+  </section>
+
+  <section class="atelier-shell">
+    <div class="stage-wrap" id="stageWrap">
+      <div class="stage-kicker"><b>Inspection</b> · front → edge → back</div>
+      <div class="view-notes"><span class="view-pill desktop-inspection-hint">Move pointer to inspect</span><span class="view-pill desktop-inspection-hint">Scroll to rotate</span><span class="view-pill mobile-inspection-hint">Drag card to inspect</span></div><button class="exit-final" id="exitFinal">Return to atelier</button>
+      <div class="scroll-track" id="scrollTrack" aria-label="Scroll to inspect the IQ Card">
+        <div class="scroll-space">
+          <div class="sticky-stage webgl-fallback" id="stickyStage">
+            <div class="webgl-card-stage" id="webglCardStage" aria-hidden="true"></div>
+            <div class="renderer-badge" aria-hidden="true">PBR / WebGL</div>
+            <div class="card-rig" id="cardRig">
+              <div class="card-aura" aria-hidden="true"></div>
+              <div class="iq-card finish-matte logo-large craft-engrave" id="iqCard">
+                <div class="card-skin card-front">
+                  <div class="card-content">
+                    <div class="card-logo" aria-label="IQ logo">iq</div>
+                    <img id="customLogoPreview" class="custom-logo-preview" alt="Custom logo preview">
+                    <div class="card-micro">NFC / IQ 01</div>
+                    <div class="card-name" id="frontName">YOUR NAME</div>
+                  </div>
+                </div>
+                <div class="card-layer layer-front-adhesive"></div>
+                <div class="card-layer layer-front-core"></div>
+                <div class="card-core"></div>
+                <div class="card-layer layer-back-core"></div>
+                <div class="card-layer layer-back-adhesive"></div>
+                <div class="card-skin card-back">
+                  <div class="card-content"><div class="tap">TAP TO CONNECT</div><div class="back-name" id="backName">YOUR NAME</div><div class="back-iq" id="backIq">iq</div><img id="customLogoBackPreview" class="back-custom-logo" alt="Custom logo back preview"></div>
+                </div>
+                <div class="card-edge edge-top"></div>
+                <div class="card-edge edge-bottom"></div>
+                <div class="card-edge edge-left"></div>
+                <div class="card-edge edge-right"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="inspection-nav" role="group" aria-label="Card inspection view">
+        <button type="button" class="inspection-view" data-inspection-view="front" aria-pressed="true">Front</button>
+        <button type="button" class="inspection-view" data-inspection-view="edge" aria-pressed="false">Edge</button>
+        <button type="button" class="inspection-view" data-inspection-view="back" aria-pressed="false">Back</button>
+      </div>
+      <div class="final-caption" id="finalCaption">
+        <span>Configured object</span>
+        <div class="final-spec"><i>Core</i><b id="finalCore">Black NFC</b></div>
+        <div class="final-spec"><i>Material</i><b id="finalMaterial">Walnut</b></div>
+        <div class="final-spec"><i>Craft</i><b id="finalCraft">Engrave</b></div>
+      </div>
+      <aside class="commercial-panel" id="commercialPanel" aria-label="Classic IQ Card commercial summary">
+        <div class="commercial-eyebrow">Commission summary</div>
+        <h3>Classic IQ Card</h3>
+        <div class="commercial-meta">
+          <i>Core</i><b id="commercialCore">Black NFC</b>
+          <i>Material</i><b id="commercialMaterial">Walnut</b>
+          <i>Craft</i><b id="commercialCraft">Engraved</b>
+        </div>
+        <div class="commercial-total"><span>Provisional total</span><strong id="commercialTotal">₹2,349</strong></div>
+        <div class="order-summary" aria-label="Provisional price breakdown">
+          <div class="order-summary-row"><span>Base card</span><strong id="priceBase">₹1,499</strong></div>
+          <div class="order-summary-row"><span>Material</span><strong id="priceMaterial">₹500</strong></div>
+          <div class="order-summary-row"><span>Craft</span><strong id="priceCraft">₹350</strong></div>
+          <div class="order-summary-row"><span>Logo</span><strong id="priceLogo">Included</strong></div>
+          <div class="order-summary-row"><span>Total</span><strong id="priceTotalBreakdown">₹2,349</strong></div>
+        </div>
+        <div class="save-status" id="saveStatus" aria-live="polite"></div>
+        <button type="button" class="restore-last" id="restoreLastBtn">Restore last saved</button>
+        <div class="commercial-actions"><button type="button" class="save-design" id="saveDesignBtn">Save this design</button><button type="button" class="continue-checkout" id="continueCheckoutBtn">Continue →</button></div>
+      </aside>
+      <aside class="order-review-panel" id="orderReviewPanel" aria-label="Order Review">
+        <div class="commercial-eyebrow">Order Review</div>
+        <h3>Review your Classic IQ Card</h3>
+        <div class="handoff-copy">Save this design to your IQ account. We’ll send a secure sign-in link — no payment required.</div>
+        <div class="order-summary">
+          <div class="order-summary-row"><span>Product</span><strong>Classic IQ Card</strong></div>
+          <div class="order-summary-row"><span>Configuration</span><strong id="orderConfigurationSummary">Black NFC · Walnut</strong></div>
+          <div class="order-summary-row"><span>Manufacturing</span><strong id="orderManufacturing">Engraved · Pure back</strong></div>
+          <div class="order-summary-row"><span>Total</span><strong id="orderReviewTotal">₹2,349</strong></div>
+        </div>
+        <div class="order-validation" id="orderValidation" aria-live="polite"></div>
+        <label class="handoff-field" for="handoffEmail"><span class="handoff-field-label"><span>Email address</span><span class="required-mark">Required</span></span><input id="handoffEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" aria-describedby="handoffEmailError" required /></label>
+        <div class="field-error" id="handoffEmailError" role="alert" aria-live="polite"></div>
+        <div class="handoff-message" id="handoffMessage" role="status" aria-live="polite"></div>
+        <div class="order-actions"><button type="button" class="order-back" id="orderBackBtn">Back to final object</button><button type="button" class="order-confirm" id="confirmBuildBtn">Confirm build</button></div>
+      </aside>
+      <div class="scroll-labels"><span id="phaseLabel">Front / material read</span><div class="progress"><i id="progressBar"></i></div><span class="angle-readout" id="angleReadout">18° / 8°</span></div>
+    </div>
+
+    <aside class="controls" aria-label="Classic IQ Card configuration">
+      <div class="control-head">
+        <div class="tiny" id="stepEyebrow">01 / Core</div>
+        <h3 id="stepTitle">Choose the core.</h3>
+        <p id="stepCopy">Start with the physical NFC object that sits inside every Classic IQ Card.</p>
+      </div>
+      <div class="step-rail" aria-label="Configuration progress">
+        <i data-step-dot="core"></i><i data-step-dot="material"></i><i data-step-dot="identity"></i><i data-step-dot="logo"></i><i data-step-dot="craft"></i><i data-step-dot="final"></i>
+      </div>
+
+      <section class="panel active" data-step="core" aria-label="Core">
+        <div class="section-label"><span>NFC core</span><span>physical base</span></div>
+        <div class="core-grid">
+          <button type="button" class="core-choice" data-core="black" aria-pressed="true">
+            <i class="core-sample core-black"></i><strong>Black NFC</strong><span>Stealth edge · strong contrast</span>
+          </button>
+          <button type="button" class="core-choice" data-core="white" aria-pressed="false">
+            <i class="core-sample core-white"></i><strong>White NFC</strong><span>Clean edge · bright construction</span>
+          </button>
+        </div>
+        <div class="construction-note"><strong>The card before the finish.</strong><span>Your selected material is laminated around this thin rounded NFC core.</span></div>
+      </section>
+
+      <section class="panel" data-step="material" aria-label="Material">
+        <div class="selected-material"><div class="selected-swatch" id="selectedSwatch"></div><div class="selected-copy"><strong id="selectedName">White</strong><span id="selectedFeel">Clean solid · soft-touch · matte</span></div></div>
+        <div class="section-label"><span>Material library</span><span id="materialCount">12 materials</span></div>
+        <div class="material-grid" id="materialGrid" role="group" aria-label="Material choices"></div>
+      </section>
+
+      <section class="panel" data-step="identity" aria-label="Identity">
+        <div class="control-group">
+          <div class="section-label"><span>Your name</span><span>first + last</span></div>
+          <div class="field"><label for="nameInput"><span>First and last name</span><span class="required-mark">Required</span></label><input id="nameInput" value="YOUR NAME" maxlength="26" autocomplete="name" placeholder="First Last" aria-describedby="nameHelp nameError" required><small class="fine-note" id="nameHelp">Use two words so your card can show your full name.</small><small class="field-error" id="nameError" role="alert" aria-live="polite"></small></div>
+        </div>
+        <div class="control-group">
+        </div>
+        <div class="identity-moment"><span>Live identity</span><strong id="identityEcho">YOUR NAME</strong><em>First name. Last name. One object.</em></div>
+      </section>
+      <section class="panel" data-step="logo" aria-label="Logo">
+        <div class="section-label"><span>Add your mark?</span><span>optional second logo</span></div>
+        <div class="construction-note"><strong>The IQ mark stays.</strong><span>Your logo is added to the opposite side of the front, in the top-right corner.</span></div>
+        <div class="upload-card">
+          <label for="logoUpload">Add another logo</label>
+          <input id="logoUpload" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+          <span>PNG, JPG, WebP or SVG · up to 1 MB · saved with this design</span>
+        </div>
+        <details class="fine-tune" id="fineTuneLogo">
+          <summary>Logo placement</summary>
+          <div class="control-group"><div class="section-label"><span>Scale</span><span id="logoScaleValue">1.00×</span></div><input id="logoScaleRange" type="range" min="0.5" max="2" step="0.01" value="1"></div>
+          <div class="control-group"><div class="section-label"><span>Horizontal position</span><span id="logoXValue">0</span></div><input id="logoXRange" type="range" min="-50" max="50" step="1" value="0"></div>
+          <div class="control-group"><div class="section-label"><span>Vertical position</span><span id="logoYValue">0</span></div><input id="logoYRange" type="range" min="-40" max="40" step="1" value="0"></div>
+          <div class="control-group"><div class="section-label"><span>Alignment</span><span>anchor</span></div><div class="segmented"><button type="button" class="choice" data-logo-align="left" aria-pressed="true">Left</button><button type="button" class="choice" data-logo-align="center" aria-pressed="false">Center</button><button type="button" class="choice" data-logo-align="right" aria-pressed="false">Right</button></div></div>
+        </details>
+      </section>
+      <section class="panel" data-step="craft" aria-label="Craft">
+        <div class="section-label"><span>Manufacturing treatment</span><span>identity surface</span></div>
+        <div class="craft-grid">
+          <button type="button" class="craft-choice" data-craft="engrave" aria-pressed="true"><strong>Engraved</strong><span>Low-gloss, cut into the surface</span></button>
+          <button type="button" class="craft-choice" data-craft="emboss" aria-pressed="false"><strong>Embossed</strong><span>Raised and light-catching</span></button>
+          <button type="button" class="craft-choice" data-craft="deboss" aria-pressed="false"><strong>Debossed</strong><span>Pressed into the material</span></button>
+          <button type="button" class="craft-choice" data-craft="foil" aria-pressed="false"><strong>Foil</strong><span>Reflective metallic identity</span></button>
+          <button type="button" class="craft-choice craft-wide" data-craft="printed" aria-pressed="false"><strong>Printed</strong><span>Crisp surface ink with no physical depth</span></button>
+        </div>
+        <div class="craft-card"><strong id="craftTitle">Laser engraving</strong><span id="craftCopy">Low-gloss lettering reads as part of the material rather than ink sitting on top.</span></div>
+        <div class="construction-note"><strong>Watch the light.</strong><span>Every treatment triggers a short raking-light sweep so depth and reflectivity can be read on the actual object.</span></div>
+      </section>
+      <section class="panel" data-step="final"><div class="construction-note"><strong>Final object.</strong><span>The controls disappear and your configured card becomes the hero. Return at any time without losing a choice.</span></div></section>
+
+      <div class="control-foot guided-nav"><div class="mobile-running-total"><span>Total</span><strong id="mobileRunningTotal" aria-live="polite">₹2,349</strong></div><button type="button" class="secondary" id="stepBack">Back</button><button type="button" class="primary" id="stepNext">Continue</button></div>
+    </aside>
+  </section>
+
+</main>
+<script type="module">
+  import { handoffEmailError, identityNameError } from '/customize/registration-validation.mjs';
+  import { normalizeStoredConfiguration, persistCheckoutHandoffMarker, persistSavedDesignHistory, restoreStoredLogo, savedDesignTarget, selectRestorableDesign, serializeLogoForStorage, validateLogoForCheckout } from '/customize/logo-persistence.mjs';
+  import { inspectionPoseForView, mobileInspectionPose, mobileStepScrollTop, nearestMobileInspectionView, snapMobilePose } from '/customize/mobile-inspection.mjs';
+  const root = document.documentElement;
+  const card = document.getElementById('iqCard');
+  const rig = document.getElementById('cardRig');
+  const scrollTrack = document.getElementById('scrollTrack');
+  const stageWrap = document.getElementById('stageWrap');
+  const stickyStage = document.getElementById('stickyStage');
+  const progressBar = document.getElementById('progressBar');
+  const phaseLabel = document.getElementById('phaseLabel');
+  const angleReadout = document.getElementById('angleReadout');
+  const selectedSwatch = document.getElementById('selectedSwatch');
+  const selectedName = document.getElementById('selectedName');
+  const selectedFeel = document.getElementById('selectedFeel');
+  const materialGrid = document.getElementById('materialGrid');
+  const frontName = document.getElementById('frontName');
+
+  const materials = [
+    {name:'Walnut',preferredTone:'dark',feel:'Warm timber · fine grain · matte',surface:'linear-gradient(126deg,#8a5528,#d0a064 42%,#a86f38 72%,#70431f)',grain:'repeating-linear-gradient(104deg,rgba(70,31,10,.18) 0 1px,transparent 1px 6px)',roughness:.68,specular:.15,edgeTone:'#4d2d18',adhesiveTone:'#ddd7ce',coreTone:'#202124'},
+    {name:'Travertine',preferredTone:'dark',feel:'Fine stone · mineral pores · matte',surface:'linear-gradient(120deg,#b9a58d,#eadbc6 48%,#c9b79e)',grain:'radial-gradient(circle at 24% 35%,rgba(111,87,62,.20) 0 1px,transparent 2px),radial-gradient(circle at 67% 68%,rgba(111,87,62,.12) 0 1px,transparent 2px)',roughness:.86,specular:.06,edgeTone:'#aa957d',adhesiveTone:'#e8dfd4',coreTone:'#a9a49d'},
+    {name:'Natural Oak',preferredTone:'dark',feel:'Open grain · pale timber · dry',surface:'linear-gradient(126deg,#b68b50,#e7cf9e 44%,#bd8d4e 79%,#8b602e)',grain:'repeating-linear-gradient(96deg,rgba(96,57,21,.12) 0 1px,transparent 1px 9px)',roughness:.74,specular:.11,edgeTone:'#8b6338',adhesiveTone:'#e0d8c9',coreTone:'#24262a'},
+    {name:'Graphite',preferredTone:'light',feel:'Honed architectural grey · matte',surface:'linear-gradient(127deg,#141517,#4a4c4d 43%,#242526 73%,#0e0f10)',grain:'radial-gradient(circle at 22% 35%,rgba(255,255,255,.07) 0 1px,transparent 1.7px)',roughness:.78,specular:.10,edgeTone:'#171819',adhesiveTone:'#d5d0c8',coreTone:'#24262b'},
+    {name:'Concrete',preferredTone:'dark',feel:'Fine cement · cloudy grain · matte',surface:'linear-gradient(120deg,#aaa9a4,#d2d0cb 48%,#97958f)',grain:'radial-gradient(circle,rgba(55,55,52,.16) 0 1px,transparent 1.8px)',roughness:.92,specular:.045,edgeTone:'#85837d',adhesiveTone:'#ddd9d1',coreTone:'#747578'},
+    {name:'Ivory Marble',preferredTone:'dark',feel:'Ivory stone · quiet veining · matte',surface:'linear-gradient(120deg,#e9e2d5,#fbf8ef 48%,#d8d0c2)',grain:'linear-gradient(108deg,transparent 0 31%,rgba(116,108,98,.16) 32%,transparent 34% 56%,rgba(116,108,98,.10) 57%,transparent 59%)',roughness:.48,specular:.18,edgeTone:'#cfc6b7',adhesiveTone:'#ebe5dd',coreTone:'#9fa3aa'},
+    {name:'Oxidised Steel',preferredTone:'dark',feel:'Brushed metal · muted oxide · matte',surface:'linear-gradient(120deg,#62676a,#a58d78 42%,#4c5558 72%,#252c2f)',grain:'repeating-linear-gradient(90deg,rgba(255,255,255,.12) 0 1px,transparent 1px 5px)',roughness:.42,specular:.30,edgeTone:'#394044',adhesiveTone:'#d7d1c7',coreTone:'#44494d'},
+    {name:'White',preferredTone:'dark',feel:'Clean solid · soft-touch · matte',surface:'linear-gradient(135deg,#fdfcf9,#ebe9e3 52%,#faf9f5)',grain:'radial-gradient(circle,rgba(0,0,0,.035) 0 1px,transparent 1.5px)',roughness:.82,specular:.08,edgeTone:'#d3d0c8',adhesiveTone:'#e5e0d7',coreTone:'#24262a'},
+    {name:'Black',preferredTone:'light',feel:'Deep black · soft-touch · matte',surface:'linear-gradient(135deg,#070809,#181a1d 52%,#08090a)',grain:'radial-gradient(circle,rgba(255,255,255,.05) 0 1px,transparent 1.5px)',roughness:.78,specular:.10,edgeTone:'#090a0c',adhesiveTone:'#d4d0c8',coreTone:'#141518'},
+    {name:'Terracotta',preferredTone:'light',feel:'Warm burnt clay · mineral grain · matte',surface:'linear-gradient(135deg,#8c3d29,#a94f32 48%,#7d3425)',grain:'radial-gradient(circle,rgba(255,215,185,.10) 0 1px,transparent 1.8px)',roughness:.82,specular:.055,edgeTone:'#713023',adhesiveTone:'#d8d0c5',coreTone:'#282326'},
+    {name:'Mustard',preferredTone:'dark',feel:'Ochre pigment · warm · matte',surface:'linear-gradient(135deg,#9a6814,#d09b31 48%,#8d5d12)',grain:'radial-gradient(circle,rgba(255,239,183,.10) 0 1px,transparent 1.8px)',roughness:.74,specular:.10,edgeTone:'#76500e',adhesiveTone:'#ddd4c5',coreTone:'#292722'},
+    {name:'Oxblood',preferredTone:'light',feel:'Muted burgundy · fine grain · matte',surface:'linear-gradient(135deg,#4e141a,#711d24 48%,#3f1016)',grain:'radial-gradient(circle,rgba(255,190,185,.07) 0 1px,transparent 1.8px)',roughness:.90,specular:.045,edgeTone:'#3a0e13',adhesiveTone:'#d6cdc4',coreTone:'#252124'},
+  ];
+
+  const customColors = [
+    {id:'black',name:'Black',hex:'#111214'}, {id:'white',name:'White',hex:'#f8f8f5'},
+    {id:'gray',name:'Gray',hex:'#8a8f98'}, {id:'silver',name:'Silver',hex:'#c8cbd0'},
+    {id:'red',name:'Red',hex:'#d63447'}, {id:'blue',name:'Blue',hex:'#3f72d8'}
+  ];
+
+  const materialOrder = ['White','Black','Graphite','Terracotta','Mustard','Oxblood','Walnut','Natural Oak','Travertine','Concrete','Ivory Marble','Oxidised Steel'];
+  materials.sort((a,b) => materialOrder.indexOf(a.name) - materialOrder.indexOf(b.name));
+
+  const craftCopy = {
+    engrave:['Laser engraving','Low-gloss lettering reads as part of the material rather than ink sitting on top.'],
+    emboss:['Raised emboss','Letterforms lift from the surface and catch a thin highlight along their upper edge.'],
+    deboss:['Pressed deboss','Letterforms sink into the skin, producing a small shadow that feels mechanically pressed.'],
+    foil:['Metal foil','A reflective metallic layer shifts dramatically as the inspection light crosses the surface.'],
+    printed:['Surface print','Crisp colour sits on the surface with no simulated physical depth or raised edge.']
+  };
+
+
+  // V8 commercial pricing is intentionally centralized and provisional.
+  const PRICING_TABLE = {
+    pricingVersion: 'demo-inr-v1',
+    currency: 'INR',
+    provisional: true,
+    base: 1499,
+    materials: { White: 0, Black: 0, Graphite: 0, Terracotta: 0, Mustard: 0, Oxblood: 0, Walnut: 500, 'Natural Oak': 500, Travertine: 650, Concrete: 550, 'Ivory Marble': 650, 'Oxidised Steel': 700 },
+    craft: { printed: 0, engrave: 350, emboss: 450, deboss: 450, foil: 650 },
+    logo: { iq: 0, custom: 250 }
+  };
+
+  function quoteConfiguration(config){
+    const components = {
+      base: PRICING_TABLE.base,
+      material: PRICING_TABLE.materials[config.material] ?? 0,
+      craft: PRICING_TABLE.craft[config.craft] ?? 0,
+      customLogoSetup: PRICING_TABLE.logo[config.logo?.mode || 'iq'] ?? 0
+    };
+    const total = Object.values(components).reduce((sum,value)=>sum+Number(value||0),0);
+    return {
+      currency: 'INR',
+      pricingVersion: PRICING_TABLE.pricingVersion,
+      provisional: true,
+      components: components,
+      total: total
+    };
+  }
+
+
+  function buildAssetMetadata(config){
+    const requestedCustom = config.logo?.mode === 'custom';
+    const logo = serializeLogoForStorage(config.logo);
+    const custom = logo.mode === 'custom';
+    return {
+      customLogo: {
+        present: custom,
+        filename: custom ? logo.filename : null,
+        mimeType: custom ? logo.mimeType : null,
+        requiresReupload: requestedCustom && !custom
+      }
+    };
+  }
+
+  function buildManufacturingSpec(config){
+    return {
+      core: { color: String(config.core || '').toLowerCase() },
+      surfaces: {
+        front: { material: config.material, customColor: selectedCustomColor(config)?.hex || null },
+        back: { material: config.material, customColor: selectedCustomColor(config)?.hex || null }
+      },
+      identity: {
+        name: String(config.identity?.name || '').trim(),
+        fineTune: { ...(config.identity?.fineTune || {}) },
+        logoMode: config.logo?.mode,
+        logoPlacement: { scale: config.logo?.scale, x: config.logo?.x, y: config.logo?.y, align: config.logo?.align },
+        craft: config.craft
+      },
+      back: {
+        layout: config.backLayout,
+        backLayout: config.backLayout,
+        tapToConnect: true
+      }
+    };
+  }
+
+  function validateCheckoutConfiguration(config){
+    const errors = [];
+    if(config.productFamily && config.productFamily !== 'classic') errors.push('Product family must be classic.');
+    if(!['black','white'].includes(config.core)) errors.push('Choose a Black or White NFC core.');
+    if(!(config.material in PRICING_TABLE.materials)) errors.push('Choose a supported Classic material.');
+    const nameParts = String(config.identity?.name || '').trim().split(/\s+/).filter(Boolean);
+    if(nameParts.length < 2 || nameParts.join(' ').toUpperCase() === 'YOUR NAME') errors.push('Enter your first and last name.');
+    if(!['pure','branded','identity','custom'].includes(config.backLayout)) errors.push('Choose a supported back layout.');
+    if(!(config.craft in PRICING_TABLE.craft)) errors.push('Choose a supported craft treatment.');
+    const logoValidation = validateLogoForCheckout(config.logo);
+    if(!logoValidation.valid) errors.push(logoValidation.error);
+    const quote = quoteConfiguration(config);
+    if(!Number.isFinite(quote.total)) errors.push('Price quote could not be generated.');
+    return { valid: errors.length === 0, errors, quote };
+  }
+
+  let identityValidationAttempted = false;
+
+  function validateIdentityStep({ focus = false } = {}){
+    const input = document.getElementById('nameInput');
+    const error = document.getElementById('nameError');
+    const message = identityNameError(configuration.identity?.name);
+    identityValidationAttempted = identityValidationAttempted || Boolean(message);
+    if(input) input.setAttribute('aria-invalid', message ? 'true' : 'false');
+    if(error){
+      error.textContent = message || '';
+      error.classList.toggle('is-visible', Boolean(message));
+    }
+    if(message && focus) input?.focus();
+    return !message;
+  }
+
+  function showHandoffEmailError(message){
+    const input = document.getElementById('handoffEmail');
+    const error = document.getElementById('handoffEmailError');
+    if(input) input.setAttribute('aria-invalid', message ? 'true' : 'false');
+    if(error){
+      error.textContent = message || '';
+      error.classList.toggle('is-visible', Boolean(message));
+    }
+  }
+
+  function commercialConfiguration(config){
+    const copy = JSON.parse(JSON.stringify(config));
+    copy.logo = serializeLogoForStorage(config.logo);
+    return copy;
+  }
+
+  function handoffConfiguration(config){
+    const copy = JSON.parse(JSON.stringify(config));
+    copy.logo = serializeLogoForStorage(config.logo);
+    return copy;
+  }
+
+  function createOrderPayload(config, designId = null){
+    const validation = validateCheckoutConfiguration(config);
+    if(!validation.valid) return { valid: false, errors: validation.errors };
+    return {
+      valid: true,
+      schemaVersion: '1.0',
+      designId: designId || null,
+      product: { family: 'classic', name: 'Classic IQ Card' },
+      configuration: handoffConfiguration(config),
+      pricing: validation.quote,
+      manufacturing: buildManufacturingSpec(config),
+      assets: buildAssetMetadata(config),
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  const MAX_PIXEL_RATIO = 2;
+
+  const PBR_MATERIALS = {
+    'Walnut': {base:'#74401f',roughness:.68,metalness:0,materialKind:1,patternScale:1.05},
+    'Natural Oak': {base:'#c79c61',roughness:.74,metalness:0,materialKind:2,patternScale:.92},
+    'Travertine': {base:'#d8c4a9',roughness:.86,metalness:0,materialKind:7,patternScale:1},
+    'Graphite': {base:'#4a4a48',roughness:.91,metalness:0,materialKind:13,patternScale:1},
+    'Concrete': {base:'#d2d0cb',roughness:.93,metalness:0,materialKind:16,patternScale:1},
+    'Ivory Marble': {base:'#e7e0d3',roughness:.48,metalness:0,materialKind:8,patternScale:.9},
+    'Oxidised Steel': {base:'#77736e',roughness:.42,metalness:.38,materialKind:11,patternScale:1},
+    'White': {base:'#f2f0eb',roughness:.82,metalness:0,materialKind:4,patternScale:1},
+    'Black': {base:'#08090a',roughness:.78,metalness:0,materialKind:4,patternScale:1},
+    'Terracotta': {base:'#a94f32',roughness:.88,metalness:0,materialKind:14,patternScale:1},
+    'Mustard': {base:'#bd861f',roughness:.82,metalness:0,materialKind:15,patternScale:1},
+    'Oxblood': {base:'#711d24',roughness:.92,metalness:0,materialKind:17,patternScale:1},
+  };
+
+  const CRAFT_RENDER_PROFILES = {
+    printed:{code:0,lift:.00015,opacity:.98},
+    engrave:{code:1,lift:-.00048,opacity:1},
+    emboss:{code:2,lift:.00135,opacity:.98},
+    deboss:{code:3,lift:-.00028,opacity:.90},
+    foil:{code:4,lift:.00095,opacity:1}
+  };
+
+  function iqHexToRgb(hex){
+    const clean=(hex||'#888888').replace('#','');
+    const value=parseInt(clean.length===3?clean.split('').map(c=>c+c).join(''):clean,16);
+    return [((value>>16)&255)/255,((value>>8)&255)/255,(value&255)/255];
+  }
+
+  function iqPerspective(fovDeg,aspect,near,far){
+    const f=1/Math.tan((fovDeg*Math.PI/180)/2), nf=1/(near-far);
+    return new Float32Array([f/aspect,0,0,0, 0,f,0,0, 0,0,(far+near)*nf,-1, 0,0,(2*far*near)*nf,0]);
+  }
+
+  function iqMultiply4(a,b){
+    const out=new Float32Array(16);
+    for(let c=0;c<4;c++) for(let r=0;r<4;r++) out[c*4+r]=a[0*4+r]*b[c*4+0]+a[1*4+r]*b[c*4+1]+a[2*4+r]*b[c*4+2]+a[3*4+r]*b[c*4+3];
+    return out;
+  }
+
+  function iqModelMatrix(rx,ry,rz,scale=1){
+    const cx=Math.cos(rx),sx=Math.sin(rx),cy=Math.cos(ry),sy=Math.sin(ry),cz=Math.cos(rz),sz=Math.sin(rz);
+    const m00=cz*cy, m01=cz*sy*sx-sz*cx, m02=cz*sy*cx+sz*sx;
+    const m10=sz*cy, m11=sz*sy*sx+cz*cx, m12=sz*sy*cx-cz*sx;
+    const m20=-sy,   m21=cy*sx,              m22=cy*cx;
+    return new Float32Array([m00*scale,m10*scale,m20*scale,0, m01*scale,m11*scale,m21*scale,0, m02*scale,m12*scale,m22*scale,0, 0,0,0,1]);
+  }
+
+  function createRoundedPrism(width,height,radius,depth,centerZ=0,cornerSegments=12){
+    const outline=[];
+    const hw=width/2,hh=height/2;
+    const corners=[
+      [hw-radius,hh-radius,0,Math.PI/2],
+      [-hw+radius,hh-radius,Math.PI/2,Math.PI],
+      [-hw+radius,-hh+radius,Math.PI,Math.PI*1.5],
+      [hw-radius,-hh+radius,Math.PI*1.5,Math.PI*2]
+    ];
+    corners.forEach(([cx,cy,a0,a1])=>{
+      for(let i=0;i<cornerSegments;i++){
+        const t=i/(cornerSegments-1),a=a0+(a1-a0)*t;
+        outline.push([cx+Math.cos(a)*radius,cy+Math.sin(a)*radius]);
+      }
+    });
+    const pos=[],norm=[],uv=[],idx=[];
+    const zf=centerZ+depth/2,zb=centerZ-depth/2,n=outline.length;
+    // front face
+    let base=0; pos.push(0,0,zf);norm.push(0,0,1);uv.push(.5,.5);
+    outline.forEach(([x,y])=>{pos.push(x,y,zf);norm.push(0,0,1);uv.push(x/width+.5,y/height+.5);});
+    for(let i=0;i<n;i++) idx.push(base,base+1+i,base+1+((i+1)%n));
+    // back face
+    base=pos.length/3; pos.push(0,0,zb);norm.push(0,0,-1);uv.push(.5,.5);
+    outline.forEach(([x,y])=>{pos.push(x,y,zb);norm.push(0,0,-1);uv.push(1-(x/width+.5),y/height+.5);});
+    for(let i=0;i<n;i++) idx.push(base,base+1+((i+1)%n),base+1+i);
+    // perimeter
+    for(let i=0;i<n;i++){
+      const p0=outline[i],p1=outline[(i+1)%n],dx=p1[0]-p0[0],dy=p1[1]-p0[1],len=Math.hypot(dx,dy)||1,nx=dy/len,ny=-dx/len;
+      base=pos.length/3;
+      pos.push(p0[0],p0[1],zf,p1[0],p1[1],zf,p1[0],p1[1],zb,p0[0],p0[1],zb);
+      for(let j=0;j<4;j++) norm.push(nx,ny,0);
+      uv.push(0,1,1,1,1,0,0,0);
+      idx.push(base,base+1,base+2,base,base+2,base+3);
+    }
+    return {positions:new Float32Array(pos),normals:new Float32Array(norm),uvs:new Float32Array(uv),indices:new Uint16Array(idx)};
+  }
+
+  function createDecalPlane(width,height,z,back=false){
+    const hw=width/2,hh=height/2;
+    const positions=new Float32Array([-hw,-hh,z, hw,-hh,z, hw,hh,z, -hw,hh,z]);
+    const normals=new Float32Array(back?[0,0,-1,0,0,-1,0,0,-1,0,0,-1]:[0,0,1,0,0,1,0,0,1,0,0,1]);
+    const uvs=new Float32Array(back?[1,0,0,0,0,1,1,1]:[0,0,1,0,1,1,0,1]);
+    const indices=new Uint16Array(back?[0,2,1,0,3,2]:[0,1,2,0,2,3]);
+    return {positions,normals,uvs,indices};
+  }
+
+  class PBRRenderer {
+    constructor(mount){
+      this.mount=mount;
+      this.canvas=document.createElement('canvas');
+      this.canvas.setAttribute('aria-hidden','true');
+      this.mount.appendChild(this.canvas);
+      this.gl=null;this.ready=false;this.failed=false;this.lastConfig=null;this.paused=false;this.reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;this.resizeObserver=null;
+      this.pose={x:8,y:-18,z:-4,zoom:1};
+      this.program=null;this.meshes=[];this.cameraDistance=9.6;this.sweepProgress=.22;this.sweepFrame=0;
+      this.frontDecalCanvas=document.createElement('canvas');this.backDecalCanvas=document.createElement('canvas');this.frontDecalCanvas.width=this.backDecalCanvas.width=1600;this.frontDecalCanvas.height=this.backDecalCanvas.height=1000;this.customLogoImageCache=new Map();this.decalProgram=null;this.decalMeshes=[];
+      this.layerMaterials={
+        frontSkin:{base:'#a8733c',roughness:.62,metalness:0,materialKind:1,patternScale:1},
+        frontAdhesive:{base:'#d7d1c7',roughness:.86,metalness:0,materialKind:0,patternScale:1},
+        core:{base:'#202124',roughness:.48,metalness:0,materialKind:0,patternScale:1},
+        backAdhesive:{base:'#d7d1c7',roughness:.86,metalness:0,materialKind:0,patternScale:1},
+        backSkin:{base:'#a8733c',roughness:.62,metalness:0,materialKind:1,patternScale:1}
+      };
+    }
+    compile(type,source){
+      const gl=this.gl,shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);
+      if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(shader)||'shader compile failed');
+      return shader;
+    }
+    createProgram(){
+      const gl=this.gl;
+      const vs=`#version 300 es
+      precision highp float;
+      layout(location=0) in vec3 aPosition;
+      layout(location=1) in vec3 aNormal;
+      layout(location=2) in vec2 aUv;
+      uniform mat4 uModel;uniform mat4 uViewProj;
+      out vec3 vNormal;out vec3 vWorld;out vec2 vUv;
+      void main(){vec4 world=uModel*vec4(aPosition,1.0);vWorld=world.xyz;vNormal=normalize(mat3(uModel)*aNormal);vUv=aUv;gl_Position=uViewProj*world;}`;
+      const fs=`#version 300 es
+      precision highp float;
+      in vec3 vNormal;in vec3 vWorld;in vec2 vUv;
+      uniform vec3 uBase;uniform float uRoughness;uniform float uMetalness;uniform vec3 uCamera;uniform int uMaterialKind;uniform float uPatternScale;uniform float uSweep;
+      out vec4 outColor;
+      float sat(float x){return clamp(x,0.0,1.0);} 
+      float hash21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
+      float noise21(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash21(i),hash21(i+vec2(1,0)),f.x),mix(hash21(i+vec2(0,1)),hash21(i+vec2(1,1)),f.x),f.y);}
+      vec3 fresnel(float cosTheta,vec3 f0){return f0+(1.0-f0)*pow(1.0-cosTheta,5.0);} 
+      vec3 materialPattern(vec3 base,vec2 rawUv,int kind,out float micro){
+        vec2 uv=rawUv*uPatternScale;micro=0.0;
+        if(kind==1){float warp=(noise21(vec2(uv.y*1.8,uv.x*.65))-.5)*.18;float grain=noise21(vec2((uv.x+warp)*4.0,uv.y*58.0))+noise21(vec2((uv.x+warp)*9.0,uv.y*125.0))*.35;float tonal=noise21(uv*2.8);micro=(grain-.5)*.035;return base*(.86+grain*.17+tonal*.06);}
+        if(kind==2){float warp=(noise21(vec2(uv.y*1.6,uv.x*.55))-.5)*.12;float grain=noise21(vec2((uv.x+warp)*3.0,uv.y*42.0));float tonal=noise21(uv*2.2);micro=(grain-.5)*.025;return base*(.90+grain*.12+tonal*.05);}
+        if(kind==3){float warp=(noise21(vec2(uv.y*3.0,uv.x*2.0))-.5)*.2;float g=.5+.5*sin((uv.x*18.0+warp)*6.28318);micro=(g-.5)*.035;return base*mix(.78,1.08,g);}
+        if(kind==4){float f=noise21(uv*170.0);micro=(f-.5)*.1;return base*mix(.95,1.04,f);}
+        if(kind==5){float wx=abs(sin(uv.x*260.0)),wy=abs(sin(uv.y*220.0));float w=pow(wx*wy,.35);micro=(w-.55)*.14;return base*mix(.82,1.11,w);}
+        if(kind==6){float p=noise21(uv*75.0);float q=noise21(uv*150.0+9.3);float pebbled=smoothstep(.30,.78,p*.7+q*.3);micro=(pebbled-.5)*.16;return base*mix(.78,1.10,pebbled);}
+        if(kind==7){float s=hash21(floor(uv*145.0));micro=(s-.5)*.08;return base*mix(.80,1.17,smoothstep(.74,.98,s));}
+        if(kind==8){float n=noise21(uv*3.2);float d=abs(sin((uv.y*1.9+uv.x*.32+n*1.35)*3.14159));float vein=1.0-smoothstep(.025,.105,d);micro=-vein*.055;return mix(base,vec3(.52,.53,.55),vein*.28);}
+        if(kind==9){vec2 cell=floor(uv*22.0);float h=hash21(cell);float chip=step(.73,h);vec3 chipCol=mix(vec3(.32,.42,.44),vec3(.62,.34,.25),hash21(cell+4.1));micro=chip*.06;return mix(base,chipCol,chip*.72);}
+        if(kind==10){vec2 q=uv*45.0;float a=step(.5,fract(q.x)),b=step(.5,fract(q.y));float weave=abs(a-b);micro=(weave-.5)*.09;return base*mix(.64,1.25,weave);}
+        if(kind==11){float brush=noise21(vec2(uv.x*8.0,uv.y*520.0));micro=(brush-.5)*.12;return base*mix(.84,1.12,brush);}
+        if(kind==12){float n=noise21(uv*3.5);float d=abs(sin((uv.x*1.7+uv.y*.55+n*1.5)*3.14159));float vein=1.0-smoothstep(.02,.085,d);micro=-vein*.045;return mix(base,vec3(.43,.39,.37),vein*.24);}
+        if(kind==13){float broad=noise21(uv*3.2);float pebble=noise21(uv*118.0+noise21(uv*6.0)*1.4);float fine=noise21(uv*265.0);float texture=broad*.10+pebble*.62+fine*.28;micro=(texture-.52)*.042;return base*(.91+texture*.14);}
+        if(kind==14){float mineral=noise21(uv*42.0);float fine=noise21(uv*220.0);float fleck=noise21(uv*9.0+4.7);float texture=mineral*.48+fine*.38+fleck*.14;float darkFleck=smoothstep(.76,.96,noise21(uv*31.0+8.2));micro=(texture-.52)*.040-darkFleck*.018;return base*(.90+texture*.16-darkFleck*.035);}
+        if(kind==15){float broad=noise21(uv*3.5);float grain=noise21(uv*118.0+noise21(uv*9.0)*2.5);float fine=noise21(uv*250.0);float texture=broad*.12+grain*.62+fine*.26;micro=(texture-.52)*.055;return base*(.87+texture*.22);}
+        if(kind==16){float cloud=noise21(uv*5.5)*.55+noise21(uv*15.0)*.45;float fine=noise21(uv*190.0);float pin=smoothstep(.84,.97,noise21(uv*58.0+3.1));float texture=cloud*.62+fine*.38;micro=(texture-.52)*.035-pin*.022;return base*(.91+texture*.15-pin*.025);}
+        if(kind==17){float grain=noise21(uv*165.0+noise21(uv*8.0)*1.2);float fine=noise21(uv*285.0);float texture=grain*.72+fine*.28;micro=(texture-.52)*.026;return base*(.93+texture*.11);}
+        return base;
+      }
+      void main(){
+        vec3 N=normalize(vNormal),V=normalize(uCamera-vWorld);
+        vec3 L1=normalize(vec3(mix(-4.8,4.8,uSweep),4.0,5.5)-vWorld),L2=normalize(vec3(3.8,1.4,3.2)-vWorld),L3=normalize(vec3(0.0,-3.0,2.0)-vWorld);
+        float micro=0.0;vec3 base=materialPattern(uBase,vUv,uMaterialKind,micro);float rough=clamp(uRoughness+micro,.06,1.0);vec3 f0=mix(vec3(.04),base,uMetalness);
+        vec3 total=base*(.24+.08*(1.0-rough));
+        vec3 lights[3]=vec3[3](L1,L2,L3);vec3 cols[3]=vec3[3](vec3(1.0,.985,.96)*2.0,vec3(.78,.84,1.0)*.8,vec3(1.0,.72,.52)*.35);
+        for(int i=0;i<3;i++){
+          vec3 L=lights[i],H=normalize(V+L);float nl=sat(dot(N,L)),nv=sat(dot(N,V)),nh=sat(dot(N,H)),vh=sat(dot(V,H));
+          float a=rough*rough,a2=a*a,den=(nh*nh*(a2-1.0)+1.0);float D=a2/max(3.14159*den*den,.0001);
+          float k=(rough+1.0);k=k*k/8.0;float Gv=nv/(nv*(1.0-k)+k),Gl=nl/(nl*(1.0-k)+k);vec3 F=fresnel(vh,f0);
+          vec3 spec=(D*Gv*Gl*F)/max(4.0*nv*nl,.001);vec3 kd=(1.0-F)*(1.0-uMetalness);
+          total+=(kd*base/3.14159+spec)*cols[i]*nl;
+        }
+        float rim=pow(1.0-sat(dot(N,V)),3.0);total+=vec3(.34,.36,.4)*rim*.22;
+        total=total/(total+vec3(1.0));total=pow(total,vec3(1.0/2.2));
+        outColor=vec4(total,1.0);
+      }`;
+      const program=gl.createProgram();gl.attachShader(program,this.compile(gl.VERTEX_SHADER,vs));gl.attachShader(program,this.compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);
+      if(!gl.getProgramParameter(program,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program)||'program link failed');
+      this.program=program;
+      this.uniforms={
+        model:gl.getUniformLocation(program,'uModel'),viewProj:gl.getUniformLocation(program,'uViewProj'),base:gl.getUniformLocation(program,'uBase'),roughness:gl.getUniformLocation(program,'uRoughness'),metalness:gl.getUniformLocation(program,'uMetalness'),camera:gl.getUniformLocation(program,'uCamera'),materialKind:gl.getUniformLocation(program,'uMaterialKind'),patternScale:gl.getUniformLocation(program,'uPatternScale'),sweep:gl.getUniformLocation(program,'uSweep')
+      };
+    }
+    createDecalProgram(){
+      const gl=this.gl;
+      const vs=`#version 300 es
+      precision highp float;
+      layout(location=0) in vec3 aPosition;layout(location=1) in vec3 aNormal;layout(location=2) in vec2 aUv;
+      uniform mat4 uModel;uniform mat4 uViewProj;uniform float uDecalLift;out vec2 vUv;out vec3 vNormal;
+      void main(){vUv=aUv;vNormal=mat3(uModel)*aNormal;gl_Position=uViewProj*uModel*vec4(aPosition+aNormal*uDecalLift,1.0);}`;
+      const fs=`#version 300 es
+      precision highp float;
+      in vec2 vUv;in vec3 vNormal;uniform sampler2D uDecal;uniform int uCraft;uniform float uSweep;uniform float uDecalOpacity;out vec4 outColor;
+      void main(){vec4 tex=texture(uDecal,vUv);if(tex.a<.015)discard;vec3 rgb=tex.rgb;
+        if(uCraft==1)rgb*=.98;
+        if(uCraft==2)rgb=mix(rgb,vec3(1.0),.08);
+        if(uCraft==3)rgb*=.86;
+        if(uCraft==4){float line=pow(max(0.0,1.0-abs(vUv.x-uSweep)*4.0),10.0);rgb=mix(vec3(.45,.31,.09),vec3(1.0,.86,.42),.38+line*.62);}
+        outColor=vec4(rgb,tex.a*uDecalOpacity);
+      }`;
+      const program=gl.createProgram();gl.attachShader(program,this.compile(gl.VERTEX_SHADER,vs));gl.attachShader(program,this.compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);
+      if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program)||'decal program link failed');
+      this.decalProgram=program;this.decalUniforms={model:gl.getUniformLocation(program,'uModel'),viewProj:gl.getUniformLocation(program,'uViewProj'),texture:gl.getUniformLocation(program,'uDecal'),craft:gl.getUniformLocation(program,'uCraft'),sweep:gl.getUniformLocation(program,'uSweep'),lift:gl.getUniformLocation(program,'uDecalLift'),opacity:gl.getUniformLocation(program,'uDecalOpacity')};
+    }
+    makeDecalMesh(name,geometry,textureKey){
+      const gl=this.gl,vao=gl.createVertexArray();gl.bindVertexArray(vao);
+      const bind=(loc,data,size)=>{const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,0,0);};
+      bind(0,geometry.positions,3);bind(1,geometry.normals,3);bind(2,geometry.uvs,2);const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,geometry.indices,gl.STATIC_DRAW);gl.bindVertexArray(null);
+      const mesh={name,vao,count:geometry.indices.length,textureKey};this.decalMeshes.push(mesh);return mesh;
+    }
+    createCanvasTexture(canvas){
+      const gl=this.gl,texture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,texture);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);this.uploadCanvasTexture(texture,canvas);return texture;
+    }
+    uploadCanvasTexture(texture,canvas){
+      const gl=this.gl;gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,canvas);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+    }
+    getCustomLogoImage(dataUrl){
+      if(!dataUrl)return null;if(this.customLogoImageCache.has(dataUrl))return this.customLogoImageCache.get(dataUrl);
+      const img=new Image();img.onload=()=>{this.customLogoImageCache.set(dataUrl,img);if(this.lastConfig){this.updateDecals(this.lastConfig);this.draw();}};img.src=dataUrl;this.customLogoImageCache.set(dataUrl,null);return null;
+    }
+    applyCraftTextStyle(ctx,config){
+      const light=config.identity.tone==='light',craft=config.craft;ctx.fillStyle=light?'#ffffff':'#000000';ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;
+      if(craft==='foil')ctx.fillStyle='#d6bd72';
+      if(craft==='engrave')ctx.globalAlpha=1;
+      if(craft==='emboss'){ctx.shadowColor='rgba(0,0,0,.34)';ctx.shadowBlur=3;ctx.shadowOffsetY=4;}
+      if(craft==='deboss'){ctx.shadowColor='rgba(255,255,255,.38)';ctx.shadowBlur=2;ctx.shadowOffsetY=-3;}
+    }
+    drawLogo(ctx,config,x,y,size,align='left'){
+      if(config.logo.mode==='none')return;
+      if(config.logo.mode==='iq'){
+        ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font=`700 ${Math.round(size*config.logo.scale)}px Helvetica,Arial,sans-serif`;ctx.textBaseline='top';ctx.textAlign=align;ctx.fillText('iq',x,y);ctx.restore();return;
+      }
+      if(config.logo.mode==='custom'&&config.logo.dataUrl){
+        const img=this.getCustomLogoImage(config.logo.dataUrl);if(!img)return;const maxW=size*2.3*config.logo.scale,maxH=size*1.2*config.logo.scale,ratio=Math.min(maxW/img.width,maxH/img.height),w=img.width*ratio,h=img.height*ratio;let dx=x;if(align==='center')dx-=w/2;if(align==='right')dx-=w;ctx.save();ctx.globalAlpha=.96;ctx.drawImage(img,dx,y,w,h);ctx.restore();
+      }
+    }
+    drawFrontDecal(config){
+      const c=this.frontDecalCanvas,ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.globalAlpha=1;
+      const stepIndex=STEPS.indexOf(config.step);if(stepIndex>=0&&stepIndex<STEPS.indexOf('identity'))return;
+      const layout=config.identity.composition,scale=config.identity.fineTune.nameScale,xOffset=config.identity.fineTune.x*2.5,yOffset=config.identity.fineTune.y*2.5;
+      const specs={signature:{x:105,y:910,font:104,logoX:105,logoY:86,logoSize:108,logoAlign:'left'},editorial:{x:105,y:910,font:148,logoX:1495,logoY:86,logoSize:70,logoAlign:'right'},minimal:{x:105,y:910,font:56,logoX:105,logoY:86,logoSize:62,logoAlign:'left'},centered:{x:800,y:555,font:98,logoX:800,logoY:86,logoSize:62,logoAlign:'center'},statement:{x:70,y:930,font:170,logoX:1490,logoY:82,logoSize:62,logoAlign:'right'}};
+      const s=specs[layout]||specs.signature;let x=s.x+xOffset,y=s.y+yOffset,align=config.identity.fineTune.align||'left';if(layout==='centered')align='center';else if(align==='center')x=800+xOffset;else if(align==='right')x=1490+xOffset;
+      ctx.save();this.applyCraftTextStyle(ctx,config);ctx.textBaseline='alphabetic';ctx.textAlign=align;ctx.font=`700 ${Math.round(s.font*scale)}px Helvetica,Arial,sans-serif`;ctx.fillText(config.identity.name||'YOUR NAME',x,y);ctx.restore();
+      let lx=s.logoX+config.logo.x*2.5,ly=s.logoY+config.logo.y*2.5,lalign=config.logo.align||s.logoAlign;if(config.logo.align==='center')lx=800+config.logo.x*2.5;else if(config.logo.align==='right')lx=1490+config.logo.x*2.5;this.drawLogo(ctx,config,lx,ly,s.logoSize,lalign);
+      ctx.save();ctx.globalAlpha=.58;ctx.fillStyle=config.identity.tone==='light'?'#f5f0e6':'#171615';ctx.font='600 20px Helvetica,Arial,sans-serif';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('NFC / IQ 01',1490,92);ctx.restore();
+    }
+    drawBackDecal(config){
+      const c=this.backDecalCanvas,ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.globalAlpha=1;const light=config.identity.tone==='light';
+      ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 34px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('TAP TO CONNECT',105,910);ctx.restore();
+      if(config.backLayout==='identity'||config.backLayout==='custom'){ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 72px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(config.identity.name||'YOUR NAME',105,100);ctx.restore();}
+      if(config.backLayout==='branded'||config.backLayout==='custom')this.drawLogo(ctx,config,1490,86,74,'right');
+      ctx.save();ctx.globalAlpha=.44;ctx.fillStyle=light?'#f5f0e6':'#171615';ctx.font='600 18px Helvetica,Arial,sans-serif';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('IQ / NFC',1490,920);ctx.restore();
+    }
+    updateDecals(config){
+      this.drawFrontDecal(config);this.drawBackDecal(config);if(this.frontDecalTexture)this.uploadCanvasTexture(this.frontDecalTexture,this.frontDecalCanvas);if(this.backDecalTexture)this.uploadCanvasTexture(this.backDecalTexture,this.backDecalCanvas);
+    }
+    makeMesh(name,geometry,materialKey){
+      const gl=this.gl,vao=gl.createVertexArray();gl.bindVertexArray(vao);
+      const bind=(loc,data,size)=>{const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,0,0);};
+      bind(0,geometry.positions,3);bind(1,geometry.normals,3);bind(2,geometry.uvs,2);
+      const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,geometry.indices,gl.STATIC_DRAW);
+      gl.bindVertexArray(null);
+      const mesh={name,vao,count:geometry.indices.length,materialKey};this.meshes.push(mesh);return mesh;
+    }
+    buildCardGeometry(){
+      const w=3.37,h=2.125,r=.19;
+      this.meshes=[];
+      this.nfcCoreMesh=this.makeMesh('nfcCoreMesh',createRoundedPrism(w,h,r,.026,0,14),'core');
+      this.frontAdhesiveMesh=this.makeMesh('frontAdhesiveMesh',createRoundedPrism(w,h,r,.0015,.01375,14),'frontAdhesive');
+      this.backAdhesiveMesh=this.makeMesh('backAdhesiveMesh',createRoundedPrism(w,h,r,.0015,-.01375,14),'backAdhesive');
+      this.frontSkinMesh=this.makeMesh('frontSkinMesh',createRoundedPrism(w,h,r,.004,.0165,14),'frontSkin');
+      this.backSkinMesh=this.makeMesh('backSkinMesh',createRoundedPrism(w,h,r,.004,-.0165,14),'backSkin');
+      this.frontDecalMesh=this.makeDecalMesh('frontDecalMesh',createDecalPlane(w,h,.0193,false),'frontDecalTexture');
+      this.backDecalMesh=this.makeDecalMesh('backDecalMesh',createDecalPlane(w,h,-.0193,true),'backDecalTexture');
+      this.frontDecalTexture=this.createCanvasTexture(this.frontDecalCanvas);this.backDecalTexture=this.createCanvasTexture(this.backDecalCanvas);
+    }
+    updateCoreAppearance(config){
+      const black=config?.core!=='white';
+      const coreBase=black?'#08090a':'#eeede8';
+      this.layerMaterials.core.base=coreBase;
+      this.layerMaterials.core.roughness=black?.46:.7;
+      this.layerMaterials.frontAdhesive.base=black?'#d6d1c9':'#ded9d1';
+      this.layerMaterials.backAdhesive.base=this.layerMaterials.frontAdhesive.base;
+      if(config?.step==='core'){
+        this.layerMaterials.frontSkin.base=black?'#0a0b0d':'#f4f3ef';
+        this.layerMaterials.backSkin.base=this.layerMaterials.frontSkin.base;
+        this.layerMaterials.frontSkin.roughness=black?.48:.72;
+        this.layerMaterials.backSkin.roughness=this.layerMaterials.frontSkin.roughness;
+      }else{
+        const profile=PBR_MATERIALS[config?.material]||PBR_MATERIALS.Walnut;
+        ['frontSkin','backSkin'].forEach(key=>{
+          const custom=customColors.find(color=>color.id===config?.customColor);
+          this.layerMaterials[key].base=custom?.hex||profile.base;
+          this.layerMaterials[key].roughness=custom?.roughness??profile.roughness;
+          this.layerMaterials[key].metalness=custom?.metalness??profile.metalness;
+          this.layerMaterials[key].materialKind=custom ? 0 : profile.materialKind;
+          this.layerMaterials[key].patternScale=custom ? 1 : profile.patternScale;
+        });
+      }
+    }
+    init(){
+      try{
+        const gl=this.canvas.getContext('webgl2',{antialias:true,alpha:true,premultipliedAlpha:true,preserveDrawingBuffer:false});
+        if(!gl) throw new Error('WebGL2 unavailable');
+        this.gl=gl;gl.clearColor(0,0,0,0);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.cullFace(gl.BACK);
+        this.createProgram();this.createDecalProgram();this.buildCardGeometry();
+        this.ready=true;this.mount.closest('.sticky-stage')?.classList.remove('webgl-fallback');this.mount.closest('.sticky-stage')?.classList.add('webgl-ready');
+        const onResize=()=>this.resize();
+        if('ResizeObserver' in window){this.resizeObserver=new ResizeObserver(onResize);this.resizeObserver.observe(this.mount);}else{window.addEventListener('resize',onResize,{passive:true});}
+        document.addEventListener('visibilitychange',()=>{this.paused=document.hidden;if(this.paused){cancelAnimationFrame(this.sweepFrame);}else{this.resize();this.draw();}});
+        this.resize();this.draw();return true;
+      }catch(error){
+        this.failed=true;this.mount.closest('.sticky-stage')?.classList.add('webgl-fallback');console.warn('IQ PBR renderer fallback:',error.message);return false;
+      }
+    }
+    resize(){
+      if(!this.gl)return;const rect=this.mount.getBoundingClientRect(),dpr=Math.min(MAX_PIXEL_RATIO,window.devicePixelRatio||1),w=Math.max(1,Math.round(rect.width*dpr)),h=Math.max(1,Math.round(rect.height*dpr));
+      if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}this.gl.viewport(0,0,w,h);this.draw();
+    }
+    update(config){this.lastConfig=config;this.updateCoreAppearance(config);this.updateDecals(config);this.draw();}
+    setPose(x,y,z,zoom){this.pose={x,y,z,zoom};this.draw();}
+    sweep(kind='material'){
+      if(this.reducedMotion||this.paused){this.sweepProgress=.22;this.draw();return;}
+      cancelAnimationFrame(this.sweepFrame);
+      const start=performance.now(),duration=kind==='craft'?760:680;
+      const tick=(now)=>{
+        const t=Math.min(1,(now-start)/duration);
+        this.sweepProgress=.04+.92*(t<.5?2*t:2-2*t);
+        this.draw();
+        if(t<1)this.sweepFrame=requestAnimationFrame(tick);else{this.sweepProgress=.22;this.draw();}
+      };
+      this.sweepFrame=requestAnimationFrame(tick);
+    }
+    draw(){
+      const gl=this.gl;if(!gl||!this.ready||!this.program||this.paused)return;
+      gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);
+      const aspect=this.canvas.width/Math.max(1,this.canvas.height),proj=iqPerspective(34,aspect,.1,100),view=new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,-this.cameraDistance,1]),vp=iqMultiply4(proj,view);
+      const p=this.pose,model=iqModelMatrix(p.x*Math.PI/180,p.y*Math.PI/180,p.z*Math.PI/180,p.zoom*1.03);
+      gl.uniformMatrix4fv(this.uniforms.model,false,model);gl.uniformMatrix4fv(this.uniforms.viewProj,false,vp);gl.uniform3f(this.uniforms.camera,0,0,this.cameraDistance);gl.uniform1f(this.uniforms.sweep,this.sweepProgress);
+      for(const mesh of this.meshes){
+        const mat=this.layerMaterials[mesh.materialKey];const c=iqHexToRgb(mat.base);gl.uniform3f(this.uniforms.base,c[0],c[1],c[2]);gl.uniform1f(this.uniforms.roughness,mat.roughness);gl.uniform1f(this.uniforms.metalness,mat.metalness||0);gl.uniform1i(this.uniforms.materialKind,mat.materialKind||0);gl.uniform1f(this.uniforms.patternScale,mat.patternScale||1);gl.bindVertexArray(mesh.vao);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_SHORT,0);
+      }
+      if(this.decalProgram&&this.frontDecalTexture){
+        gl.useProgram(this.decalProgram);gl.uniformMatrix4fv(this.decalUniforms.model,false,model);gl.uniformMatrix4fv(this.decalUniforms.viewProj,false,vp);gl.uniform1f(this.decalUniforms.sweep,this.sweepProgress);const profile=CRAFT_RENDER_PROFILES[this.lastConfig?.craft]||CRAFT_RENDER_PROFILES.engrave;gl.uniform1i(this.decalUniforms.craft,profile.code);gl.uniform1f(this.decalUniforms.lift,profile.lift);gl.uniform1f(this.decalUniforms.opacity,profile.opacity);gl.uniform1i(this.decalUniforms.texture,0);gl.activeTexture(gl.TEXTURE0);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.disable(gl.CULL_FACE);
+        for(const mesh of this.decalMeshes){gl.bindTexture(gl.TEXTURE_2D,this[mesh.textureKey]);gl.bindVertexArray(mesh.vao);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_SHORT,0);}
+        gl.depthMask(true);gl.disable(gl.BLEND);gl.enable(gl.CULL_FACE);
+      }
+      gl.bindVertexArray(null);
+    }
+  }
+
+  function initPBRRenderer(){
+    const mount=document.getElementById('webglCardStage');
+    if(!mount) return null;
+    const renderer=new PBRRenderer(mount);
+    window.__iqPBR=renderer;
+    renderer.init();
+    return renderer;
+  }
+
+  const configuration = {
+    step: 'core',
+    core: 'black',
+    material: 'White',
+    customColor: null,
+    finish: 'matte',
+    identity: {
+      name: 'YOUR NAME',
+      tone: 'dark',
+      composition: 'signature',
+      fineTune: { nameScale: 1, x: 0, y: 0, align: 'left' }
+    },
+    logo: { mode: 'iq', dataUrl: null, objectUrl: null, filename: null, mimeType: null, scale: 1, x: 0, y: 0, align: 'left' },
+    side: 'front',
+    backLayout: 'pure',
+    craft: 'engrave'
+  };
+
+  const STEPS = ['core','material','identity','logo','craft','final'];
+
+  const STEP_POSES = {
+    core: .035,
+    material: .20,
+    identity: .085,
+    logo: .155,
+    craft: .31,
+    final: .28
+  };
+
+  function setConfiguration(patch) {
+    Object.assign(configuration, patch);
+    configuration.identity.tone = configuration.core === 'black' ? 'dark' : 'light';
+    renderCard(configuration);
+    renderControls(configuration);
+  }
+
+  const corePalette = {
+    black: { core: '#202124', adhesive: '#d6d1c9', surface: 'linear-gradient(126deg,#0d0d0e,#1b1b1d 42%,#111214 82%,#050506)', tone: 'dark' },
+    white: { core: '#ecebe7', adhesive: '#d9d4cc', surface: 'linear-gradient(126deg,#ffffff,#f4f4f2 48%,#e7e6e2 100%)', tone: 'light' }
+  };
+
+  const compositions = {
+    signature: { nameClass: 'layout-signature', logoClass: 'logo-signature' },
+    editorial: { nameClass: 'layout-editorial', logoClass: 'logo-editorial' },
+    minimal: { nameClass: 'layout-minimal', logoClass: 'logo-minimal' },
+    centered: { nameClass: 'layout-centered', logoClass: 'logo-centered' },
+    statement: { nameClass: 'layout-statement', logoClass: 'logo-statement' }
+  };
+
+  function selectedCustomColor(config){
+    return customColors.find(color => color.id === config.customColor) || null;
+  }
+
+  function surfaceLabel(config){
+    const color = selectedCustomColor(config);
+    return color ? `${config.material} · ${color.name}` : config.material;
+  }
+
+  function syncSurfaceSummary(config){
+    const material = materials.find(m => m.name === config.material) || materials[0];
+    const color = selectedCustomColor(config);
+    selectedSwatch.style.background = color ? color.hex : material.surface;
+    selectedSwatch.style.setProperty('--grain-pattern', color ? 'linear-gradient(145deg,rgba(255,255,255,.24),transparent 52%)' : material.grain);
+    selectedName.textContent = color ? `${material.name} · ${color.name}` : material.name;
+    selectedFeel.textContent = color ? `Custom color · ${color.name} surface` : material.feel;
+    document.querySelectorAll('.material').forEach(button=>button.setAttribute('aria-pressed',button.dataset.material===material.name?'true':'false'));
+    document.querySelectorAll('[data-custom-color]').forEach(button=>button.setAttribute('aria-pressed',button.dataset.customColor===config.customColor?'true':'false'));
+  }
+
+  function renderCard(config) {
+    const palette = corePalette[config.core];
+    root.style.setProperty('--core-tone', palette.core);
+    root.style.setProperty('--adhesive-tone', palette.adhesive);
+    if(config.step === 'core') {
+      root.style.setProperty('--material-base', palette.surface);
+      root.style.setProperty('--grain-pattern', 'radial-gradient(circle at 28% 22%,rgba(255,255,255,.045) 0 1px,transparent 1.5px),repeating-linear-gradient(118deg,rgba(255,255,255,.018) 0 1px,transparent 1px 13px)');
+      root.style.setProperty('--roughness', config.core === 'black' ? '.76' : '.68');
+      root.style.setProperty('--specular', config.core === 'black' ? '.10' : '.16');
+      root.style.setProperty('--edge-tone', config.core === 'black' ? '#111214' : '#ece8e1');
+      root.style.setProperty('--name-color', palette.tone === 'light' ? '#ffffff' : '#000000');
+    } else {
+      const material = materials.find(m => m.name === config.material) || materials[0];
+      const color = selectedCustomColor(config);
+      root.style.setProperty('--material-base', color ? color.hex : material.surface);
+      root.style.setProperty('--grain-pattern', color ? 'linear-gradient(145deg,rgba(255,255,255,.22),transparent 52%)' : material.grain);
+      root.style.setProperty('--roughness', color ? '.42' : material.roughness);
+      root.style.setProperty('--specular', color ? '.24' : material.specular);
+      root.style.setProperty('--edge-tone', material.edgeTone);
+      root.style.setProperty('--stage-b', color ? '#f1f1f4' : material.preferredTone==='light' ? '#efeff3' : '#f4f4f6');
+      root.style.setProperty('--stage-c', color ? '#e5e5e9' : material.preferredTone==='light' ? '#e2e3e7' : '#e8e8ec');
+    }
+    const stepIndex = STEPS.indexOf(config.step);
+    card.classList.toggle('pre-identity-preview', stepIndex >= 0 && stepIndex < STEPS.indexOf('identity'));
+    frontName.textContent = config.identity.name || 'YOUR NAME';
+    root.style.setProperty('--name-color', config.identity.tone === 'light' ? '#ffffff' : '#000000');
+    root.style.setProperty('--name-user-scale', config.identity.fineTune.nameScale);
+    root.style.setProperty('--name-user-x', `${config.identity.fineTune.x}px`);
+    root.style.setProperty('--name-user-y', `${config.identity.fineTune.y}px`);
+    root.style.setProperty('--name-align', config.identity.fineTune.align);
+    card.classList.remove('name-align-left','name-align-center','name-align-right');
+    card.classList.add(`name-align-${config.identity.fineTune.align}`);
+    root.style.setProperty('--logo-user-scale', config.logo.scale);
+    root.style.setProperty('--logo-user-x', `${config.logo.x}px`);
+    root.style.setProperty('--logo-user-y', `${config.logo.y}px`);
+    const iqLogo = card.querySelector('.card-front .card-logo');
+    const customLogo = document.getElementById('customLogoPreview');
+    if(iqLogo) iqLogo.style.display = '';
+    if(customLogo) {
+      customLogo.style.display = config.logo.mode === 'custom' && config.logo.dataUrl ? 'block' : 'none';
+      if(config.logo.dataUrl && customLogo.src !== config.logo.dataUrl) customLogo.src = config.logo.dataUrl;
+      if(config.logo.align === 'center'){
+        customLogo.style.left='50%'; customLogo.style.right='auto'; customLogo.style.transform=`translate(calc(-50% + ${config.logo.x}px),${config.logo.y}px) scale(${config.logo.scale})`; customLogo.style.transformOrigin='center top';
+      } else if(config.logo.align === 'right'){
+        customLogo.style.left='auto'; customLogo.style.right='34px'; customLogo.style.transform=`translate(${config.logo.x}px,${config.logo.y}px) scale(${config.logo.scale})`; customLogo.style.transformOrigin='right top';
+      } else {
+        customLogo.style.left='34px'; customLogo.style.right='auto'; customLogo.style.transform=`translate(${config.logo.x}px,${config.logo.y}px) scale(${config.logo.scale})`; customLogo.style.transformOrigin='left top';
+      }
+    }
+    card.classList.remove('composition-signature','composition-editorial','composition-minimal','composition-centered','composition-statement');
+    card.classList.add(`composition-${config.identity.composition}`);
+    const backName = document.getElementById('backName');
+    const backIq = document.getElementById('backIq');
+    const backCustom = document.getElementById('customLogoBackPreview');
+    const showBackName = config.backLayout === 'identity' || config.backLayout === 'custom';
+    const showBackLogo = config.backLayout === 'branded' || config.backLayout === 'custom';
+    if(backName){ backName.textContent=config.identity.name; backName.style.display=showBackName?'block':'none'; }
+    if(backIq) backIq.style.display=showBackLogo && config.logo.mode==='iq' ? 'block':'none';
+    if(backCustom){
+      backCustom.style.display=showBackLogo && config.logo.mode==='custom' && config.logo.dataUrl ? 'block':'none';
+      if(config.logo.dataUrl && backCustom.src!==config.logo.dataUrl) backCustom.src=config.logo.dataUrl;
+    }
+    card.classList.remove('craft-engrave','craft-emboss','craft-deboss','craft-foil','craft-printed','craft-cut');
+    card.classList.add(`craft-${config.craft}`);
+    card.classList.remove('finish-matte','finish-satin','finish-gloss');
+    card.classList.add(`finish-${config.finish}`);
+    if(window.__iqPBR?.ready) window.__iqPBR.update(config);
+  }
+
+  function renderControls(config) {
+    syncSurfaceSummary(config);
+    renderFinalSummary(config);
+    renderCommercialSummary(config);
+    const index = STEPS.indexOf(config.step);
+    document.querySelectorAll('[data-step]').forEach(panel => panel.classList.toggle('active', panel.dataset.step === config.step));
+    document.querySelectorAll('[data-step-dot]').forEach((dot, i) => {
+      dot.classList.toggle('is-active', i === index);
+      dot.classList.toggle('is-complete', i < index);
+    });
+    document.querySelectorAll('[data-core]').forEach(button => button.setAttribute('aria-pressed', button.dataset.core === config.core ? 'true' : 'false'));
+    document.querySelectorAll('[data-name-tone]').forEach(button => button.setAttribute('aria-pressed', button.dataset.nameTone === config.identity.tone ? 'true' : 'false'));
+    const nameField = document.getElementById('nameInput');
+    if(nameField && nameField.value !== config.identity.name) nameField.value = config.identity.name;
+    const identityEcho = document.getElementById('identityEcho');
+    if(identityEcho) identityEcho.textContent = config.identity.name;
+    document.querySelectorAll('[data-name-align]').forEach(button => button.setAttribute('aria-pressed', button.dataset.nameAlign === config.identity.fineTune.align ? 'true' : 'false'));
+    document.querySelectorAll('[data-logo-align]').forEach(button => button.setAttribute('aria-pressed', button.dataset.logoAlign === config.logo.align ? 'true' : 'false'));
+    document.querySelectorAll('[data-side]').forEach(button => button.setAttribute('aria-pressed', button.dataset.side === config.side ? 'true' : 'false'));
+    document.querySelectorAll('[data-back-layout]').forEach(button => button.setAttribute('aria-pressed', button.dataset.backLayout === config.backLayout ? 'true' : 'false'));
+    document.querySelectorAll('[data-craft]').forEach(button => button.setAttribute('aria-pressed', button.dataset.craft === config.craft ? 'true' : 'false'));
+    const craftText = craftCopy[config.craft];
+    if(craftText){ const title=document.getElementById('craftTitle');const copy=document.getElementById('craftCopy');if(title)title.textContent=craftText[0];if(copy)copy.textContent=craftText[1]; }
+    [['logoScaleRange',config.logo.scale,'logoScaleValue',`${Number(config.logo.scale).toFixed(2)}×`],['logoXRange',config.logo.x,'logoXValue',`${config.logo.x}`],['logoYRange',config.logo.y,'logoYValue',`${config.logo.y}`]].forEach(([id,value,outId,label])=>{const input=document.getElementById(id);if(input)input.value=value;const out=document.getElementById(outId);if(out)out.textContent=label;});
+    const labels = {
+      core:['01 / Core','Choose the core.','Start with the physical NFC object that sits inside every Classic IQ Card.'],
+      material:['02 / Material','Choose the surface.','Wrap the NFC core in a material that feels like you.'],
+      identity:['03 / Identity','Make it yours.','Your identity begins with one simple thing: your name.'],
+      logo:['04 / Mark','Add your mark.','Keep the IQ mark and optionally add your own logo.'],
+      craft:['05 / Craft','Choose the treatment.','Decide how the identity physically lives on the surface.'],
+      final:['06 / Final Object','Your IQ Card.','Inspect the finished object before returning to edit.']
+    };
+    const [eyebrow,title,copy] = labels[config.step];
+    document.getElementById('stepEyebrow').textContent = eyebrow;
+    document.getElementById('stepTitle').textContent = title;
+    document.getElementById('stepCopy').textContent = copy;
+    document.getElementById('stepBack').disabled = index === 0;
+    document.getElementById('stepNext').textContent = index === STEPS.length - 1 ? 'Reveal object' : 'Continue';
+    const statusStep = document.querySelector('.top-status span:last-child');
+    if(statusStep) statusStep.textContent = `${String(index+1).padStart(2,'0')} / ${config.step[0].toUpperCase()}${config.step.slice(1)}`;
+    scheduleAutosave();
+  }
+
+  function animatePanelEntry(step) {
+    const panel = document.querySelector(`[data-step="${step}"]`);
+    if(!panel) return;
+    panel.classList.remove('is-entering');
+    void panel.offsetWidth;
+    panel.classList.add('is-entering');
+    window.setTimeout(() => panel.classList.remove('is-entering'), 460);
+  }
+
+  function focusStepPose(step) {
+    if(mobileInspectionQuery.matches) return;
+    const max = scrollTrack.scrollHeight - scrollTrack.clientHeight;
+    let targetProgress = STEP_POSES[step] ?? 0;
+    scrollTrack.scrollTo({top:max * targetProgress, behavior:'smooth'});
+  }
+
+  function focusMobileStepControls(){
+    if(!mobileInspectionQuery.matches) return;
+    const controls=document.querySelector('.controls');
+    window.requestAnimationFrame(()=>{
+      const top=mobileStepScrollTop({scrollY:window.scrollY,controlsTop:controls.getBoundingClientRect().top,stageHeight:stageWrap.offsetHeight});
+      const behavior=window.matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth';
+      window.scrollTo({top,behavior});
+    });
+  }
+
+  function setStep(step, options={}) {
+    if (!STEPS.includes(step)) return;
+    if(step === 'final' && configuration.step !== 'final') lastEditingStep = configuration.step;
+    configuration.step = step;
+    renderCard(configuration);
+    renderControls(configuration);
+    animatePanelEntry(step);
+    focusStepPose(step);
+    if(options.scroll!==false && step!=='final') focusMobileStepControls();
+    if(step === 'final') setFinalMode(true);
+  }
+
+  const mobileInspectionQuery = window.matchMedia('(max-width:620px)');
+  let pointerX = 0, pointerY = 0, scrollP = 0;
+  let mobilePose = inspectionPoseForView('front');
+  let mobileDrag = null;
+  let finalMode = false;
+  let lastEditingStep = 'craft';
+
+  function triggerMaterialFlash(){
+    card.classList.remove('material-flash');
+    void card.offsetWidth;
+    card.classList.add('material-flash');
+  }
+
+  function triggerInspectionSweep(kind){
+    card.classList.remove('inspection-sweep');
+    void card.offsetWidth;
+    card.classList.add('inspection-sweep');
+    if(window.__iqPBR?.ready) window.__iqPBR.sweep(kind);
+    if(kind === 'material') focusStepPose('material');
+    if(kind === 'craft') focusStepPose('craft');
+    window.setTimeout(()=>card.classList.remove('inspection-sweep'), 920);
+  }
+
+  function renderFinalSummary(config) {
+    document.getElementById('finalCore').textContent = `${config.core[0].toUpperCase()}${config.core.slice(1)} NFC`;
+    document.getElementById('finalMaterial').textContent = surfaceLabel(config);
+    document.getElementById('finalCraft').textContent = config.craft;
+  }
+
+
+  const formatINR = value => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(Number(value||0));
+
+  function renderCommercialSummary(config){
+    const quote = quoteConfiguration(config);
+    const set = (id,value) => { const el=document.getElementById(id); if(el) el.textContent=value; };
+    set('commercialCore', `${config.core[0].toUpperCase()}${config.core.slice(1)} NFC`);
+    set('commercialMaterial', surfaceLabel(config));
+    set('commercialCraft', config.craft === 'engrave' ? 'Engraved' : config.craft === 'emboss' ? 'Embossed' : config.craft === 'deboss' ? 'Debossed' : config.craft === 'foil' ? 'Foil' : 'Printed');
+    set('commercialTotal', formatINR(quote.total));
+    set('mobileRunningTotal', formatINR(quote.total));
+    set('priceBase', formatINR(quote.components.base));
+    set('priceMaterial', formatINR(quote.components.material));
+    set('priceCraft', formatINR(quote.components.craft));
+    set('priceLogo', formatINR(quote.components.customLogoSetup));
+    set('priceTotalBreakdown', formatINR(quote.total));
+    return quote;
+  }
+
+
+   const SAVED_DESIGNS_KEY = 'iqcard.savedDesigns.v1';
+   const CHECKOUT_HANDOFF_KEY = 'iqcard.checkoutHandoff.v1';
+   const AUTOSAVE_DELAY_MS = 350;
+   let autosaveTimer = null;
+   let autosaveReady = false;
+   let activeDesignId = null;
+
+  function generateDesignId(){
+    const token = Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0').toUpperCase();
+    return `IQD-${token}`;
+  }
+
+  function getSavedDesigns(){
+    try {
+      const raw = localStorage.getItem(SAVED_DESIGNS_KEY);
+      if(!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch(error) {
+      return [];
+    }
+  }
+
+  function refreshSavedDesignUI(){
+    const records = getSavedDesigns();
+    const restore = document.getElementById('restoreLastBtn');
+    if(restore) restore.classList.toggle('is-visible', records.length > 0);
+    return records;
+  }
+
+  function saveCurrentDesign({silent = false} = {}){
+    const activeRecord = getSavedDesigns().find(item => item.id === activeDesignId);
+    const target = savedDesignTarget({ silent, activeRecord });
+    const record = {
+      id: target.reuseActiveId && activeDesignId ? activeDesignId : generateDesignId(),
+      schemaVersion: '1.0',
+      saveMode: target.saveMode,
+      configuration: commercialConfiguration(configuration),
+      originalQuote: quoteConfiguration(configuration),
+      savedAt: new Date().toISOString()
+    };
+    try {
+      const result = persistSavedDesignHistory({ storage: localStorage, key: SAVED_DESIGNS_KEY, newestRecord: record, existingRecords: getSavedDesigns(), maxRecords: 20 });
+      if(!result.ok && !result.records) throw new Error(result.error);
+      activeDesignId = record.id;
+      const status = document.getElementById('saveStatus');
+      if(status && !silent) status.textContent = `Saved as ${record.id}`;
+      refreshSavedDesignUI();
+      return record;
+    } catch(error) {
+      const status = document.getElementById('saveStatus');
+      if(status) status.textContent = 'Saving is unavailable in this preview.';
+      return null;
+    }
+  }
+
+  function scheduleAutosave(){
+    if(!autosaveReady) return;
+    if(autosaveTimer) window.clearTimeout(autosaveTimer);
+    autosaveTimer = window.setTimeout(() => {
+      autosaveTimer = null;
+      saveCurrentDesign({silent:true});
+    }, AUTOSAVE_DELAY_MS);
+  }
+
+  function restoreSavedDesign(record){
+    const saved = normalizeStoredConfiguration(record?.configuration);
+    if(!saved) return false;
+    if(configuration.logo.objectUrl) URL.revokeObjectURL(configuration.logo.objectUrl);
+    activeDesignId = record.id || activeDesignId;
+    const legacyStepMap = { composition: 'logo', sides: 'craft' };
+    const savedStep = saved.step || 'final';
+    configuration.step = legacyStepMap[savedStep] || (STEPS.includes(savedStep) ? savedStep : 'final');
+    configuration.core = saved.core || 'black';
+    configuration.material = materials.some(item => item.name === saved.material) ? saved.material : 'Walnut';
+    configuration.customColor = customColors.some(item => item.id === saved.customColor) ? saved.customColor : null;
+    configuration.finish = saved.finish || 'matte';
+    configuration.identity = {
+      name: saved.identity?.name || 'YOUR NAME',
+      tone: saved.identity?.tone || 'dark',
+      composition: saved.identity?.composition || 'signature',
+      fineTune: { nameScale:1, x:0, y:0, align:'left', ...(saved.identity?.fineTune || {}) }
+    };
+    const restoredLogo = restoreStoredLogo(saved.logo);
+    const customLogoRequiresReupload = saved.logo?.mode === 'custom' && restoredLogo.mode !== 'custom';
+    configuration.logo = restoredLogo;
+    configuration.identity.tone = configuration.core === 'black' ? 'dark' : 'light';
+    if(configuration.logo.mode === 'iq') configuration.logo.align = 'left';
+    configuration.side = saved.side || 'front';
+    configuration.backLayout = saved.backLayout || 'pure';
+    configuration.craft = saved.craft || 'engrave';
+    syncSurfaceSummary(configuration);
+    renderCard(configuration);
+    renderControls(configuration);
+    renderCommercialSummary(configuration);
+    if(configuration.step === 'final') setFinalMode(true); else focusStepPose(configuration.step);
+    const status = document.getElementById('saveStatus');
+    if(status) status.textContent = customLogoRequiresReupload
+      ? `Restored ${record.id} with the IQ mark. Re-upload the missing custom logo to use it.`
+      : `Restored ${record.id}`;
+    return true;
+  }
+
+
+  function renderOrderReview(){
+    const quote = quoteConfiguration(configuration);
+    const manufacturing = buildManufacturingSpec(configuration);
+    const craftLabel = configuration.craft === 'engrave' ? 'Engraved' : configuration.craft === 'emboss' ? 'Embossed' : configuration.craft === 'deboss' ? 'Debossed' : configuration.craft === 'foil' ? 'Foil' : 'Printed';
+    const configSummary = document.getElementById('orderConfigurationSummary');
+    const manufacturingSummary = document.getElementById('orderManufacturing');
+    if(configSummary) configSummary.textContent = `${configuration.core[0].toUpperCase()}${configuration.core.slice(1)} NFC · ${surfaceLabel(configuration)}`;
+    if(manufacturingSummary) manufacturingSummary.textContent = `${craftLabel} · ${manufacturing.back.layout} back`;
+    const total = document.getElementById('orderReviewTotal');
+    if(total) total.textContent = formatINR(quote.total);
+  }
+
+  function openOrderReview(){
+    const validation = validateCheckoutConfiguration(configuration);
+    const validationBox = document.getElementById('orderValidation');
+    if(!validation.valid){
+      if(validationBox){ validationBox.textContent = validation.errors.join(' '); validationBox.classList.add('is-visible'); }
+      const status = document.getElementById('saveStatus');
+      if(status) status.textContent = validation.errors.join(' ');
+      return false;
+    }
+    if(validationBox){ validationBox.textContent=''; validationBox.classList.remove('is-visible'); }
+    renderOrderReview();
+    document.getElementById('iq-atelier').classList.add('order-review-mode');
+    return true;
+  }
+
+   function closeOrderReview(){
+     document.getElementById('iq-atelier').classList.remove('order-review-mode');
+     const message = document.getElementById('handoffMessage');
+     if(message){ message.textContent = ''; message.classList.remove('is-visible','is-error'); }
+     showHandoffEmailError('');
+   }
+
+   async function confirmBuild(){
+     const confirm = document.getElementById('confirmBuildBtn');
+     const payload = createOrderPayload(configuration, activeDesignId || generateDesignId());
+     const validationBox = document.getElementById('orderValidation');
+     const emailInput = document.getElementById('handoffEmail');
+     const message = document.getElementById('handoffMessage');
+     if(!payload.valid){
+      if(validationBox){ validationBox.textContent = payload.errors.join(' '); validationBox.classList.add('is-visible'); }
+      return null;
+     }
+     const email = emailInput?.value.trim() || '';
+     const emailError = handoffEmailError(email);
+     if(emailError){
+       showHandoffEmailError(emailError);
+       emailInput?.focus();
+       return null;
+     }
+     showHandoffEmailError('');
+     activeDesignId = payload.designId;
+     window.__iqCheckoutPayload = payload;
+     const markerResult = persistCheckoutHandoffMarker({ storage: localStorage, key: CHECKOUT_HANDOFF_KEY, payload });
+     if(!markerResult.ok){
+       if(message){ message.textContent = markerResult.error; message.classList.add('is-visible','is-error'); }
+       return null;
+     }
+     const registrationPayload = {
+       schemaVersion: payload.schemaVersion,
+       configuration: payload.configuration
+     };
+     if(confirm) confirm.disabled = true;
+     if(message){ message.textContent = 'Saving your design and sending your secure link…'; message.classList.add('is-visible'); message.classList.remove('is-error'); }
+     try {
+       const response = await fetch('/api/checkout/handoff', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ email, designId: payload.designId, payload: registrationPayload })
+       });
+       const result = await response.json().catch(() => ({}));
+       if(!response.ok || !result.ok) throw new Error(result.error || 'We could not send the sign-in link. Please try again.');
+       if(validationBox){ validationBox.textContent=''; validationBox.classList.remove('is-visible'); }
+       if(result.next){ window.location.assign(result.next); return; }
+       if(message){ message.textContent = `Check your email. We sent a secure sign-in link to ${email}.`; message.classList.add('is-visible'); }
+       if(confirm) confirm.textContent = 'Email sent ✓';
+       return payload;
+     } catch(error) {
+       if(message){ message.textContent = error instanceof Error ? error.message : 'We could not send the sign-in link. Please try again.'; message.classList.add('is-visible','is-error'); }
+       if(confirm) confirm.disabled = false;
+       return null;
+     }
+   }
+
+  function updateFinalCaption(){ renderFinalSummary(configuration); }
+
+  function setMaterial(m){
+    configuration.material = m.name;
+    renderCard(configuration);
+    renderControls(configuration);
+    updateFinalCaption();
+    triggerMaterialFlash();
+    triggerInspectionSweep('material');
+  }
+
+  function setCustomColor(color){
+    configuration.customColor = color?.id || null;
+    renderCard(configuration);
+    renderControls(configuration);
+    updateFinalCaption();
+    triggerMaterialFlash();
+    triggerInspectionSweep('material');
+  }
+
+  materials.forEach((m,i)=>{
+    const b=document.createElement('button');
+    b.className='material';b.dataset.material=m.name;b.setAttribute('aria-pressed',i===0?'true':'false');
+    b.innerHTML=`<i class="swatch" style="--swatch:${m.surface};--grain:${m.grain}"></i><span class="material-copy"><strong>${m.name}</strong><span>${m.feel}</span></span>`;
+    b.addEventListener('click',()=>setMaterial(m));
+    materialGrid.appendChild(b);
+  });
+
+  document.querySelectorAll('[data-custom-color]').forEach(button=>button.addEventListener('click',()=>{
+    const color = customColors.find(item=>item.id===button.dataset.customColor);
+    if(color) setCustomColor(color);
+  }));
+  const customColorReset = document.getElementById('customColorReset');
+  if(customColorReset) customColorReset.addEventListener('click',()=>setCustomColor(null));
+
+  document.querySelectorAll('[data-core]').forEach(button => button.addEventListener('click', () => {
+    setConfiguration({ core: button.dataset.core });
+  }));
+
+  document.getElementById('nameInput').addEventListener('input', (event) => {
+    configuration.identity.name = event.target.value;
+    renderCard(configuration);
+    renderControls(configuration);
+    if(identityValidationAttempted) validateIdentityStep();
+  });
+  document.querySelectorAll('[data-name-tone]').forEach(button => button.addEventListener('click', () => {
+    configuration.identity.tone = button.dataset.nameTone;
+    renderCard(configuration);
+    renderControls(configuration);
+  }));
+  document.getElementById('logoUpload').addEventListener('change', (event) => {
+    const file = event.target.files?.[0];
+    const status = document.getElementById('saveStatus');
+    if (!file) return;
+    if (!['image/png','image/jpeg','image/webp','image/svg+xml'].includes(file.type) || file.size < 1 || file.size > 1000000) {
+      if(status) status.textContent = 'Choose a PNG, JPG, WebP or SVG logo no larger than 1 MB.';
+      event.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const restoredLogo = restoreStoredLogo({
+        ...configuration.logo,
+        mode: 'custom',
+        dataUrl: reader.result,
+        filename: file.name,
+        mimeType: file.type
+      });
+      if(restoredLogo.mode !== 'custom') {
+        if(status) status.textContent = 'This custom logo could not be read. Choose another image.';
+        event.target.value = '';
+        return;
+      }
+      if(configuration.logo.objectUrl) URL.revokeObjectURL(configuration.logo.objectUrl);
+      configuration.logo = { ...restoredLogo, objectUrl: URL.createObjectURL(file) };
+      renderCard(configuration);
+      renderControls(configuration);
+    };
+    reader.onerror = () => {
+      if(status) status.textContent = 'This custom logo could not be read. Choose another image.';
+      event.target.value = '';
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('logoScaleRange').addEventListener('input', event => { configuration.logo.scale=Number(event.target.value);renderCard(configuration);renderControls(configuration); });
+  document.getElementById('logoXRange').addEventListener('input', event => { configuration.logo.x=Number(event.target.value);renderCard(configuration);renderControls(configuration); });
+  document.getElementById('logoYRange').addEventListener('input', event => { configuration.logo.y=Number(event.target.value);renderCard(configuration);renderControls(configuration); });
+  document.querySelectorAll('[data-logo-align]').forEach(button => button.addEventListener('click',()=>{configuration.logo.align=button.dataset.logoAlign;renderCard(configuration);renderControls(configuration);}));
+
+  document.getElementById('stepBack').addEventListener('click', () => {
+    const index = STEPS.indexOf(configuration.step);
+    if(index > 0) setStep(STEPS[index - 1]);
+  });
+  document.getElementById('stepNext').addEventListener('click', () => {
+    const index = STEPS.indexOf(configuration.step);
+    if(configuration.step === 'identity' && !validateIdentityStep({focus:true})) return;
+    if(index < STEPS.length - 1) setStep(STEPS[index + 1]);
+  });
+
+  document.getElementById('handoffEmail').addEventListener('input', (event) => {
+    if(!handoffEmailError(event.target.value)) showHandoffEmailError('');
+  });
+
+  document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t===tab?'true':'false'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.dataset.panel===tab.dataset.panel));
+  }));
+
+  document.querySelectorAll('[data-craft]').forEach(button=>button.addEventListener('click',()=>{
+    configuration.craft = button.dataset.craft;
+    renderCard(configuration);
+    renderControls(configuration);
+    triggerMaterialFlash();
+    triggerInspectionSweep('craft');
+  }));
+
+
+  function sceneAngles(p){
+    // Five-act choreography: front read, tilt, edge reveal, turn, back hero.
+    if(p<.18){const t=p/.18;return {x:8+t*4,y:-18+t*22,z:-4+t*3,zoom:1};}
+    if(p<.43){const t=(p-.18)/.25;return {x:12+t*45,y:4+t*80,z:-1+t*6,zoom:1+.025*t};}
+    if(p<.58){const t=(p-.43)/.15;return {x:57-t*25,y:84+t*16,z:5-t*3,zoom:1.025+.02*Math.sin(t*Math.PI)};}
+    if(p<.82){const t=(p-.58)/.24;return {x:32-t*26,y:100+t*62,z:2-t*5,zoom:1.02-.02*t};}
+    const t=(p-.82)/.18;return {x:6+t*2,y:162+t*18,z:-3+t*2,zoom:1};
+  }
+
+  function updateScene(){
+    const mobile = mobileInspectionQuery.matches;
+    const max=scrollTrack.scrollHeight-scrollTrack.clientHeight;
+    scrollP=mobile?Math.min(1,Math.max(0,(mobilePose.y+12)/192)):(max>0?Math.min(1,Math.max(0,scrollTrack.scrollTop/max)):0);
+    const a=mobile?{...mobilePose,z:0,zoom:1}:sceneAngles(scrollP);
+    const inspectX=mobile?0:pointerY*7, inspectY=mobile?0:pointerX*9;
+    const currentY = a.y + inspectY;
+    rig.style.transform=`scale(${a.zoom}) rotateX(${a.x+inspectX}deg) rotateY(${currentY}deg) rotateZ(${a.z}deg)`;
+    if(window.__iqPBR?.ready) window.__iqPBR.setPose(a.x+inspectX,currentY,a.z,a.zoom);
+    const edgeFocus = Math.max(0, 1 - Math.abs(Math.abs(currentY) - 90) / 42);
+    root.style.setProperty('--edge-opacity', (0.02 + edgeFocus * 0.88).toFixed(3));
+    progressBar.style.width=`${scrollP*100}%`;
+    angleReadout.textContent=`${Math.round(a.y+inspectY)}° / ${Math.round(a.x+inspectX)}°`;
+    if(scrollP<.22)phaseLabel.textContent='Front / material read';
+    else if(scrollP<.43)phaseLabel.textContent='Tilt / surface response';
+    else if(scrollP<.61)phaseLabel.textContent='Edge / NFC sandwich';
+    else if(scrollP<.84)phaseLabel.textContent='Turn / construction';
+    else phaseLabel.textContent='Back / final read';
+  }
+
+  scrollTrack.addEventListener('scroll',updateScene,{passive:true});
+  stageWrap.addEventListener('pointermove',e=>{
+    if(mobileInspectionQuery.matches) return;
+    const r=stageWrap.getBoundingClientRect();pointerX=((e.clientX-r.left)/r.width-.5);pointerY=((e.clientY-r.top)/r.height-.5);
+    const mx = Math.max(10,Math.min(90,50+pointerX*70));
+    const my = Math.max(10,Math.min(90,38+pointerY*70));
+    root.style.setProperty('--mx',`${mx}%`);root.style.setProperty('--my',`${my}%`);
+    root.style.setProperty('--glow-x',`${48+pointerX*10}%`);root.style.setProperty('--glow-y',`${42+pointerY*8}%`);
+    updateScene();
+  });
+  stageWrap.addEventListener('pointerleave',()=>{if(mobileInspectionQuery.matches)return;pointerX=0;pointerY=0;root.style.setProperty('--glow-x','50%');root.style.setProperty('--glow-y','46%');updateScene();});
+
+  function renderMobileInspectionView(view){
+    document.querySelectorAll('[data-inspection-view]').forEach(button=>button.setAttribute('aria-pressed',button.dataset.inspectionView===view?'true':'false'));
+    updateScene();
+  }
+
+  function selectMobileInspectionView(view){
+    if(!mobileInspectionQuery.matches) return;
+    mobilePose=inspectionPoseForView(view);
+    renderMobileInspectionView(view);
+  }
+
+  document.querySelectorAll('[data-inspection-view]').forEach(button=>button.addEventListener('click',()=>selectMobileInspectionView(button.dataset.inspectionView)));
+  stickyStage.addEventListener('pointerdown',event=>{
+    if(!mobileInspectionQuery.matches || event.pointerType==='mouse') return;
+    mobileDrag={pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,baseX:mobilePose.x,baseY:mobilePose.y};
+    stickyStage.setPointerCapture(event.pointerId);
+    stickyStage.classList.add('is-dragging');
+  });
+  stickyStage.addEventListener('pointermove',event=>{
+    if(!mobileDrag || event.pointerId!==mobileDrag.pointerId) return;
+    mobilePose=mobileInspectionPose({...mobileDrag,currentX:event.clientX,currentY:event.clientY});
+    renderMobileInspectionView(nearestMobileInspectionView(mobilePose.y));
+  });
+  function finishMobileDrag(event){
+    if(!mobileDrag || event.pointerId!==mobileDrag.pointerId) return;
+    mobilePose=snapMobilePose(mobilePose);
+    mobileDrag=null;
+    stickyStage.classList.remove('is-dragging');
+    renderMobileInspectionView(nearestMobileInspectionView(mobilePose.y));
+  }
+  stickyStage.addEventListener('pointerup',finishMobileDrag);
+  stickyStage.addEventListener('pointercancel',finishMobileDrag);
+  mobileInspectionQuery.addEventListener('change',()=>{
+    mobileDrag=null;
+    stickyStage.classList.remove('is-dragging');
+    updateScene();
+  });
+
+  function setFinalMode(on){
+    finalMode=on;document.getElementById('iq-atelier').classList.toggle('final-mode',on);
+    document.querySelector('.controls').style.display=on?'none':'';
+    document.querySelector('.atelier-shell').style.gridTemplateColumns=on?'1fr':'';
+    rig.style.filter = on ? 'drop-shadow(0 40px 62px rgba(0,0,0,.16))' : '';
+    if(on){
+      renderCommercialSummary(configuration);
+      focusStepPose('final');
+      document.querySelector('.atelier-shell').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  }
+  document.getElementById('exitFinal').addEventListener('click',()=>{closeOrderReview();setFinalMode(false);setStep(lastEditingStep);});
+  document.getElementById('saveDesignBtn').addEventListener('click', saveCurrentDesign);
+  document.getElementById('continueCheckoutBtn').addEventListener('click', openOrderReview);
+  document.getElementById('orderBackBtn').addEventListener('click', closeOrderReview);
+  document.getElementById('confirmBuildBtn').addEventListener('click', confirmBuild);
+  document.getElementById('restoreLastBtn').addEventListener('click',()=>{
+    const record = selectRestorableDesign(getSavedDesigns());
+    if(record) restoreSavedDesign(record);
+  });
+   refreshSavedDesignUI();
+   autosaveReady = true;
+
+   initPBRRenderer();
+  setMaterial(materials.find(m=>m.name==='Walnut'));setStep('core',{scroll:false});updateScene();
+</script>
+</body>
+</html>

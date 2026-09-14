@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.env.local
+.env*.local
+coverage/
+.vercel
+.env*
+node_modules/
+.next/
+IQCard-site-git/
+.worktrees/
+.superpowers/sdd/
