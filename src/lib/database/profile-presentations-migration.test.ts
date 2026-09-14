@@ -20,7 +20,7 @@ describe('profile presentations migration', () => {
   it('keeps drafts private behind an owner-only RLS policy', () => {
     const migration = sql()
 
-    expect(migration).toContain('create table public.profile_presentations')
+    expect(migration).toContain('create table if not exists public.profile_presentations')
     expect(migration).toContain('profile_id uuid primary key references public.profiles(id) on delete cascade')
     expect(migration).toContain("draft jsonb not null default '{\"template\":\"minimal\",\"cover\":{}}'::jsonb")
     expect(migration).toContain("published jsonb not null default '{\"template\":\"minimal\",\"cover\":{}}'::jsonb")
@@ -34,7 +34,7 @@ describe('profile presentations migration', () => {
   it('limits public presentation reads to the published JSON of published profiles', () => {
     const migration = sql()
 
-    expect(migration).toContain('create view public.published_profile_presentations')
+    expect(migration).toContain('create or replace view public.published_profile_presentations')
     expect(migration).toContain('select profile_presentations.profile_id, profile_presentations.published')
     expect(migration).toContain("where profiles.status = 'published'")
     expect(migration).toContain('grant select on table public.published_profile_presentations to anon, authenticated')

@@ -1,4 +1,4 @@
-create table public.profile_presentations (
+create table if not exists public.profile_presentations (
   profile_id uuid primary key references public.profiles(id) on delete cascade,
   draft jsonb not null default '{"template":"minimal","cover":{}}'::jsonb,
   published jsonb not null default '{"template":"minimal","cover":{}}'::jsonb
@@ -23,7 +23,7 @@ grant select on table public.profile_presentations to authenticated;
 
 -- The view is the sole public read boundary: drafts stay in the RLS-protected
 -- table and the view cannot expose a row until its profile is published.
-create view public.published_profile_presentations
+create or replace view public.published_profile_presentations
 with (security_barrier = true) as
 select profile_presentations.profile_id, profile_presentations.published
 from public.profile_presentations
