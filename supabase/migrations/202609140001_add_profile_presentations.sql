@@ -59,10 +59,10 @@ begin
     or pg_catalog.jsonb_typeof(p_draft #> '{cover,overlay}') is distinct from 'number'
     or pg_catalog.jsonb_typeof(p_draft #> '{cover,focalY}') is distinct from 'number'
     or coalesce(p_draft #>> '{cover,alignment}', '') not in ('lower-left', 'center')
-    or case when pg_catalog.jsonb_typeof(p_draft #> '{cover,overlay}') = 'number'
-      then (p_draft #>> '{cover,overlay}')::numeric not between 0.15 and 0.70 else true end
-    or case when pg_catalog.jsonb_typeof(p_draft #> '{cover,focalY}') = 'number'
-      then (p_draft #>> '{cover,focalY}')::numeric not between 0 and 100 else true end then
+    or (case when pg_catalog.jsonb_typeof(p_draft #> '{cover,overlay}') = 'number'
+      then (p_draft #>> '{cover,overlay}')::numeric not between 0.15 and 0.70 else true end)
+    or (case when pg_catalog.jsonb_typeof(p_draft #> '{cover,focalY}') = 'number'
+      then (p_draft #>> '{cover,focalY}')::numeric not between 0 and 100 else true end) then
     raise sqlstate '22023' using message = 'Invalid presentation settings';
   end if;
 
