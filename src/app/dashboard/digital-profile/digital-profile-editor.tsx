@@ -225,10 +225,14 @@ export function DigitalProfileEditor({
             </div>
           </section>
 
-          {draft.template === 'cover' ? <section className="digital-profile-panel" aria-labelledby="digital-profile-appearance-title">
-            <div className="digital-profile-panel-head"><span>02 · APPEARANCE</span><h2 id="digital-profile-appearance-title">Set the scene.</h2><p>Shape the image behind your identity.</p></div>
-            <CoverMedia coverPath={draft.cover.coverPath} onUpload={uploadCover} onDelete={deleteCover} />
+          <section className="digital-profile-panel" aria-labelledby="digital-profile-photo-title">
+            <div className="digital-profile-panel-head"><span>02 · PROFILE PHOTO</span><h2 id="digital-profile-photo-title">Your picture.</h2><p>This shared photo appears in both Minimal and Cover.</p></div>
             <ProfilePhotoControls profile={profile} uploadPhotoAction={uploadPhotoAction} deletePhotoAction={deletePhotoAction} />
+          </section>
+
+          {draft.template === 'cover' ? <section className="digital-profile-panel" aria-labelledby="digital-profile-appearance-title">
+            <div className="digital-profile-panel-head"><span>03 · APPEARANCE</span><h2 id="digital-profile-appearance-title">Set the scene.</h2><p>Shape the image behind your identity.</p></div>
+            <CoverMedia coverPath={draft.cover.coverPath} onUpload={uploadCover} onDelete={deleteCover} />
             <div className="digital-profile-range">
               <label htmlFor="digital-profile-overlay"><span>Darken background</span><output>{Math.round(draft.cover.overlay * 100)}%</output></label>
               <input id="digital-profile-overlay" type="range" min="0.15" max="0.7" step="0.01" value={draft.cover.overlay} onChange={(event) => updateCover('overlay', Number(event.target.value))} />
@@ -247,7 +251,7 @@ export function DigitalProfileEditor({
           </section> : null}
 
           <section className="digital-profile-panel digital-profile-content-panel" aria-labelledby="digital-profile-content-title">
-            <div className="digital-profile-panel-head"><span>{draft.template === 'cover' ? '03' : '02'} · CONTENT</span><h2 id="digital-profile-content-title">The details are shared.</h2><p>Edit your identity and links once. Both templates use them.</p></div>
+            <div className="digital-profile-panel-head"><span>{draft.template === 'cover' ? '04' : '03'} · CONTENT</span><h2 id="digital-profile-content-title">The details are shared.</h2><p>Edit your identity and links once. Both templates use them.</p></div>
             <dl><div><dt>Identity</dt><dd>{profile.full_name || 'Add your name'} · {profile.headline || 'Add your role'}</dd></div><div><dt>Content</dt><dd>{profile.profile_links.length} link{profile.profile_links.length === 1 ? '' : 's'} · {profile.bio ? 'Bio ready' : 'Add a bio'}</dd></div></dl>
             <div className="digital-profile-content-links"><Link href="/dashboard#identity">Edit identity →</Link><Link href="/dashboard#content">Manage content →</Link></div>
           </section>

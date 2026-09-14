@@ -94,6 +94,14 @@ describe('DigitalProfileEditor', () => {
     expect(button(host, /Lower left/i).getAttribute('aria-pressed')).toBe('true')
   })
 
+  it('keeps the shared profile photo controls available in Minimal', async () => {
+    await act(async () => button(host, /01 Minimal/i).click())
+
+    expect(labelledInput(host, /Change photo/i).name).toBe('photo')
+    expect(button(host, /Remove photo/i)).not.toBeNull()
+    expect(() => labelledInput(host, /Change Cover/i)).toThrow()
+  })
+
   it('keeps the submitted draft and shared phone preview in sync', async () => {
     const focal = labelledInput(host, /Vertical image position/i)
     const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
