@@ -94,7 +94,7 @@ describe('profile cover actions', () => {
     expect(client.rpc).not.toHaveBeenCalled()
   })
 
-  it('persists a validated owner-scoped cover path before returning it and then removes the replaced draft object', async () => {
+  it('persists a validated owner-scoped cover path without deleting the replaced draft object', async () => {
     const events: string[] = []
     const client = configuredClient({ events })
     vi.mocked(createServerClient).mockResolvedValue(client as never)
@@ -108,13 +108,13 @@ describe('profile cover actions', () => {
       contentType: 'image/png',
       upsert: false,
     })
-    expect(events).toEqual(['storage-upload', 'rpc:save_own_profile_presentation', 'storage-remove'])
+    expect(events).toEqual(['storage-upload', 'rpc:save_own_profile_presentation'])
     expect(client.rpc).toHaveBeenCalledWith('save_own_profile_presentation', {
       p_draft: expect.objectContaining({
         cover: expect.objectContaining({ coverPath: expect.stringMatching(/^owner-1\/.+\.png$/) }),
       }),
     })
-    expect(client.remove).toHaveBeenCalledWith(['owner-1/old-cover.jpg'])
+    expect(client.remove).not.toHaveBeenCalled()
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard')
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard/digital-profile')
   })
@@ -133,21 +133,21 @@ describe('profile cover actions', () => {
     expect(revalidatePath).not.toHaveBeenCalled()
   })
 
-  it('clears the saved draft path before removing its un-published Storage object', async () => {
+  it('clears the saved draft path without deleting its Storage object', async () => {
     const events: string[] = []
     const client = configuredClient({ events })
     vi.mocked(createServerClient).mockResolvedValue(client as never)
 
     await expect(deleteProfileCover()).resolves.toEqual({ coverPath: null })
 
-    expect(events).toEqual(['rpc:save_own_profile_presentation', 'storage-remove'])
+    expect(events).toEqual(['rpc:save_own_profile_presentation'])
     expect(client.rpc).toHaveBeenCalledWith('save_own_profile_presentation', {
       p_draft: expect.objectContaining({ cover: expect.objectContaining({ coverPath: null }) }),
     })
-    expect(client.remove).toHaveBeenCalledWith(['owner-1/old-cover.jpg'])
+    expect(client.remove).not.toHaveBeenCalled()
   })
 
-  it('does not remove an object that the published Cover snapshot still references', async () => {
+  it('retains an object when the published Cover snapshot still references it', async () => {
     const events: string[] = []
     const client = configuredClient({ events, publishedCoverPath: 'owner-1/old-cover.jpg' })
     vi.mocked(createServerClient).mockResolvedValue(client as never)
