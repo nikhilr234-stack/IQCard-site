@@ -1,5 +1,24 @@
 export type ProfileStatus = 'draft' | 'published'
 
+export type ProfileTemplate = 'minimal' | 'cover'
+
+export type CoverPresentation = {
+  template: ProfileTemplate
+  cover: {
+    coverPath: string | null
+    overlay: number
+    focalY: number
+    alignment: 'lower-left' | 'center'
+    photoPathOverride: string | null
+  }
+}
+
+export type ProfilePresentation = {
+  profile_id?: string
+  draft: CoverPresentation
+  published: CoverPresentation
+}
+
 export type ProfileLink = {
   id: string
   profile_id: string
