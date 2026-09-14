@@ -30,6 +30,16 @@ async function getOwnPresentation(supabase: ProfileCoverClient, ownerId: string)
   return normalizePresentation(data)
 }
 
+async function removeCoverIfNotPublished(supabase: ProfileCoverClient, ownerId: string, path: string, message: string) {
+  try {
+    const latestPresentation = await getOwnPresentation(supabase, ownerId)
+    if (latestPresentation.published.cover.coverPath === path) return
+    await removeCoverBestEffort(supabase, path, message)
+  } catch (error) {
+    console.error('Profile cover cleanup state check failed.', error)
+  }
+}
+
 function revalidateProfileCover() {
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/digital-profile')
@@ -62,8 +72,8 @@ export async function uploadProfileCover(formData: FormData) {
   }
 
   const previousPath = presentation.draft.cover.coverPath
-  if (previousPath && previousPath !== coverPath && previousPath !== presentation.published.cover.coverPath) {
-    await removeCoverBestEffort(supabase, previousPath, 'Profile cover replacement cleanup failed.')
+  if (previousPath && previousPath !== coverPath) {
+    await removeCoverIfNotPublished(supabase, account.id, previousPath, 'Profile cover replacement cleanup failed.')
   }
   revalidateProfileCover()
   return { coverPath }
@@ -83,9 +93,7 @@ export async function deleteProfileCover() {
   const { error: saveError } = await supabase.rpc('save_own_profile_presentation', { p_draft: draft })
   if (saveError) throw new Error('Unable to remove cover.')
 
-  if (coverPath !== presentation.published.cover.coverPath) {
-    await removeCoverBestEffort(supabase, coverPath, 'Profile cover deletion cleanup failed.')
-  }
+  await removeCoverIfNotPublished(supabase, account.id, coverPath, 'Profile cover deletion cleanup failed.')
   revalidateProfileCover()
   return { coverPath: null }
 }

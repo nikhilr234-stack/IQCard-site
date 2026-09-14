@@ -31,10 +31,11 @@ const currentPresentation = {
   },
 }
 
-function configuredClient({ rpcError = null, events, publishedCoverPath = null }: {
+function configuredClient({ rpcError = null, events, publishedCoverPath = null, refreshedPublishedCoverPath = publishedCoverPath }: {
   rpcError?: Error | null
   events: string[]
   publishedCoverPath?: string | null
+  refreshedPublishedCoverPath?: string | null
 }) {
   const upload = vi.fn(async () => {
     events.push('storage-upload')
@@ -48,16 +49,23 @@ function configuredClient({ rpcError = null, events, publishedCoverPath = null }
     events.push(`rpc:${name}`)
     return { error: rpcError }
   })
-  const presentation = {
-    draft: currentPresentation.draft,
-    published: {
-      ...currentPresentation.published,
-      cover: { ...currentPresentation.published.cover, coverPath: publishedCoverPath },
-    },
-  }
+  let readCount = 0
+  const maybeSingle = vi.fn(async () => {
+    const coverPath = readCount++ === 0 ? publishedCoverPath : refreshedPublishedCoverPath
+    return {
+      data: {
+        draft: currentPresentation.draft,
+        published: {
+          ...currentPresentation.published,
+          cover: { ...currentPresentation.published.cover, coverPath },
+        },
+      },
+      error: null,
+    }
+  })
   const from = vi.fn(() => ({
     select: vi.fn(() => ({
-      eq: vi.fn(() => ({ maybeSingle: vi.fn().mockResolvedValue({ data: presentation, error: null }) })),
+      eq: vi.fn(() => ({ maybeSingle })),
     })),
   }))
   return { from, rpc, storage: { from: vi.fn(() => ({ upload, remove })) }, upload, remove }
@@ -147,6 +155,36 @@ describe('profile cover actions', () => {
     await deleteProfileCover()
 
     expect(events).toEqual(['rpc:save_own_profile_presentation'])
+    expect(client.remove).not.toHaveBeenCalled()
+  })
+
+  it('does not delete the old draft object when a concurrent publish promotes it after replacement saves', async () => {
+    const events: string[] = []
+    const client = configuredClient({
+      events,
+      publishedCoverPath: null,
+      refreshedPublishedCoverPath: 'owner-1/old-cover.jpg',
+    })
+    vi.mocked(createServerClient).mockResolvedValue(client as never)
+    const formData = new FormData()
+    formData.set('cover', new File([new Uint8Array(1)], 'cover.png', { type: 'image/png' }))
+
+    await uploadProfileCover(formData)
+
+    expect(client.remove).not.toHaveBeenCalled()
+  })
+
+  it('does not delete a removed draft object when a concurrent publish promotes it after removal saves', async () => {
+    const events: string[] = []
+    const client = configuredClient({
+      events,
+      publishedCoverPath: null,
+      refreshedPublishedCoverPath: 'owner-1/old-cover.jpg',
+    })
+    vi.mocked(createServerClient).mockResolvedValue(client as never)
+
+    await deleteProfileCover()
+
     expect(client.remove).not.toHaveBeenCalled()
   })
 })
