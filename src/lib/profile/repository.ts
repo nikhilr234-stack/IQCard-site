@@ -1,6 +1,7 @@
 import { createServerClient } from '@/lib/supabase/server'
-import type { Profile } from './types'
+import type { CoverPresentation, Profile } from './types'
 import { createDefaultProfileDraft } from './defaults'
+import { DEFAULT_PRESENTATION, normalizePresentation } from './presentation'
 
 export function profilePhotoUrl(path: string | null | undefined): string | null {
   return path ? `/api/profile-photo?path=${encodeURIComponent(path)}` : null
@@ -36,4 +37,26 @@ export async function getPublishedProfile(slug: string): Promise<Profile | null>
   const supabase = await createServerClient()
   const { data } = await supabase.from('profiles').select('*, profile_links(*)').eq('slug', slug).eq('status', 'published').maybeSingle()
   return data ? withPhotoUrl({ ...data, profile_links: data.profile_links ?? [] }) as Profile : null
+}
+
+export async function getOwnProfilePresentation(ownerId: string): Promise<CoverPresentation> {
+  const supabase = await createServerClient()
+  const { data } = await supabase
+    .from('profile_presentations')
+    .select('draft, profiles!inner(owner_id)')
+    .eq('profiles.owner_id', ownerId)
+    .maybeSingle()
+
+  return data ? normalizePresentation({ draft: data.draft }).draft : DEFAULT_PRESENTATION.draft
+}
+
+export async function getPublishedProfilePresentation(profileId: string): Promise<CoverPresentation> {
+  const supabase = await createServerClient()
+  const { data } = await supabase
+    .from('published_profile_presentations')
+    .select('published')
+    .eq('profile_id', profileId)
+    .maybeSingle()
+
+  return data ? normalizePresentation({ published: data.published }).published : DEFAULT_PRESENTATION.published
 }
