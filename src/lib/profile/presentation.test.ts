@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_PRESENTATION, normalizePresentation, resolvePresentation } from './presentation'
+import type { ProfilePresentation } from './types'
 
 describe('profile presentation normalization', () => {
   it('clamps Cover controls without discarding a saved Cover when Minimal is selected', () => {
@@ -26,5 +27,14 @@ describe('profile presentation normalization', () => {
     expect(resolvePresentation(value, 'draft').template).toBe('cover')
     expect(resolvePresentation(value, 'published').template).toBe('minimal')
     expect(resolvePresentation(value, 'draft').cover.coverPath).toBe('draft.jpg')
+  })
+
+  it('does not share mutable defaults between draft and published snapshots', () => {
+    const value = DEFAULT_PRESENTATION as unknown as ProfilePresentation
+    value.draft.cover.coverPath = 'draft.jpg'
+    value.draft.cover.overlay = 0.7
+
+    expect(value.published.cover.coverPath).toBeNull()
+    expect(value.published.cover.overlay).toBe(0.38)
   })
 })

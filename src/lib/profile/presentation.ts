@@ -2,20 +2,22 @@ import type { CoverPresentation, ProfilePresentation, ProfileTemplate } from './
 
 export type { CoverPresentation, ProfilePresentation, ProfileTemplate }
 
-const DEFAULT_SETTINGS: CoverPresentation = {
-  template: 'minimal',
-  cover: {
-    coverPath: null,
-    overlay: 0.38,
-    focalY: 50,
-    alignment: 'lower-left',
-    photoPathOverride: null,
-  },
+function createDefaultSettings(): CoverPresentation {
+  return {
+    template: 'minimal',
+    cover: {
+      coverPath: null,
+      overlay: 0.38,
+      focalY: 50,
+      alignment: 'lower-left',
+      photoPathOverride: null,
+    },
+  }
 }
 
 export const DEFAULT_PRESENTATION = {
-  draft: DEFAULT_SETTINGS,
-  published: DEFAULT_SETTINGS,
+  draft: createDefaultSettings(),
+  published: createDefaultSettings(),
 } as const satisfies ProfilePresentation
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -39,8 +41,8 @@ function normalizeSettings(input: unknown): CoverPresentation {
     template,
     cover: {
       coverPath: optionalPath(cover.coverPath),
-      overlay: clampNumber(cover.overlay, DEFAULT_SETTINGS.cover.overlay, 0.15, 0.7),
-      focalY: clampNumber(cover.focalY, DEFAULT_SETTINGS.cover.focalY, 0, 100),
+      overlay: clampNumber(cover.overlay, 0.38, 0.15, 0.7),
+      focalY: clampNumber(cover.focalY, 50, 0, 100),
       alignment: cover.alignment === 'center' ? 'center' : 'lower-left',
       photoPathOverride: optionalPath(cover.photoPathOverride),
     },

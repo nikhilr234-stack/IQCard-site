@@ -33,3 +33,17 @@
 ## Concerns
 
 - `profile_id` is optional in the normalized TypeScript model because callers may normalize legacy/partial JSON before associating it with a profile. Persistence code can require it at its database boundary.
+
+## Round 1 reviewer fix
+
+### Changed files
+
+- `src/lib/profile/presentation.ts`: replaced the shared default settings object with a `createDefaultSettings()` factory, allocating independent draft and published snapshots (including nested Cover settings).
+- `src/lib/profile/presentation.test.ts`: added a regression test that mutates draft defaults and verifies published defaults remain unchanged.
+
+### RED/GREEN evidence
+
+- RED command: `PATH=/Users/soumyar/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:/usr/bin:/bin ../../node_modules/.bin/vitest run src/lib/profile/presentation.test.ts`
+- RED output: 1 failed, 3 passed; published `coverPath` became `draft.jpg` after mutating draft, proving the shared-reference bug.
+- GREEN command: `PATH=/Users/soumyar/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:/usr/bin:/bin ../../node_modules/.bin/vitest run src/lib/profile/presentation.test.ts src/lib/profile/defaults.test.ts src/lib/profile/links.test.ts src/lib/profile/photo.test.ts src/lib/profile/public-profile.test.ts src/lib/profile/repository.test.ts src/lib/profile/validation.test.ts src/lib/profile/vcard.test.ts`
+- GREEN output: 8 test files passed, 82 tests passed.
