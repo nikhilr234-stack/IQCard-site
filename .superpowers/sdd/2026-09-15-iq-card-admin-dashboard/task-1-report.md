@@ -28,6 +28,12 @@
 - Full `vitest run`: 81 files, 527 tests passed.
 - `git diff --check`: passed with no whitespace errors.
 
+## Round 1 follow-up
+
+- Added `DROP TRIGGER IF EXISTS on_client_admin_metadata_updated ON public.client_admin_metadata` immediately before trigger creation. This makes the migration safe if a partially applied migration is retried after the table already exists.
+- Extended the migration test to require both the retry-safe drop and its ordering before `CREATE TRIGGER`.
+- Re-ran the focused migration test after the change: 1 file, 3 tests passed.
+
 ## Commit
 
 `Add client admin metadata migration` (this task's final commit)

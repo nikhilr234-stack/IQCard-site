@@ -13,6 +13,7 @@ alter table public.client_admin_metadata enable row level security;
 revoke all privileges on table public.client_admin_metadata from public, anon, authenticated;
 grant all privileges on table public.client_admin_metadata to service_role;
 
+drop trigger if exists on_client_admin_metadata_updated on public.client_admin_metadata;
 create trigger on_client_admin_metadata_updated
   before update on public.client_admin_metadata
   for each row execute procedure public.set_updated_at();

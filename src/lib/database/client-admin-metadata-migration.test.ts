@@ -37,7 +37,11 @@ describe('client admin metadata migration', () => {
   it('maintains updated_at with the shared timestamp trigger', () => {
     const migration = sql()
 
+    expect(migration).toContain('drop trigger if exists on_client_admin_metadata_updated on public.client_admin_metadata')
     expect(migration).toContain('create trigger on_client_admin_metadata_updated before update on public.client_admin_metadata')
+    expect(migration.indexOf('drop trigger if exists on_client_admin_metadata_updated on public.client_admin_metadata')).toBeLessThan(
+      migration.indexOf('create trigger on_client_admin_metadata_updated before update on public.client_admin_metadata'),
+    )
     expect(migration).toContain('for each row execute procedure public.set_updated_at()')
   })
 })
