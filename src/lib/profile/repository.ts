@@ -7,6 +7,12 @@ export function profilePhotoUrl(path: string | null | undefined): string | null 
   return path ? `/api/profile-photo?path=${encodeURIComponent(path)}` : null
 }
 
+function isPresentationSchemaUnavailable(error: { code?: string; message?: string } | null): boolean {
+  return error?.code === '42P01'
+    || error?.code === 'PGRST205'
+    || Boolean(error?.message?.includes('profile_presentations'))
+}
+
 function withPhotoUrl<T extends { photo_path?: string | null }>(profile: T) {
   if (!profile.photo_path) return { ...profile, photo_url: null }
   return { ...profile, photo_url: profilePhotoUrl(profile.photo_path) }
@@ -47,7 +53,10 @@ export async function getOwnProfilePresentation(ownerId: string): Promise<CoverP
     .eq('profiles.owner_id', ownerId)
     .maybeSingle()
 
-  if (error) throw error
+  // Keep existing Minimal profiles available during a rolling deployment where
+  // the app is live slightly before the accompanying database migration.
+  if (error && !isPresentationSchemaUnavailable(error)) throw error
+  if (error) return DEFAULT_PRESENTATION.draft
   if (data === null) return DEFAULT_PRESENTATION.draft
   if (!data) throw new Error('Unable to load your profile presentation')
   return normalizePresentation({ draft: data.draft }).draft
@@ -61,7 +70,10 @@ export async function getPublishedProfilePresentation(profileId: string): Promis
     .eq('profile_id', profileId)
     .maybeSingle()
 
-  if (error) throw error
+  // See the owner reader above: this preserves the established public profile
+  // experience until the new presentation table/view has been applied.
+  if (error && !isPresentationSchemaUnavailable(error)) throw error
+  if (error) return DEFAULT_PRESENTATION.published
   if (data === null) return DEFAULT_PRESENTATION.published
   if (!data) throw new Error('Unable to load published profile presentation')
   return normalizePresentation({ published: data.published }).published

@@ -110,6 +110,22 @@ describe('profile presentation readers', () => {
     await expect(getPublishedProfilePresentation('profile-1')).rejects.toThrow('presentation query failed')
   })
 
+  it('keeps public Minimal profiles available while the presentation migration is pending', async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: null,
+      error: { code: '42P01', message: 'relation "profile_presentations" does not exist' },
+    })
+    vi.mocked(createServerClient).mockResolvedValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({ maybeSingle })),
+        })),
+      })),
+    } as never)
+
+    await expect(getPublishedProfilePresentation('profile-1')).resolves.toEqual(DEFAULT_PRESENTATION.published)
+  })
+
   it('normalizes a saved owner draft before returning it', async () => {
     const maybeSingle = vi.fn().mockResolvedValue({
       data: {
