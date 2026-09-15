@@ -3,8 +3,8 @@ import type { Client } from './types'
 import { filterClients, getCompletionDistribution, getDashboardKpis, getOnboardingChart, getOnboardingFunnel, getQuickInsights, getStatusBreakdown, paginateClients, sortClients, toClientCsvRows } from './selectors'
 
 const clients: Client[] = [
-  { id: 'live', name: 'Ada Lovelace', email: 'ada@example.com', status: 'Live', profileUrl: '/ada', joinedAt: '2026-09-01T00:00:00Z', completion: 1, lastActiveAt: '2026-09-08T00:00:00Z', segment: 'Enterprise', inviteOpened: true, startedProfile: true, completedProfile: true },
-  { id: 'draft', name: 'Grace Hopper', email: 'grace@example.com', status: 'Draft', profileUrl: '/grace', joinedAt: '2026-09-02T00:00:00Z', completion: .5, lastActiveAt: null, segment: 'Startup', inviteOpened: true, startedProfile: true, completedProfile: false },
+  { id: 'live', name: 'Ada Lovelace', email: 'ada@example.com', status: 'Live', profileUrl: '/ada', joinedAt: '2026-09-01T00:00:00Z', completion: 100, lastActiveAt: '2026-09-08T00:00:00Z', segment: 'Enterprise', inviteOpened: true, startedProfile: true, completedProfile: true },
+  { id: 'draft', name: 'Grace Hopper', email: 'grace@example.com', status: 'Draft', profileUrl: '/grace', joinedAt: '2026-09-02T00:00:00Z', completion: 50, lastActiveAt: null, segment: 'Startup', inviteOpened: true, startedProfile: true, completedProfile: false },
   { id: 'invited', name: 'Linus Torvalds', email: 'linus@example.com', status: 'Invited', profileUrl: null, joinedAt: '2026-09-03T00:00:00Z', completion: 0, lastActiveAt: null, segment: 'Startup', inviteOpened: false, startedProfile: false, completedProfile: false },
   { id: 'none', name: 'Radia Perlman', email: 'radia@example.com', status: 'No profile', profileUrl: null, joinedAt: '2026-09-04T00:00:00Z', completion: 0, lastActiveAt: null, segment: 'Unassigned', inviteOpened: false, startedProfile: false, completedProfile: false },
 ]
@@ -17,7 +17,7 @@ describe('admin dashboard selectors', () => {
   })
 
   it('derives KPIs, status breakdown, and funnel from the supplied clients', () => {
-    expect(getDashboardKpis(clients)).toEqual({ total: 4, live: 1, completionRate: .375, inviteOpenRate: .5 })
+    expect(getDashboardKpis(clients)).toEqual({ total: 4, live: 1, completionRate: 37.5, inviteOpenRate: .5 })
     expect(getStatusBreakdown(clients)).toEqual({ Live: 1, Draft: 1, Invited: 1, 'No profile': 1 })
     expect(getOnboardingFunnel(clients)).toEqual({ invited: 4, openedInvite: 2, startedProfile: 2, completedProfile: 1, live: 1 })
   })

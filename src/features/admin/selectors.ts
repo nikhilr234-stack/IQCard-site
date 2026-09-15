@@ -71,7 +71,7 @@ export function getOnboardingChart(clients: readonly Client[]) {
 export function getCompletionDistribution(clients: readonly Client[]) {
   return clients.reduce((distribution, client) => {
     if (client.completion === 0) distribution.notStarted += 1
-    else if (client.completion >= 1) distribution.completed += 1
+    else if (client.completion >= 100) distribution.completed += 1
     else distribution.inProgress += 1
     return distribution
   }, { notStarted: 0, inProgress: 0, completed: 0 })
@@ -93,7 +93,7 @@ export function toClientCsvRows(clients: readonly Client[]) {
     Status: client.status,
     'Profile URL': client.profileUrl ?? '',
     Joined: client.joinedAt,
-    Completion: `${Math.round(client.completion * 100)}%`,
+    Completion: `${Math.round(client.completion)}%`,
     Segment: client.segment,
     'Last active': client.lastActiveAt ?? '',
   }))

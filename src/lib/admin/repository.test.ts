@@ -47,8 +47,8 @@ describe('listAdminClients', () => {
     }) as never)
 
     await expect(listAdminClients()).resolves.toEqual([
-      { id: 'live', name: 'Live Person', email: 'live@example.com', status: 'Live', profileUrl: '/live-person', joinedAt: '2026-09-01T00:00:00Z', completion: 1, lastActiveAt: '2026-09-05T00:00:00Z', segment: 'Enterprise', inviteOpened: true, startedProfile: true, completedProfile: true },
-      { id: 'draft', name: 'Draft Person', email: 'draft@example.com', status: 'Draft', profileUrl: '/draft-person', joinedAt: '2026-09-02T00:00:00Z', completion: 2 / 6, lastActiveAt: null, segment: 'Unassigned', inviteOpened: false, startedProfile: true, completedProfile: false },
+      { id: 'live', name: 'Live Person', email: 'live@example.com', status: 'Live', profileUrl: '/live-person', joinedAt: '2026-09-01T00:00:00Z', completion: 100, lastActiveAt: '2026-09-05T00:00:00Z', segment: 'Enterprise', inviteOpened: true, startedProfile: true, completedProfile: true },
+      { id: 'draft', name: 'Draft Person', email: 'draft@example.com', status: 'Draft', profileUrl: '/draft-person', joinedAt: '2026-09-02T00:00:00Z', completion: 2 / 6 * 100, lastActiveAt: null, segment: 'Unassigned', inviteOpened: false, startedProfile: true, completedProfile: false },
       { id: 'invited', name: 'invite', email: 'invite@example.com', status: 'Invited', profileUrl: null, joinedAt: '2026-09-03T00:00:00Z', completion: 0, lastActiveAt: null, segment: 'New leads', inviteOpened: false, startedProfile: false, completedProfile: false },
       { id: 'legacy', name: 'legacy', email: 'legacy@example.com', status: 'No profile', profileUrl: null, joinedAt: '2026-09-04T00:00:00Z', completion: 0, lastActiveAt: null, segment: 'Unassigned', inviteOpened: false, startedProfile: false, completedProfile: false },
     ])
@@ -64,5 +64,19 @@ describe('listAdminClients', () => {
     } as never)
 
     await expect(listAdminClients()).rejects.toThrow('Unable to load clients.')
+  })
+
+  it('does not count a default onboarding row as started and ignores invalid duplicate completion steps', async () => {
+    vi.mocked(createAdminClient).mockReturnValue(clientWithRows({
+      progress: [
+        { owner_id: 'invited', current_step: 'identity', completed_steps: [], started_at: '2026-09-03T00:00:00Z', completed_at: null },
+        { owner_id: 'legacy', current_step: 'publish', completed_steps: ['identity', 'identity', 'contact', 'invalid'], started_at: '2026-09-04T00:00:00Z', completed_at: null },
+      ],
+    }) as never)
+
+    const clients = await listAdminClients()
+
+    expect(clients.find((client) => client.id === 'invited')).toMatchObject({ startedProfile: false, completion: 0 })
+    expect(clients.find((client) => client.id === 'legacy')).toMatchObject({ startedProfile: true, completion: 2 / 6 * 100 })
   })
 })
