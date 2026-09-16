@@ -6,6 +6,13 @@ export function validateClientEmail(value: string): { ok: true; value: string } 
   return { ok: true, value: email }
 }
 
+export function validateClientSegment(value: string): { ok: true; value: string } | { ok: false; error: string } {
+  const segment = value.trim()
+  if (!segment) return { ok: false, error: 'Enter a client segment.' }
+  if (segment.length > 60) return { ok: false, error: 'Client segment must be 60 characters or fewer.' }
+  return { ok: true, value: segment }
+}
+
 export function makeAvailableSlug(base: string, taken: Set<string>) {
   const root = suggestSlug(base) || 'profile'
   if (!taken.has(root) && !isReservedSlug(root)) return root

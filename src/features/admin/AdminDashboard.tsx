@@ -20,11 +20,11 @@ import './admin.css'
 
 export type AdminDashboardActions = { onOnboard: (input: OnboardInput) => Promise<void>; onPublish: (clientId: string) => Promise<void>; onUnpublish: (clientId: string) => Promise<void>; onResend: (clientId: string) => Promise<void>; onSegmentChange: (clientId: string, segment: string) => Promise<void> }
 
-export function AdminDashboard({ clients, actions }: { clients: readonly Client[]; actions: AdminDashboardActions }) {
+export function AdminDashboard({ clients, actions, initialNotice = '' }: { clients: readonly Client[]; actions: AdminDashboardActions; initialNotice?: string }) {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<ClientStatus | 'All'>('All')
   const [dateRange, setDateRange] = useState('Last 30 days')
-  const [notice, setNotice] = useState('')
+  const [notice, setNotice] = useState(initialNotice)
   const emailInputRef = useRef<HTMLInputElement>(null)
   const kpis = useMemo(() => getDashboardKpis(clients), [clients])
   const statusBreakdown = useMemo(() => getStatusBreakdown(clients), [clients])
