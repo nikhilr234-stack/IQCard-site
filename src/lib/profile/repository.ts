@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient, createServerClient } from '@/lib/supabase/server'
 import type { CoverPresentation, Profile } from './types'
 import { createDefaultProfileDraft } from './defaults'
 import { DEFAULT_PRESENTATION, normalizePresentation } from './presentation'
@@ -40,7 +40,7 @@ export async function getOwnProfile(user: { id: string; email: string }, preferr
 }
 
 export async function getPublishedProfile(slug: string): Promise<Profile | null> {
-  const supabase = await createServerClient()
+  const supabase = createPublicClient()
   const { data } = await supabase.from('profiles').select('*, profile_links(*)').eq('slug', slug).eq('status', 'published').maybeSingle()
   return data ? withPhotoUrl({ ...data, profile_links: data.profile_links ?? [] }) as Profile : null
 }
@@ -80,7 +80,7 @@ export async function getPublishedProfilePresentation(profileId: string): Promis
 }
 
 export async function getPublishedProfilePresentationBySlug(slug: string): Promise<CoverPresentation> {
-  const supabase = await createServerClient()
+  const supabase = createPublicClient()
   const { data, error } = await supabase
     .from('published_profile_presentations')
     .select('published')

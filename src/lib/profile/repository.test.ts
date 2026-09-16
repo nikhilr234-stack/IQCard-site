@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient, createServerClient } from '@/lib/supabase/server'
 import {
   getOwnProfile,
   getOwnProfilePresentation,
@@ -9,7 +9,7 @@ import {
 } from './repository'
 import { DEFAULT_PRESENTATION } from './presentation'
 
-vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn() }))
+vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn(), createPublicClient: vi.fn() }))
 
 const storedProfile = {
   id: 'profile-1',
@@ -44,7 +44,11 @@ function profileClient() {
 }
 
 describe('profile photo delivery URLs', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(createServerClient).mockReset()
+    vi.mocked(createPublicClient).mockReset()
+  })
 
   it('gives an owner an internal authenticated photo URL without minting a bearer URL', async () => {
     const client = profileClient()
@@ -58,12 +62,13 @@ describe('profile photo delivery URLs', () => {
 
   it('gives a public profile the same application-controlled exact-path URL', async () => {
     const client = profileClient()
-    vi.mocked(createServerClient).mockResolvedValue(client as never)
+    vi.mocked(createPublicClient).mockReturnValue(client as never)
 
     const profile = await getPublishedProfile('owner')
 
     expect(profile?.photo_url).toBe('/api/profile-photo?path=owner-1%2Fportrait.png')
     expect(client.createSignedUrl).not.toHaveBeenCalled()
+    expect(createServerClient).not.toHaveBeenCalled()
   })
 
   it('creates a new owner draft only through the server-controlled draft RPC', async () => {
@@ -83,7 +88,11 @@ describe('profile photo delivery URLs', () => {
 })
 
 describe('profile presentation readers', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(createServerClient).mockReset()
+    vi.mocked(createPublicClient).mockReset()
+  })
 
   it('falls back to Minimal defaults when a legacy profile has no presentation row', async () => {
     const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null })
@@ -101,7 +110,7 @@ describe('profile presentation readers', () => {
   it('reads a public presentation directly by slug so it can load alongside the profile', async () => {
     const maybeSingle = vi.fn().mockResolvedValue({ data: { published: { template: 'minimal', cover: {} } }, error: null })
     const eq = vi.fn(() => ({ maybeSingle }))
-    vi.mocked(createServerClient).mockResolvedValue({
+    vi.mocked(createPublicClient).mockReturnValue({
       from: vi.fn(() => ({
         select: vi.fn(() => ({ eq })),
       })),
@@ -109,6 +118,7 @@ describe('profile presentation readers', () => {
 
     await expect(getPublishedProfilePresentationBySlug('owner')).resolves.toEqual(DEFAULT_PRESENTATION.published)
     expect(eq).toHaveBeenCalledWith('slug', 'owner')
+    expect(createServerClient).not.toHaveBeenCalled()
   })
 
   it('does not treat a failed public presentation query as a legacy profile', async () => {

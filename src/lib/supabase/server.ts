@@ -1,4 +1,5 @@
 import { createServerClient as createSupabaseServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { getPublicEnv } from '@/lib/env'
 
@@ -17,5 +18,14 @@ export async function createServerClient() {
         }
       },
     },
+  })
+}
+
+// Public profile reads never need a visitor's session. Keeping them free of
+// request cookies allows Next to cache the rendered public route safely.
+export function createPublicClient() {
+  const environment = getPublicEnv()
+  return createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
   })
 }

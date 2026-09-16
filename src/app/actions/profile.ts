@@ -47,6 +47,7 @@ export async function saveProfileDraft(formData: FormData) {
     const { error: linksError } = await supabase.rpc('replace_own_profile_links', { p_links: normalizedLinks })
     if (linksError) throw new Error('Unable to update profile links.')
   }
+  revalidatePath(`/${input.slug}`)
   revalidatePath('/dashboard')
 }
 

@@ -51,6 +51,7 @@ describe('profile actions', () => {
     })
     expect(from).not.toHaveBeenCalledWith('profile_links')
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard')
+    expect(revalidatePath).toHaveBeenCalledWith('/owner')
   })
 
   it('persists normalized profile fields and explicit visibility choices', async () => {
