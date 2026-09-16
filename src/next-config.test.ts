@@ -9,4 +9,10 @@ describe('Server Action upload configuration', () => {
   it('does not place the ignored server action setting at the config top level', () => {
     expect(nextConfig).not.toHaveProperty('serverActions')
   })
+
+  it('allows only profile-photo URLs through the local image optimizer', () => {
+    expect(nextConfig.images?.localPatterns).toEqual([
+      { pathname: '/api/profile-photo' },
+    ])
+  })
 })

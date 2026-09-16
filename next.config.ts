@@ -3,6 +3,11 @@ import { legacyRouteRedirects } from './src/lib/site-routing'
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: {
+    localPatterns: [
+      { pathname: '/api/profile-photo' },
+    ],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '6mb',
