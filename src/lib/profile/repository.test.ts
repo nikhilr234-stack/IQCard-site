@@ -9,7 +9,12 @@ import {
 } from './repository'
 import { DEFAULT_PRESENTATION } from './presentation'
 
+const { unstableCache } = vi.hoisted(() => ({
+  unstableCache: vi.fn((reader: () => unknown) => reader),
+}))
+
 vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn(), createPublicClient: vi.fn() }))
+vi.mock('next/cache', () => ({ unstable_cache: unstableCache }))
 
 const storedProfile = {
   id: 'profile-1',
@@ -69,6 +74,10 @@ describe('profile photo delivery URLs', () => {
     expect(profile?.photo_url).toBe('/api/profile-photo?path=owner-1%2Fportrait.png')
     expect(client.createSignedUrl).not.toHaveBeenCalled()
     expect(createServerClient).not.toHaveBeenCalled()
+    expect(unstableCache).toHaveBeenCalledWith(expect.any(Function), ['published-profile', 'owner'], {
+      revalidate: 60,
+      tags: ['published-profile:owner'],
+    })
   })
 
   it('creates a new owner draft only through the server-controlled draft RPC', async () => {
@@ -119,6 +128,10 @@ describe('profile presentation readers', () => {
     await expect(getPublishedProfilePresentationBySlug('owner')).resolves.toEqual(DEFAULT_PRESENTATION.published)
     expect(eq).toHaveBeenCalledWith('slug', 'owner')
     expect(createServerClient).not.toHaveBeenCalled()
+    expect(unstableCache).toHaveBeenCalledWith(expect.any(Function), ['published-presentation', 'owner'], {
+      revalidate: 60,
+      tags: ['published-profile:owner'],
+    })
   })
 
   it('does not treat a failed public presentation query as a legacy profile', async () => {

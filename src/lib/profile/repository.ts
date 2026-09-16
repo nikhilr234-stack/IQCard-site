@@ -1,4 +1,5 @@
 import { createPublicClient, createServerClient } from '@/lib/supabase/server'
+import { unstable_cache } from 'next/cache'
 import type { CoverPresentation, Profile } from './types'
 import { createDefaultProfileDraft } from './defaults'
 import { DEFAULT_PRESENTATION, normalizePresentation } from './presentation'
@@ -40,9 +41,14 @@ export async function getOwnProfile(user: { id: string; email: string }, preferr
 }
 
 export async function getPublishedProfile(slug: string): Promise<Profile | null> {
-  const supabase = createPublicClient()
-  const { data } = await supabase.from('profiles').select('*, profile_links(*)').eq('slug', slug).eq('status', 'published').maybeSingle()
-  return data ? withPhotoUrl({ ...data, profile_links: data.profile_links ?? [] }) as Profile : null
+  return unstable_cache(async () => {
+    const supabase = createPublicClient()
+    const { data } = await supabase.from('profiles').select('*, profile_links(*)').eq('slug', slug).eq('status', 'published').maybeSingle()
+    return data ? withPhotoUrl({ ...data, profile_links: data.profile_links ?? [] }) as Profile : null
+  }, ['published-profile', slug], {
+    revalidate: 60,
+    tags: [`published-profile:${slug}`],
+  })()
 }
 
 export async function getOwnProfilePresentation(ownerId: string): Promise<CoverPresentation> {
@@ -80,15 +86,20 @@ export async function getPublishedProfilePresentation(profileId: string): Promis
 }
 
 export async function getPublishedProfilePresentationBySlug(slug: string): Promise<CoverPresentation> {
-  const supabase = createPublicClient()
-  const { data, error } = await supabase
-    .from('published_profile_presentations')
-    .select('published')
-    .eq('slug', slug)
-    .maybeSingle()
+  return unstable_cache(async () => {
+    const supabase = createPublicClient()
+    const { data, error } = await supabase
+      .from('published_profile_presentations')
+      .select('published')
+      .eq('slug', slug)
+      .maybeSingle()
 
-  if (error && !isPresentationSchemaUnavailable(error)) throw error
-  if (error || data === null) return DEFAULT_PRESENTATION.published
-  if (!data) throw new Error('Unable to load published profile presentation')
-  return normalizePresentation({ published: data.published }).published
+    if (error && !isPresentationSchemaUnavailable(error)) throw error
+    if (error || data === null) return DEFAULT_PRESENTATION.published
+    if (!data) throw new Error('Unable to load published profile presentation')
+    return normalizePresentation({ published: data.published }).published
+  }, ['published-presentation', slug], {
+    revalidate: 60,
+    tags: [`published-profile:${slug}`],
+  })()
 }
