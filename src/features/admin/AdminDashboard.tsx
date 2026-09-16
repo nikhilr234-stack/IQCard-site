@@ -23,6 +23,7 @@ export type AdminDashboardActions = { onOnboard: (input: OnboardInput) => Promis
 export function AdminDashboard({ clients, actions }: { clients: readonly Client[]; actions: AdminDashboardActions }) {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<ClientStatus | 'All'>('All')
+  const [dateRange, setDateRange] = useState('Last 30 days')
   const [notice, setNotice] = useState('')
   const emailInputRef = useRef<HTMLInputElement>(null)
   const kpis = useMemo(() => getDashboardKpis(clients), [clients])
@@ -31,7 +32,6 @@ export function AdminDashboard({ clients, actions }: { clients: readonly Client[
   const completion = useMemo(() => getCompletionDistribution(clients), [clients])
   const chart = useMemo(() => getOnboardingChart(clients), [clients])
   const insights = useMemo(() => getQuickInsights(clients), [clients])
-  const draftCount = statusBreakdown.Draft
   async function invoke(label: string, callback: () => Promise<void>) {
     setNotice('')
     try {
@@ -42,5 +42,17 @@ export function AdminDashboard({ clients, actions }: { clients: readonly Client[
     }
   }
 
-  return <div className="iq-admin-dashboard"><AdminShell sidebar={<AdminSidebar />} topbar={<AdminTopbar query={query} status={status} onQueryChange={setQuery} onStatusChange={setStatus} />} insightRail={<InsightRail clients={clients} insights={insights} />}><ClientsHeader /><AddClientPanel onOnboard={(input) => invoke('Client invitation', () => actions.onOnboard(input))} emailInputRef={emailInputRef} /><KpiStrip items={[{ icon: '◎', value: kpis.total, label: 'Total clients' }, { icon: '●', value: kpis.live, label: 'Live profiles' }, { icon: '▤', value: draftCount, label: 'Draft profiles' }, { icon: '↗', value: `${Math.round(kpis.completionRate)}%`, label: 'Avg. completion' }, { icon: '◷', value: `${Math.round(kpis.inviteOpenRate)}%`, label: 'Invite open rate' }]} /><section className="analytics-grid" aria-label="Client analytics"><OnboardingChart points={chart} /><StatusDonut items={statusBreakdown} /><OnboardingFunnel stages={[{ label: 'Invited', count: funnel.invited }, { label: 'Opened', count: funnel.openedInvite }, { label: 'Started', count: funnel.startedProfile }, { label: 'Completed', count: funnel.completedProfile }, { label: 'Live', count: funnel.live }]} /><CompletionDistribution buckets={completion} /></section><ClientTable clients={clients} query={query} status={status} onQueryChange={setQuery} onAddClientFocus={() => { emailInputRef.current?.focus(); emailInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }) }} onPublish={(id) => invoke('Publication', () => actions.onPublish(id))} onUnpublish={(id) => invoke('Publication', () => actions.onUnpublish(id))} onResend={(id) => invoke('Invitation', () => actions.onResend(id))} onSegmentChange={(id, segment) => invoke('Segment', () => actions.onSegmentChange(id, segment))} /><p className="action-toast" role="status" aria-live="polite">{notice}</p></AdminShell></div>
+  async function onboard(input: OnboardInput) {
+    setNotice('')
+    await actions.onOnboard(input)
+    setNotice('Client invitation updated.')
+  }
+
+  function focusOnboarding() {
+    const behavior = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+    emailInputRef.current?.focus()
+    emailInputRef.current?.scrollIntoView({ behavior, block: 'center' })
+  }
+
+  return <div className="iq-admin-dashboard"><AdminShell sidebar={<AdminSidebar />} topbar={<AdminTopbar query={query} status={status} dateRange={dateRange} onQueryChange={setQuery} onStatusChange={setStatus} onDateRangeChange={setDateRange} />} insightRail={<InsightRail clients={clients} insights={insights} />}><ClientsHeader /><AddClientPanel onOnboard={onboard} emailInputRef={emailInputRef} /><KpiStrip items={[{ icon: '◎', value: kpis.total, label: 'Total clients' }, { icon: '●', value: kpis.live, label: 'Live profiles' }, { icon: '▤', value: kpis.draft, label: 'Draft profiles' }, { icon: '↗', value: kpis.published, label: 'Published profiles' }, { icon: '◷', value: kpis.pendingInvites, label: 'Pending invites' }, { icon: '◎', value: `${Math.round(kpis.activationRate)}%`, label: 'Activation rate' }, { icon: '◒', value: `${Math.round(kpis.completionRate)}%`, label: 'Avg. completion' }, { icon: '▥', value: kpis.weeklyActive, label: 'Weekly active' }]} /><section className="analytics-grid" aria-label="Client analytics"><OnboardingChart points={chart} /><StatusDonut items={statusBreakdown} /><OnboardingFunnel stages={[{ label: 'Invited', count: funnel.invited }, { label: 'Opened', count: funnel.openedInvite }, { label: 'Started', count: funnel.startedProfile }, { label: 'Completed', count: funnel.completedProfile }, { label: 'Live', count: funnel.live }]} /><CompletionDistribution buckets={completion} /></section><ClientTable clients={clients} query={query} status={status} onQueryChange={setQuery} onAddClientFocus={focusOnboarding} onPublish={(id) => invoke('Publication', () => actions.onPublish(id))} onUnpublish={(id) => invoke('Publication', () => actions.onUnpublish(id))} onResend={(id) => invoke('Invitation', () => actions.onResend(id))} onSegmentChange={(id, segment) => invoke('Segment', () => actions.onSegmentChange(id, segment))} /><p className="action-toast" role="status" aria-live="polite">{notice}</p></AdminShell></div>
 }

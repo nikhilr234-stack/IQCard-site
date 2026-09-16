@@ -27,15 +27,22 @@ export function paginateClients(clients: readonly Client[], page: number, pageSi
   return clients.slice(start, start + validPageSize)
 }
 
-export function getDashboardKpis(clients: readonly Client[]) {
+export function getDashboardKpis(clients: readonly Client[], now = new Date()) {
   const total = clients.length
   const completion = clients.reduce((sum, client) => sum + client.completion, 0)
   const opened = clients.filter((client) => client.inviteOpened).length
+  const weeklyActivityStart = new Date(now)
+  weeklyActivityStart.setDate(weeklyActivityStart.getDate() - 7)
   return {
     total,
     live: clients.filter((client) => client.status === 'Live').length,
+    draft: clients.filter((client) => client.status === 'Draft').length,
+    published: clients.filter((client) => client.completedProfile).length,
+    pendingInvites: clients.filter((client) => client.status === 'Invited').length,
+    activationRate: total ? clients.filter((client) => client.startedProfile).length / total * 100 : 0,
     completionRate: total ? completion / total : 0,
     inviteOpenRate: total ? opened / total : 0,
+    weeklyActive: clients.filter((client) => client.lastActiveAt && new Date(client.lastActiveAt) >= weeklyActivityStart).length,
   }
 }
 
