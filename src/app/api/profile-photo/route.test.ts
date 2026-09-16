@@ -13,7 +13,7 @@ function storageClient(result: { data: Blob | null; error: Error | null }) {
 describe('profile photo delivery route', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('downloads the exact requested path through the cookie-scoped RLS client and disables caching', async () => {
+  it('downloads the exact requested path through the cookie-scoped RLS client and caches public image bytes briefly', async () => {
     const client = storageClient({ data: new Blob(['image-bytes'], { type: 'image/png' }), error: null })
     vi.mocked(createServerClient).mockResolvedValue(client as never)
 
@@ -23,7 +23,8 @@ describe('profile photo delivery route', () => {
     expect(client.download).toHaveBeenCalledWith('owner-1/portrait.png')
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toBe('image/png')
-    expect(response.headers.get('cache-control')).toContain('no-store')
+    expect(response.headers.get('cache-control')).toContain('public')
+    expect(response.headers.get('cache-control')).toContain('max-age=300')
     expect(await response.text()).toBe('image-bytes')
   })
 

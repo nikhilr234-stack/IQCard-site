@@ -3,9 +3,14 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const migrationPath = resolve(process.cwd(), 'supabase/migrations/202609140001_add_profile_presentations.sql')
+const publicLookupMigrationPath = resolve(process.cwd(), 'supabase/migrations/202609160001_add_slug_to_published_profile_presentations.sql')
 
 function sql(): string {
   return readFileSync(migrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+function publicLookupSql(): string {
+  return readFileSync(publicLookupMigrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
 }
 
 function functionBody(migration: string, name: string): string {
@@ -38,6 +43,14 @@ describe('profile presentations migration', () => {
     expect(migration).toContain('select profile_presentations.profile_id, profile_presentations.published')
     expect(migration).toContain("where profiles.status = 'published'")
     expect(migration).toContain('grant select on table public.published_profile_presentations to anon, authenticated')
+  })
+
+  it('adds the public slug to the published presentation view for concurrent lookup', () => {
+    const migration = publicLookupSql()
+
+    expect(migration).toContain('create or replace view public.published_profile_presentations')
+    expect(migration).toContain('profiles.slug')
+    expect(migration).toContain("where profiles.status = 'published'")
   })
 
   it('validates and canonicalizes an authenticated owner draft without arbitrary fields', () => {

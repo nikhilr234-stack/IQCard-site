@@ -7,6 +7,13 @@ const noStoreHeaders = {
   'X-Content-Type-Options': 'nosniff',
 }
 
+const publicImageHeaders = {
+  'Cache-Control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400',
+  'Content-Security-Policy': "default-src 'none'; sandbox",
+  'Cross-Origin-Resource-Policy': 'same-origin',
+  'X-Content-Type-Options': 'nosniff',
+}
+
 const profilePhotoTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
 function notFoundResponse() {
@@ -31,7 +38,7 @@ export async function GET(request: Request) {
 
   return new Response(data, {
     headers: {
-      ...noStoreHeaders,
+      ...publicImageHeaders,
       'Content-Disposition': contentType === 'application/octet-stream' ? 'attachment' : 'inline',
       'Content-Type': contentType,
     },

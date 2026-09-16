@@ -51,7 +51,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
       <section className="cover-profile-lower-third" aria-labelledby="cover-profile-name">
         <div className={`cover-profile-identity${photoUrl ? ' has-photo' : ''}`}>
           <div className="cover-profile-photo" role={photoUrl ? undefined : 'img'} aria-label={photoUrl ? undefined : `${displayName} initials`}>
-            {photoUrl ? <Image src={photoUrl} alt={`${displayName} profile photo`} fill sizes="96px" unoptimized /> : <span>{view.initials}</span>}
+            {photoUrl ? <Image src={photoUrl} alt={`${displayName} profile photo`} fill sizes="96px" /> : <span>{view.initials}</span>}
           </div>
           <div className="cover-profile-nameplate">
             <p className="cover-profile-eyebrow">Professional</p>

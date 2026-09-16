@@ -74,4 +74,11 @@ describe('PublicProfile', () => {
     expect(html).toContain('public-profile-shell')
     expect(html).not.toContain('cover-profile-shell')
   })
+
+  it('uses the image optimizer for public profile photos', () => {
+    const html = renderToStaticMarkup(<PublicProfile profile={{ ...profile, photo_url: '/api/profile-photo?path=owner-1%2Fada.jpg' }} presentation={{ ...cover, template: 'minimal' }} />)
+
+    expect(html).toContain('/_next/image?url=')
+    expect(html).toContain('owner-1%252Fada.jpg')
+  })
 })

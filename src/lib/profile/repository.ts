@@ -78,3 +78,17 @@ export async function getPublishedProfilePresentation(profileId: string): Promis
   if (!data) throw new Error('Unable to load published profile presentation')
   return normalizePresentation({ published: data.published }).published
 }
+
+export async function getPublishedProfilePresentationBySlug(slug: string): Promise<CoverPresentation> {
+  const supabase = await createServerClient()
+  const { data, error } = await supabase
+    .from('published_profile_presentations')
+    .select('published')
+    .eq('slug', slug)
+    .maybeSingle()
+
+  if (error && !isPresentationSchemaUnavailable(error)) throw error
+  if (error || data === null) return DEFAULT_PRESENTATION.published
+  if (!data) throw new Error('Unable to load published profile presentation')
+  return normalizePresentation({ published: data.published }).published
+}

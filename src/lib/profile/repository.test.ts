@@ -5,6 +5,7 @@ import {
   getOwnProfilePresentation,
   getPublishedProfile,
   getPublishedProfilePresentation,
+  getPublishedProfilePresentationBySlug,
 } from './repository'
 import { DEFAULT_PRESENTATION } from './presentation'
 
@@ -95,6 +96,19 @@ describe('profile presentation readers', () => {
     } as never)
 
     await expect(getPublishedProfilePresentation('profile-1')).resolves.toEqual(DEFAULT_PRESENTATION.published)
+  })
+
+  it('reads a public presentation directly by slug so it can load alongside the profile', async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({ data: { published: { template: 'minimal', cover: {} } }, error: null })
+    const eq = vi.fn(() => ({ maybeSingle }))
+    vi.mocked(createServerClient).mockResolvedValue({
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({ eq })),
+      })),
+    } as never)
+
+    await expect(getPublishedProfilePresentationBySlug('owner')).resolves.toEqual(DEFAULT_PRESENTATION.published)
+    expect(eq).toHaveBeenCalledWith('slug', 'owner')
   })
 
   it('does not treat a failed public presentation query as a legacy profile', async () => {
