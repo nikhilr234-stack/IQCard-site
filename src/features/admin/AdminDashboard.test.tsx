@@ -1,6 +1,8 @@
 /** @vitest-environment jsdom */
 
 import { act } from 'react'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -96,5 +98,11 @@ describe('AdminDashboard', () => {
     expect(rowsPerPage).not.toBeNull()
     await act(async () => setValue(rowsPerPage!, '10'))
     expect(host.textContent).toContain('Showing 1–6 of 6 clients')
+  })
+
+  it('overrides the app-wide narrow main rule so the desktop dashboard can use its grid width', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/features/admin/admin.css'), 'utf8')
+
+    expect(css).toContain('.iq-admin-dashboard .admin-shell__main { width: 100%; max-width: none; margin: 0;')
   })
 })
