@@ -100,6 +100,14 @@ describe('AdminDashboard', () => {
     expect(host.textContent).toContain('Showing 1–6 of 6 clients')
   })
 
+  it('filters the directory from an analytical selection and clears the active view', async () => {
+    await act(async () => button(host, /draft profiles/i).click())
+
+    expect(host.textContent).toContain('Active view: Draft profiles')
+    await act(async () => button(host, /^clear$/i).click())
+    expect(host.textContent).not.toContain('Active view: Draft profiles')
+  })
+
   it('overrides the app-wide narrow main rule so the desktop dashboard can use its grid width', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/features/admin/admin.css'), 'utf8')
 

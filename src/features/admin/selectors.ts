@@ -1,4 +1,14 @@
-import type { Client, ClientFilters, ClientSort, ClientStatus } from './types'
+import type { Client, ClientFilters, ClientSort, ClientStatus, DashboardDateRange, DashboardView } from './types'
+
+const DAY = 86_400_000
+
+function clientTime(client: Client) {
+  return new Date(client.lastActiveAt ?? client.joinedAt).getTime()
+}
+
+function latestClientTime(clients: readonly Client[], fallback: Date) {
+  return Math.max(...clients.map(clientTime), fallback.getTime() - 365 * DAY)
+}
 
 export function filterClients(clients: readonly Client[], filters: ClientFilters): Client[] {
   const search = filters.search?.trim().toLocaleLowerCase() ?? ''
@@ -25,6 +35,34 @@ export function paginateClients(clients: readonly Client[], page: number, pageSi
   const validPageSize = Math.max(pageSize, 1)
   const start = (validPage - 1) * validPageSize
   return clients.slice(start, start + validPageSize)
+}
+
+export function filterClientsByDateRange(clients: readonly Client[], days: DashboardDateRange, now = new Date()): Client[] {
+  const cutoff = now.getTime() - (days - 1) * DAY
+  return clients.filter((client) => new Date(client.joinedAt).getTime() >= cutoff && new Date(client.joinedAt).getTime() <= now.getTime())
+}
+
+export function applyDashboardView(clients: readonly Client[], view: DashboardView | null, now = new Date()): Client[] {
+  if (!view) return [...clients]
+  if (view.kind === 'status') return clients.filter((client) => client.status === view.status)
+  if (view.kind === 'inviteOpened') return clients.filter((client) => client.inviteOpened)
+  if (view.kind === 'completionRange') return clients.filter((client) => client.completion >= view.min && client.completion <= view.max)
+  if (view.kind === 'joinedDate') return clients.filter((client) => client.joinedAt.slice(0, 10) === view.date)
+  if (view.kind === 'joinedRecent') return filterClientsByDateRange(clients, view.days, now)
+  if (view.kind === 'client') return clients.filter((client) => client.id === view.id)
+  if (view.kind === 'segment') return clients.filter((client) => client.segment === view.segment)
+
+  const latest = latestClientTime(clients, now)
+  if (view.kind === 'weeklyActive') return clients.filter((client) => client.lastActiveAt && clientTime(client) >= latest - 7 * DAY)
+  if (view.kind === 'followUp') return clients.filter((client) => client.status === 'Invited' && (!client.lastActiveAt || clientTime(client) < latest - 2 * DAY))
+  if (view.kind === 'funnel') {
+    if (view.stage === 'invited') return [...clients]
+    if (view.stage === 'opened') return clients.filter((client) => client.inviteOpened)
+    if (view.stage === 'started') return clients.filter((client) => client.startedProfile)
+    if (view.stage === 'completed') return clients.filter((client) => client.completedProfile)
+    return clients.filter((client) => client.status === 'Live')
+  }
+  return [...clients]
 }
 
 export function getDashboardKpis(clients: readonly Client[], now = new Date()) {
