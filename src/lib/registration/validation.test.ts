@@ -45,8 +45,8 @@ const canonicalPayload = {
     currency: 'INR',
     pricingVersion: 'demo-inr-v1',
     provisional: true,
-    components: { base: 1499, material: 500, craft: 350, customLogoSetup: 0 },
-    total: 2349,
+    components: { base: 799, material: 500, craft: 350, customLogoSetup: 0 },
+    total: 1649,
   },
   manufacturing: {
     core: { color: 'black' },

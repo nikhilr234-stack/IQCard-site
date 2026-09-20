@@ -15,7 +15,7 @@ const PROFILE_TEMPLATE_IDS = new Set<ProfileTemplate>(PROFILE_TEMPLATE_OPTIONS.m
 
 function createDefaultSettings(): CoverPresentation {
   return {
-    template: 'minimal',
+    template: 'cover',
     cover: {
       coverPath: null,
       overlay: 0.38,
@@ -48,7 +48,7 @@ function normalizeSettings(input: unknown): CoverPresentation {
   const cover = isRecord(source.cover) ? source.cover : {}
   const template = typeof source.template === 'string' && PROFILE_TEMPLATE_IDS.has(source.template as ProfileTemplate)
     ? source.template as ProfileTemplate
-    : 'minimal'
+    : 'cover'
 
   return {
     template,

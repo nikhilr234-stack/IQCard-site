@@ -9,5 +9,6 @@ describe('LandingPage', () => {
 
     expect(html).toContain('href="/login"')
     expect(html).toContain('>Log in</a>')
+    expect(html).toContain('Designed by NRG STUDIO')
   })
 })

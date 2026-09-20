@@ -103,7 +103,7 @@ describe('profile presentation readers', () => {
     vi.mocked(createPublicClient).mockReset()
   })
 
-  it('falls back to Minimal defaults when a legacy profile has no presentation row', async () => {
+  it('falls back to Cover defaults when a legacy profile has no presentation row', async () => {
     const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null })
     vi.mocked(createServerClient).mockResolvedValue({
       from: vi.fn(() => ({
@@ -125,7 +125,7 @@ describe('profile presentation readers', () => {
       })),
     } as never)
 
-    await expect(getPublishedProfilePresentationBySlug('owner')).resolves.toEqual(DEFAULT_PRESENTATION.published)
+    await expect(getPublishedProfilePresentationBySlug('owner')).resolves.toMatchObject({ template: 'minimal' })
     expect(eq).toHaveBeenCalledWith('slug', 'owner')
     expect(createServerClient).not.toHaveBeenCalled()
     expect(unstableCache).toHaveBeenCalledWith(expect.any(Function), ['published-presentation', 'owner'], {

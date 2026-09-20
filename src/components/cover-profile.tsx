@@ -2,7 +2,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
 
-import { PublicProfileMenu } from '@/components/public-profile-menu'
 import { buildPublicProfileView } from '@/lib/profile/public-profile'
 import type { CoverPresentation, Profile } from '@/lib/profile/types'
 
@@ -45,7 +44,6 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
       {preview ? <div className="cover-preview-badge">Private preview</div> : null}
       <header className="cover-profile-topbar">
         <Link className="cover-profile-brand" data-iq-brand="primary" href="/" aria-label="IQ Card home">iq</Link>
-        <PublicProfileMenu slug={profile.slug} />
       </header>
 
       <section className="cover-profile-lower-third" aria-labelledby="cover-profile-name">
@@ -54,7 +52,6 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
             {photoUrl ? <Image src={photoUrl} alt={`${displayName} profile photo`} fill sizes="96px" /> : <span>{view.initials}</span>}
           </div>
           <div className="cover-profile-nameplate">
-            <p className="cover-profile-eyebrow">Professional</p>
             <h1 id="cover-profile-name">{displayName}</h1>
             {profile.headline ? <p className="cover-profile-role">{profile.headline}</p> : null}
             {profile.tagline ? <p className="cover-profile-tagline">{profile.tagline}</p> : null}
@@ -80,7 +77,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
         </div>
       </section>
 
-      <footer className="cover-profile-footer"><span>Made with <strong>iq</strong></span><span>Professional</span></footer>
+      <footer className="cover-profile-footer"><span>Made with <strong>iq</strong></span><span className="cover-profile-footer-actions"><Link href="/customize">Design yours →</Link><span>Professional</span></span></footer>
     </div>
   </main>
 }

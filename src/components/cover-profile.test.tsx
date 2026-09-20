@@ -59,6 +59,11 @@ describe('PublicProfile', () => {
     expect(html).toContain('--cover-overlay:0.56')
     expect(html).toContain('--cover-focal-y:68%')
     expect(html).toContain('aria-label="Profile links"')
+    expect(html).toContain('href="/customize"')
+    expect(html).toContain('Design yours →')
+    expect(html).not.toContain('Open profile menu')
+    expect(html).not.toContain('cover-profile-eyebrow')
+    expect(html).toContain('>Professional</span>')
   })
 
   it('uses the Cover fallback when no cover image is saved', () => {

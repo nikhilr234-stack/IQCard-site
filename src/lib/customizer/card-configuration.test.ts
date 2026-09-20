@@ -82,8 +82,8 @@ describe('canonical card payload', () => {
         currency: 'INR',
         pricingVersion: 'demo-inr-v1',
         provisional: true,
-        components: { base: 1499, material: 500, craft: 350, customLogoSetup: 0 },
-        total: 2349,
+        components: { base: 799, material: 500, craft: 350, customLogoSetup: 0 },
+        total: 1649,
       },
       manufacturing: {
         core: { color: 'black' },
@@ -101,23 +101,24 @@ describe('canonical card payload', () => {
         back: { layout: 'pure', backLayout: 'pure', tapToConnect: true },
       },
     })
-    expect(result?.pricing.total).toBe(2349)
+    expect(result?.pricing.components.base).toBe(799)
+    expect(result?.pricing.total).toBe(1649)
     expect(result?.manufacturing.surfaces.front.material).toBe(result?.configuration.material)
   })
 
   it.each([
-    ['White', 1849],
-    ['Black', 1849],
-    ['Graphite', 1849],
-    ['Terracotta', 1849],
-    ['Mustard', 1849],
-    ['Oxblood', 1849],
-    ['Walnut', 2349],
-    ['Natural Oak', 2349],
-    ['Travertine', 2499],
-    ['Concrete', 2399],
-    ['Ivory Marble', 2499],
-    ['Oxidised Steel', 2549],
+    ['White', 1149],
+    ['Black', 1149],
+    ['Graphite', 1149],
+    ['Terracotta', 1149],
+    ['Mustard', 1149],
+    ['Oxblood', 1149],
+    ['Walnut', 1649],
+    ['Natural Oak', 1649],
+    ['Travertine', 1799],
+    ['Concrete', 1699],
+    ['Ivory Marble', 1799],
+    ['Oxidised Steel', 1849],
   ])('accepts material %s and applies its server price', (material, total) => {
     const result = canonicalizeCardPayload(payloadWith({ material }))
 
@@ -126,11 +127,11 @@ describe('canonical card payload', () => {
   })
 
   it.each([
-    ['printed', 1999],
-    ['engrave', 2349],
-    ['emboss', 2449],
-    ['deboss', 2449],
-    ['foil', 2649],
+    ['printed', 1299],
+    ['engrave', 1649],
+    ['emboss', 1749],
+    ['deboss', 1749],
+    ['foil', 1949],
   ])('accepts craft %s and applies its server price', (craft, total) => {
     const result = canonicalizeCardPayload(payloadWith({ craft }))
 
@@ -261,7 +262,7 @@ describe('canonical card payload', () => {
       mimeType: 'image/png',
     })
     expect(result?.pricing.components.customLogoSetup).toBe(250)
-    expect(result?.pricing.total).toBe(2599)
+    expect(result?.pricing.total).toBe(1899)
   })
 
   it.each([

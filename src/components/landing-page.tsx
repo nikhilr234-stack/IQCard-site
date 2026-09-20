@@ -16,6 +16,7 @@ export function LandingPage() {
         .iq-material-native-copy .iq-text-link { margin-top:54px; }
         .iq-opening__copy .iq-button { margin-top: 28px; }
         .iq-opening__cta { gap: 10px; }
+        .iq-final-footnote small { margin-left: auto; color: #a5a5aa; font-size: 8px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
         .iq-material-native-visual { position:relative; min-height:640px; overflow:hidden; border:0; border-radius:0; background:transparent; }
         .iq-material-native-visual::after { content:""; position:absolute; left:8%; right:8%; bottom:8%; height:20%; background:radial-gradient(ellipse,rgba(0,0,0,.20),transparent 68%); filter:blur(27px); pointer-events:none; }
         .iq-material-native-card { position:absolute; width:42%; aspect-ratio:1.586; border-radius:25px; border:1px solid rgba(0,0,0,.12); box-shadow:0 28px 44px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.30); }
@@ -35,6 +36,7 @@ export function LandingPage() {
         @media (max-width: 560px) {
           .iq-nav__actions { gap: 6px; }
           .iq-nav__actions .iq-button { min-height: 44px; padding: 0 13px; font-size: 10px; }
+          .iq-final-footnote small { width: 100%; margin-left: 0; }
         }
       `}</style>
       <Script src="/landing.js" strategy="afterInteractive" />
@@ -168,7 +170,7 @@ export function LandingPage() {
             <h2>Make your introduction<br />unmistakably yours.</h2>
             <Link className="iq-button iq-button--dark" href={HOME_CTA_HREF}>Get your IQ Card</Link>
           </div>
-          <div className="iq-final-footnote"><span>Physical.</span><span>Digital.</span><span>Yours.</span></div>
+          <div className="iq-final-footnote"><span>Physical.</span><span>Digital.</span><span>Yours.</span><small>Designed by NRG STUDIO</small></div>
         </section>
       </main>
     </div>

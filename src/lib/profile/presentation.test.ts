@@ -14,8 +14,17 @@ describe('profile presentation normalization', () => {
     })
   })
 
-  it('fills missing draft and published settings from Minimal defaults', () => {
+  it('fills missing draft and published settings from Cover defaults', () => {
     expect(normalizePresentation(null)).toEqual(DEFAULT_PRESENTATION)
+    expect(DEFAULT_PRESENTATION.draft.template).toBe('cover')
+    expect(DEFAULT_PRESENTATION.published.template).toBe('cover')
+  })
+
+  it('preserves an explicit non-Cover template', () => {
+    expect(normalizePresentation({ draft: { template: 'studio' }, published: { template: 'signal' } })).toMatchObject({
+      draft: { template: 'studio' },
+      published: { template: 'signal' },
+    })
   })
 
   it('keeps draft and published snapshots independently resolvable', () => {

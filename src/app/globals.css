@@ -317,21 +317,18 @@ body:has(.cover-profile-shell) { background: #111113; color: #fff; }
 .cover-profile-page { width: min(1120px, 100%); min-height: 100svh; margin: 0 auto; padding: 24px clamp(22px, 5vw, 68px) 26px; display: flex; flex-direction: column; }
 .cover-profile-topbar { height: 52px; display: flex; align-items: center; justify-content: space-between; }
 .cover-profile-brand { color: #fff; font-size: 27px; font-weight: 700; letter-spacing: -.11em; line-height: 1; text-decoration: none; text-shadow: 0 2px 12px rgba(0,0,0,.22); }
-.cover-profile-topbar .public-menu-btn { border-color: rgba(255,255,255,.72); background: rgba(16,16,18,.20); color: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.08); backdrop-filter: blur(12px); }
-.cover-profile-topbar .public-menu-btn:hover { border-color: #fff; box-shadow: 0 0 0 6px rgba(255,255,255,.11); }
 .cover-profile-lower-third { width: min(760px, 100%); margin-top: auto; padding-top: clamp(110px, 24vh, 230px); }
 .cover-profile--center .cover-profile-lower-third { margin-inline: auto; text-align: center; }
 .cover-profile--center .cover-profile-identity { justify-content: center; }
 .cover-profile--center .cover-profile-content { align-items: center; }
 .cover-profile--center .cover-profile-links,.cover-profile--center .cover-profile-contact-actions { justify-content: center; }
 .cover-profile-identity { display: flex; align-items: center; gap: 18px; }
-.cover-profile-photo { width: 88px; aspect-ratio: 1; flex: 0 0 auto; position: relative; overflow: hidden; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.36); border-radius: 24px; background: linear-gradient(145deg, rgba(255,255,255,.25), rgba(255,255,255,.06)); box-shadow: 0 16px 36px rgba(0,0,0,.24); backdrop-filter: blur(12px); }
+.cover-profile-photo { width: 104px; aspect-ratio: 1; flex: 0 0 auto; position: relative; overflow: hidden; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.36); border-radius: 24px; background: linear-gradient(145deg, rgba(255,255,255,.25), rgba(255,255,255,.06)); box-shadow: 0 16px 36px rgba(0,0,0,.24); backdrop-filter: blur(12px); }
 .cover-profile-photo::before { content: ""; position: absolute; top: 24%; left: 50%; width: 40px; height: 40px; border-radius: 50%; background: rgba(18,18,21,.88); transform: translateX(-50%); }
 .cover-profile-photo::after { content: ""; position: absolute; bottom: -7%; left: 50%; width: 74%; height: 40%; border-radius: 50% 50% 19px 19px; background: rgba(18,18,21,.88); transform: translateX(-50%); }
 .cover-profile-photo span { position: relative; z-index: 1; margin-top: -25%; color: #fff; font-size: 24px; font-weight: 600; letter-spacing: -.08em; }
 .cover-profile-photo img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; }
 .cover-profile-nameplate { min-width: 0; }
-.cover-profile-eyebrow { margin: 0 0 10px; color: rgba(255,255,255,.66); font-size: 9px; font-weight: 800; letter-spacing: .17em; text-transform: uppercase; }
 .cover-profile-nameplate h1 { max-width: 640px; margin: 0; color: #fff; font-size: clamp(48px, 7vw, 88px); font-weight: 600; letter-spacing: -.075em; line-height: .85; text-shadow: 0 5px 22px rgba(0,0,0,.22); text-wrap: balance; }
 .cover-profile-role { margin: 15px 0 0; color: #fff; font-size: clamp(16px, 2.1vw, 23px); font-weight: 500; letter-spacing: -.03em; }
 .cover-profile-tagline,.cover-profile-location { color: rgba(255,255,255,.72); }
@@ -352,6 +349,8 @@ body:has(.cover-profile-shell) { background: #111113; color: #fff; }
 .cover-profile-contact-actions a { color: rgba(255,255,255,.72); font-size: 10px; font-weight: 700; text-decoration: none; transition: color .2s ease; }
 .cover-profile-contact-actions a:hover { color: #fff; }
 .cover-profile-footer { margin-top: 52px; padding-top: 17px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,.20); color: rgba(255,255,255,.58); font-size: 8px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.cover-profile-footer-actions { display: inline-flex; align-items: center; gap: 18px; }
+.cover-profile-footer-actions a { color: rgba(255,255,255,.72); font-size: 8px; font-weight: 600; letter-spacing: .08em; text-transform: none; }
 .cover-profile-footer strong { color: #fff; font-size: 13px; letter-spacing: -.1em; text-transform: lowercase; }
 .cover-preview-badge { position: fixed; z-index: 20; top: 18px; left: 50%; transform: translateX(-50%); padding: 6px 10px; border: 1px solid rgba(255,255,255,.26); border-radius: 999px; background: rgba(16,16,18,.48); color: rgba(255,255,255,.92); font-size: 10px; backdrop-filter: blur(12px); }
 
@@ -360,7 +359,7 @@ body:has(.cover-profile-shell) { background: #111113; color: #fff; }
   .cover-profile-topbar { height: 48px; }
   .cover-profile-lower-third { width: 100%; padding-top: 164px; }
   .cover-profile-identity { align-items: flex-end; gap: 14px; }
-  .cover-profile-photo { width: 72px; border-radius: 21px; }
+  .cover-profile-photo { width: 84px; border-radius: 21px; }
   .cover-profile-photo::before { width: 32px; height: 32px; }
   .cover-profile-photo span { font-size: 19px; }
   .cover-profile-nameplate h1 { font-size: clamp(43px, 14vw, 66px); }
@@ -374,6 +373,7 @@ body:has(.cover-profile-shell) { background: #111113; color: #fff; }
   .cover-profile-links a { min-height: 46px; font-size: 11px; }
   .cover-profile-contact-actions { gap: 16px; }
   .cover-profile-footer { margin-top: 36px; }
+  .cover-profile-footer-actions { gap: 12px; }
   .cover-profile--center .cover-profile-identity { align-items: center; flex-direction: column; }
 }
 
