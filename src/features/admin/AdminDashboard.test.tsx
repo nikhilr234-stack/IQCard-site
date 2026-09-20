@@ -39,8 +39,12 @@ function setValue(element: HTMLInputElement | HTMLSelectElement, value: string) 
 describe('AdminDashboard', () => {
   let host: HTMLDivElement
   let root: Root
+  let stylesheet: HTMLStyleElement
 
   beforeEach(async () => {
+    stylesheet = document.createElement('style')
+    stylesheet.textContent = readFileSync(resolve(process.cwd(), 'src/features/admin/admin.css'), 'utf8')
+    document.head.append(stylesheet)
     host = document.createElement('div')
     document.body.append(host)
     root = createRoot(host)
@@ -50,6 +54,7 @@ describe('AdminDashboard', () => {
   afterEach(async () => {
     await act(async () => root.unmount())
     host.remove()
+    stylesheet.remove()
     vi.clearAllMocks()
   })
 
@@ -57,6 +62,12 @@ describe('AdminDashboard', () => {
     expect(host.querySelector('h1')?.textContent).toBe('Clients')
     expect(host.querySelector<HTMLInputElement>('[aria-label="Search clients"]')).not.toBeNull()
     expect(host.textContent).toContain('Quick insights')
+  })
+
+  it('gives an administrator a direct link to their personal dashboard', () => {
+    const personalDashboard = [...host.querySelectorAll<HTMLAnchorElement>('a')].find((link) => link.textContent?.trim() === 'Your dashboard')
+
+    expect(personalDashboard?.getAttribute('href')).toBe('/dashboard')
   })
 
   it('delegates publishing to the injected action without mutating the client list', async () => {
@@ -81,6 +92,14 @@ describe('AdminDashboard', () => {
     expect(host.querySelector<HTMLInputElement>('[aria-label="Client name"]')!.value).toBe('Ada Lovelace')
     expect(host.querySelector<HTMLSelectElement>('[aria-label="Client segment"]')!.value).toBe('Technology')
     expect(host.querySelector('[role="alert"]')?.textContent).toContain('could not be completed')
+  })
+
+  it('keeps the onboarding email and send action on dedicated rows', () => {
+    const email = host.querySelector<HTMLInputElement>('[aria-label="Client email"]')!
+    const submit = button(host, /send access link/i)
+
+    expect(getComputedStyle(email.closest('label')!).gridColumn).toBe('1 / -1')
+    expect(getComputedStyle(submit).gridColumn).toBe('1 / -1')
   })
 
   it('renders eight data-derived overview cards and lets admins choose rows per page', async () => {

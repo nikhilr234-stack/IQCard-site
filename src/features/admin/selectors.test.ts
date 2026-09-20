@@ -36,6 +36,10 @@ describe('admin dashboard selectors', () => {
     expect(filterClientsByDateRange(clients, 7, new Date('2026-09-08T00:00:00Z')).map(({ id }) => id)).toEqual(['draft', 'invited', 'none'])
   })
 
+  it('does not show stale activity in the weekly-active view', () => {
+    expect(applyDashboardView(clients, { kind: 'weeklyActive', label: 'Weekly active' }, new Date('2026-09-16T00:00:00Z'))).toEqual([])
+  })
+
   it('filters and sorts the canonical client list without mutating it', () => {
     expect(filterClients(clients, { search: 'grace', status: 'Draft', segment: 'Startup' }).map(({ id }) => id)).toEqual(['draft'])
     expect(sortClients(clients, { key: 'joinedAt', direction: 'desc' }).map(({ id }) => id)).toEqual(['none', 'invited', 'draft', 'live'])

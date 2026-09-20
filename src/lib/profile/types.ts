@@ -1,6 +1,6 @@
 export type ProfileStatus = 'draft' | 'published'
 
-export type ProfileTemplate = 'minimal' | 'cover'
+export type ProfileTemplate = 'minimal' | 'cover' | 'studio' | 'executive' | 'signal' | 'index'
 
 export type CoverPresentation = {
   template: ProfileTemplate

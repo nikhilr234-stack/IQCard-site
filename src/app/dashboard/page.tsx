@@ -1,5 +1,5 @@
 import { requireAuthenticatedAccount } from '@/lib/auth/account'
-import { getOwnProfile } from '@/lib/profile/repository'
+import { getOwnProfile, getOwnProfilePresentation } from '@/lib/profile/repository'
 import { publishProfile, saveProfileDraft, unpublishProfile } from '@/app/actions/profile'
 import { uploadProfilePhoto, deleteProfilePhoto } from '@/app/actions/profile-photo'
 import { ProfileEditor } from './profile-editor'
@@ -7,9 +7,8 @@ import { isLinkedInImportConfigured } from '@/lib/linkedin'
 import { getLatestCheckoutHandoff } from '@/lib/checkout/repository'
 import { handoffIdentityName } from '@/lib/dashboard/dashboard-v6'
 import { isOnboardingV2Enabled } from '@/lib/features'
-import { getOnboardingProgress, onboardingPath } from '@/lib/onboarding/progress'
 import { getLatestClaimedRegistrationIntent } from '@/lib/registration/repository'
-import { redirect } from 'next/navigation'
+import { selectExactSavedCardDesign } from '@/lib/dashboard/saved-card'
 import { getPublicEnv } from '@/lib/env'
 
 export const dynamic = 'force-dynamic'
@@ -42,21 +41,23 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const feedback = parseLinkedInFeedback(query.linkedin)
   const account = await requireAuthenticatedAccount()
   const registrationV2 = isOnboardingV2Enabled()
-  if (registrationV2 && account.role === 'client') {
-    const progress = await getOnboardingProgress(account.id)
-    if (!progress.completedAt) redirect(onboardingPath(progress.currentStep))
-  }
-  const registration = registrationV2 ? await getLatestClaimedRegistrationIntent(account.id) : null
-  const legacyDesign = registration ? null : await getLatestCheckoutHandoff(account.id)
-  const savedDesign = registration
-    ? { design_id: registration.design_id, payload: registration.design_payload }
-    : legacyDesign
+  const [registration, legacyDesign] = await Promise.all([
+    registrationV2 ? getLatestClaimedRegistrationIntent(account.id) : Promise.resolve(null),
+    getLatestCheckoutHandoff(account.id),
+  ])
+  const savedDesign = selectExactSavedCardDesign(
+    registration ? { design_id: registration.design_id, payload: registration.design_payload } : null,
+    legacyDesign,
+  )
   const preferredName = registration
     ? `${registration.first_name} ${registration.last_name}`
     : handoffIdentityName(legacyDesign?.payload)
-  const profile = await getOwnProfile(account, preferredName)
+  const [profile, presentation] = await Promise.all([
+    getOwnProfile(account, preferredName),
+    getOwnProfilePresentation(account.id),
+  ])
   return <div className="dashboard-v6-shell">
     {feedback ? <p className="dashboard-linkedin-feedback" role={feedback.role} aria-live={feedback.role === 'alert' ? 'assertive' : 'polite'}>{feedback.message}</p> : null}
-    <ProfileEditor profile={profile} savedDesign={savedDesign} saveProfileAction={saveProfileDraft} publishAction={publishProfile} unpublishAction={unpublishProfile} uploadPhotoAction={uploadProfilePhoto} deletePhotoAction={deleteProfilePhoto} linkedinConfigured={isLinkedInImportConfigured()} siteUrl={getPublicEnv().siteUrl} />
+    <ProfileEditor profile={profile} presentation={presentation} savedDesign={savedDesign} saveProfileAction={saveProfileDraft} publishAction={publishProfile} unpublishAction={unpublishProfile} uploadPhotoAction={uploadProfilePhoto} deletePhotoAction={deleteProfilePhoto} linkedinConfigured={isLinkedInImportConfigured()} siteUrl={getPublicEnv().siteUrl} />
   </div>
 }

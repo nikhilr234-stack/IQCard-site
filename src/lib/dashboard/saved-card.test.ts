@@ -1,9 +1,28 @@
 import { describe, expect, it } from 'vitest'
-import { parseSavedCardDesign } from './saved-card'
+import { parseSavedCardDesign, selectExactSavedCardDesign } from './saved-card'
 
 const customLogoDataUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg=='
 
 describe('saved card design', () => {
+  it('uses the legacy saved design when the preferred registration payload is unusable', () => {
+    const legacyDesign = {
+      design_id: 'IQ-LEGACY-REAL',
+      payload: {
+        schemaVersion: '1.0',
+        configuration: {
+          core: 'black', material: 'Walnut', craft: 'engrave', customColor: 'black', backLayout: 'pure',
+          identity: { name: 'Ava Stone', tone: 'dark', composition: 'signature', fineTune: { nameScale: 1, x: 0, y: 0, align: 'left' } },
+          logo: { mode: 'iq', dataUrl: null, filename: null, mimeType: null, align: 'right', x: 50, y: 18, scale: 0.7 },
+        },
+      },
+    }
+
+    expect(selectExactSavedCardDesign(
+      { design_id: 'IQ-BROKEN-NEW', payload: { configuration: { material: 'Walnut' } } },
+      legacyDesign,
+    )).toEqual(legacyDesign)
+  })
+
   it('maps the exact saved customizer configuration into a card view model', () => {
     expect(parseSavedCardDesign({
       design_id: 'IQ-164597',
@@ -15,7 +34,19 @@ describe('saved card design', () => {
           logo: { mode: 'iq', dataUrl: null, filename: null, mimeType: null, align: 'right', x: 50, y: 18, scale: 0.7 },
         },
       },
-    })).toMatchObject({ available: true, designId: 'IQ-164597', material: 'walnut', finish: 'engrave', engravedName: 'Ava Stone', logoPlacement: 'right', customColor: '#111214', core: 'black' })
+    })).toMatchObject({
+      available: true,
+      designId: 'IQ-164597',
+      material: 'walnut',
+      finish: 'engrave',
+      engravedName: 'Ava Stone',
+      nameLayout: { align: 'left', scale: 1, x: 0, y: 0 },
+      logoLayout: { align: 'right', scale: 0.7, x: 50, y: 18 },
+      composition: 'signature',
+      backLayout: 'pure',
+      customColor: '#111214',
+      core: 'black',
+    })
   })
 
   it('reports unavailable instead of fabricating a card', () => {

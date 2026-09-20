@@ -5,12 +5,13 @@ import type { ReactElement } from 'react'
 const dependencies = vi.hoisted(() => ({
   requireAuthenticatedAccount: vi.fn(),
   getOwnProfile: vi.fn(),
+  getOwnProfilePresentation: vi.fn(),
   getLatestCheckoutHandoff: vi.fn(),
   getPublicEnv: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/account', () => ({ requireAuthenticatedAccount: dependencies.requireAuthenticatedAccount }))
-vi.mock('@/lib/profile/repository', () => ({ getOwnProfile: dependencies.getOwnProfile }))
+vi.mock('@/lib/profile/repository', () => ({ getOwnProfile: dependencies.getOwnProfile, getOwnProfilePresentation: dependencies.getOwnProfilePresentation }))
 vi.mock('@/lib/checkout/repository', () => ({ getLatestCheckoutHandoff: dependencies.getLatestCheckoutHandoff }))
 vi.mock('@/lib/features', () => ({ isOnboardingV2Enabled: () => false }))
 vi.mock('@/lib/linkedin', async (loadOriginal) => {
@@ -40,6 +41,10 @@ describe('dashboard LinkedIn import feedback', () => {
     vi.clearAllMocks()
     dependencies.requireAuthenticatedAccount.mockResolvedValue({ id: 'owner-1', email: 'owner@example.com', role: 'client' })
     dependencies.getOwnProfile.mockResolvedValue(profile)
+    dependencies.getOwnProfilePresentation.mockResolvedValue({
+      template: 'minimal',
+      cover: { coverPath: null, overlay: .38, focalY: 50, alignment: 'lower-left', photoPathOverride: null },
+    })
     dependencies.getLatestCheckoutHandoff.mockResolvedValue(null)
     dependencies.getPublicEnv.mockReturnValue({ siteUrl: 'https://iqcard.in' })
   })

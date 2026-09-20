@@ -66,6 +66,11 @@ function savedRecord(id: string, saveMode: 'manual' | 'auto' | undefined, name: 
 }
 
 describe('custom-logo browser persistence', () => {
+  it('defaults a missing saved logo alignment to left without changing an explicit choice', () => {
+    expect(restoreStoredLogo({ mode: 'iq', dataUrl: null, filename: null, mimeType: null })).toMatchObject({ align: 'left' })
+    expect(restoreStoredLogo({ mode: 'iq', dataUrl: null, filename: null, mimeType: null, align: 'right' })).toMatchObject({ align: 'right' })
+  })
+
   it('restores the latest explicit save instead of a newer background autosave', () => {
     const explicitSave = { id: 'manual', saveMode: 'manual', configuration: { material: 'Ivory Marble' } }
     const backgroundSave = { id: 'auto', saveMode: 'auto', configuration: { material: 'Walnut' } }
@@ -480,7 +485,7 @@ describe('custom-logo browser persistence', () => {
         composition: 'signature',
         fineTune: { nameScale: 1, x: 0, y: 0, align: 'left' },
       },
-      logo: builtInLogo,
+      logo: { ...builtInLogo, align: 'left', objectUrl: undefined },
       side: 'front',
       backLayout: 'pure',
       craft: 'engrave',

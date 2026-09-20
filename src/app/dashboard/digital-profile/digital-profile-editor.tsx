@@ -7,6 +7,7 @@ import { useFormStatus } from 'react-dom'
 
 import { PublicProfile } from '@/components/public-profile'
 import { PROFILE_PHOTO_MAX_BYTES } from '@/lib/profile/photo'
+import { PROFILE_TEMPLATE_OPTIONS } from '@/lib/profile/presentation'
 import type { CoverPresentation, Profile, ProfileTemplate } from '@/lib/profile/types'
 
 type FormAction = (formData: FormData) => void | Promise<void>
@@ -218,15 +219,14 @@ export function DigitalProfileEditor({
       <div className="digital-profile-workspace">
         <div className="digital-profile-controls">
           <section className="digital-profile-panel" aria-labelledby="digital-profile-template-title">
-            <div className="digital-profile-panel-head"><span>01 · TEMPLATE</span><h2 id="digital-profile-template-title">Your presentation.</h2><p>Switch any time without losing your Cover settings.</p></div>
+            <div className="digital-profile-panel-head"><span>01 · TEMPLATE</span><h2 id="digital-profile-template-title">Your presentation.</h2><p>Switch any time without losing your shared details or Cover settings.</p></div>
             <div className="digital-profile-templates">
-              <button type="button" aria-label="01 Minimal" className={draft.template === 'minimal' ? 'active' : ''} aria-pressed={draft.template === 'minimal'} onClick={() => selectTemplate('minimal')}><span>01</span><strong>Minimal</strong><small>Clean and editorial</small><i aria-hidden="true" /></button>
-              <button type="button" aria-label="02 Cover" className={draft.template === 'cover' ? 'active' : ''} aria-pressed={draft.template === 'cover'} onClick={() => selectTemplate('cover')}><span>02</span><strong>Cover</strong><small>Immersive and visual</small><i aria-hidden="true" /></button>
+              {PROFILE_TEMPLATE_OPTIONS.map((option) => <button key={option.id} type="button" aria-label={`${option.number} ${option.name}`} className={draft.template === option.id ? 'active' : ''} aria-pressed={draft.template === option.id} onClick={() => selectTemplate(option.id)}><span>{option.number}</span><strong>{option.name}</strong><small>{option.description}</small><i aria-hidden="true" /></button>)}
             </div>
           </section>
 
           <section className="digital-profile-panel" aria-labelledby="digital-profile-photo-title">
-            <div className="digital-profile-panel-head"><span>02 · PROFILE PHOTO</span><h2 id="digital-profile-photo-title">Your picture.</h2><p>This shared photo appears in both Minimal and Cover.</p></div>
+            <div className="digital-profile-panel-head"><span>02 · PROFILE PHOTO</span><h2 id="digital-profile-photo-title">Your picture.</h2><p>This shared photo appears across every profile style.</p></div>
             <ProfilePhotoControls profile={profile} uploadPhotoAction={uploadPhotoAction} deletePhotoAction={deletePhotoAction} />
           </section>
 
@@ -251,7 +251,7 @@ export function DigitalProfileEditor({
           </section> : null}
 
           <section className="digital-profile-panel digital-profile-content-panel" aria-labelledby="digital-profile-content-title">
-            <div className="digital-profile-panel-head"><span>{draft.template === 'cover' ? '04' : '03'} · CONTENT</span><h2 id="digital-profile-content-title">The details are shared.</h2><p>Edit your identity and links once. Both templates use them.</p></div>
+            <div className="digital-profile-panel-head"><span>{draft.template === 'cover' ? '04' : '03'} · CONTENT</span><h2 id="digital-profile-content-title">The details are shared.</h2><p>Edit your identity and links once. Every template uses them.</p></div>
             <dl><div><dt>Identity</dt><dd>{profile.full_name || 'Add your name'} · {profile.headline || 'Add your role'}</dd></div><div><dt>Content</dt><dd>{profile.profile_links.length} link{profile.profile_links.length === 1 ? '' : 's'} · {profile.bio ? 'Bio ready' : 'Add a bio'}</dd></div></dl>
             <div className="digital-profile-content-links"><Link href="/dashboard#identity">Edit identity →</Link><Link href="/dashboard#content">Manage content →</Link></div>
           </section>
@@ -268,7 +268,7 @@ export function DigitalProfileEditor({
 
         <aside className="digital-profile-preview-column">
           <div className="digital-profile-preview-sticky">
-            <div className="digital-profile-preview-head"><span>LIVE PREVIEW</span><strong>{draft.template === 'cover' ? '02 Cover' : '01 Minimal'}</strong></div>
+            <div className="digital-profile-preview-head"><span>LIVE PREVIEW</span><strong>{PROFILE_TEMPLATE_OPTIONS.find(({ id }) => id === draft.template)?.number} {PROFILE_TEMPLATE_OPTIONS.find(({ id }) => id === draft.template)?.name}</strong></div>
             <section className="digital-profile-phone" aria-label="Profile phone preview">
               <div className="digital-profile-phone-screen"><PublicProfile profile={profile} presentation={draft} preview /></div>
             </section>

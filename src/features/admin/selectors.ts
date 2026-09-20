@@ -53,7 +53,11 @@ export function applyDashboardView(clients: readonly Client[], view: DashboardVi
   if (view.kind === 'segment') return clients.filter((client) => client.segment === view.segment)
 
   const latest = latestClientTime(clients, now)
-  if (view.kind === 'weeklyActive') return clients.filter((client) => client.lastActiveAt && clientTime(client) >= latest - 7 * DAY)
+  if (view.kind === 'weeklyActive') {
+    const weeklyActivityStart = new Date(now)
+    weeklyActivityStart.setDate(weeklyActivityStart.getDate() - 7)
+    return clients.filter((client) => client.lastActiveAt && clientTime(client) >= weeklyActivityStart.getTime())
+  }
   if (view.kind === 'followUp') return clients.filter((client) => client.status === 'Invited' && (!client.lastActiveAt || clientTime(client) < latest - 2 * DAY))
   if (view.kind === 'funnel') {
     if (view.stage === 'invited') return [...clients]

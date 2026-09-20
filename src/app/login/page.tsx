@@ -4,8 +4,6 @@ import { getLoginPageState } from '@/lib/auth/login-page-content'
 import { magicLinkErrorMessage } from '@/lib/auth/messages'
 import { loginStyles } from '@/components/login-styles'
 import { getCurrentAccount } from '@/lib/auth/account'
-import { isOnboardingV2Enabled } from '@/lib/features'
-import { getOnboardingProgress, onboardingPath } from '@/lib/onboarding/progress'
 import { redirect } from 'next/navigation'
 
 type LoginPageProps = {
@@ -19,13 +17,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams
   const account = await getCurrentAccount()
   if (account?.role === 'admin') redirect('/admin')
-  if (account?.role === 'client') {
-    if (isOnboardingV2Enabled()) {
-      const progress = await getOnboardingProgress(account.id)
-      redirect(progress.completedAt ? '/dashboard' : onboardingPath(progress.currentStep))
-    }
-    redirect('/dashboard')
-  }
+  if (account?.role === 'client') redirect('/dashboard')
   const state = getLoginPageState(params)
   const errorMessage = state.error ? magicLinkErrorMessage(state.error) : null
 

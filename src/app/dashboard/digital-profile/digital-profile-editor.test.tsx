@@ -123,4 +123,17 @@ describe('DigitalProfileEditor', () => {
     expect(host.querySelector('[aria-label="Profile phone preview"] .cover-profile--center')).not.toBeNull()
     expect(host.querySelector('[aria-label="Profile phone preview"] .cover-profile-shell')?.getAttribute('style')).toContain('--cover-focal-y: 22%')
   })
+
+  it.each([
+    ['03 Studio', 'studio'],
+    ['04 Executive', 'executive'],
+    ['05 Signal', 'signal'],
+    ['06 Index', 'index'],
+  ] as const)('selects and serializes %s from the existing template picker', async (buttonName, template) => {
+    await act(async () => button(host, new RegExp(buttonName, 'i')).click())
+
+    const serialized = host.querySelector<HTMLInputElement>('input[name="presentation"]')
+    expect(JSON.parse(serialized?.value ?? '').template).toBe(template)
+    expect(host.querySelector(`[data-template="${template}"]`)).not.toBeNull()
+  })
 })

@@ -106,7 +106,7 @@ describe('checkout registration handoff route', () => {
     expect(mocks.signInWithOtp).toHaveBeenCalledWith({
       email: 'owner@example.com',
       options: {
-        emailRedirectTo: 'https://iqcard.in/auth/confirm?registration=registration-secret&next=%2Fonboarding%2Fidentity',
+        emailRedirectTo: 'https://iqcard.in/auth/confirm?registration=registration-secret&next=%2Fdashboard',
       },
     })
     expect(await response.json()).toEqual({ ok: true, sent: true, next: '/register/check-email' })

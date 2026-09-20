@@ -2,6 +2,17 @@ import type { CoverPresentation, ProfilePresentation, ProfileTemplate } from './
 
 export type { CoverPresentation, ProfilePresentation, ProfileTemplate }
 
+export const PROFILE_TEMPLATE_OPTIONS = [
+  { id: 'minimal', number: '01', name: 'Minimal', description: 'Clean and editorial' },
+  { id: 'cover', number: '02', name: 'Cover', description: 'Immersive and visual' },
+  { id: 'studio', number: '03', name: 'Studio', description: 'Portfolio first' },
+  { id: 'executive', number: '04', name: 'Executive', description: 'Portrait and authority' },
+  { id: 'signal', number: '05', name: 'Signal', description: 'Bold and expressive' },
+  { id: 'index', number: '06', name: 'Index', description: 'Every link, organized' },
+] as const satisfies ReadonlyArray<{ id: ProfileTemplate; number: string; name: string; description: string }>
+
+const PROFILE_TEMPLATE_IDS = new Set<ProfileTemplate>(PROFILE_TEMPLATE_OPTIONS.map(({ id }) => id))
+
 function createDefaultSettings(): CoverPresentation {
   return {
     template: 'minimal',
@@ -35,7 +46,9 @@ function clampNumber(value: unknown, fallback: number, min: number, max: number)
 function normalizeSettings(input: unknown): CoverPresentation {
   const source = isRecord(input) ? input : {}
   const cover = isRecord(source.cover) ? source.cover : {}
-  const template: ProfileTemplate = source.template === 'cover' ? 'cover' : 'minimal'
+  const template = typeof source.template === 'string' && PROFILE_TEMPLATE_IDS.has(source.template as ProfileTemplate)
+    ? source.template as ProfileTemplate
+    : 'minimal'
 
   return {
     template,

@@ -25,7 +25,7 @@ function placement(value) {
     scale: boundedNumber(logo.scale, 0.5, 2, 1),
     x: boundedNumber(logo.x, -50, 50, 0),
     y: boundedNumber(logo.y, -40, 40, 0),
-    align: ALIGNMENTS.includes(logo.align) ? logo.align : 'right',
+    align: ALIGNMENTS.includes(logo.align) ? logo.align : 'left',
   }
 }
 
@@ -125,7 +125,7 @@ export function normalizeStoredConfiguration(value) {
   const logoScale = boundedNumber(logoInput.scale, 0.5, 2, 1)
   const logoX = boundedNumber(logoInput.x, -50, 50, 0)
   const logoY = boundedNumber(logoInput.y, -40, 40, 0)
-  const logoAlign = allowed(logoInput.align, ALIGNMENTS, 'right')
+  const logoAlign = allowed(logoInput.align, ALIGNMENTS, 'left')
   const logoPlacementInvalid = logoAlign === null ||
     (logoInput.scale !== undefined && logoScale === 1 && logoInput.scale !== 1) ||
     (logoInput.x !== undefined && logoX === 0 && logoInput.x !== 0) ||

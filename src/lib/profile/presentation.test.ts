@@ -29,6 +29,13 @@ describe('profile presentation normalization', () => {
     expect(resolvePresentation(value, 'draft').cover.coverPath).toBe('draft.jpg')
   })
 
+  it.each(['studio', 'executive', 'signal', 'index'] as const)('keeps the %s template selected when normalizing stored settings', (template) => {
+    const value = normalizePresentation({ draft: { template }, published: { template } })
+
+    expect(value.draft.template).toBe(template)
+    expect(value.published.template).toBe(template)
+  })
+
   it('does not share mutable defaults between draft and published snapshots', () => {
     const value = DEFAULT_PRESENTATION as unknown as ProfilePresentation
     value.draft.cover.coverPath = 'draft.jpg'

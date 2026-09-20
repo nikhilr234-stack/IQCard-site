@@ -108,7 +108,6 @@ describe('dialog and form accessibility contracts', () => {
 
   it.each([
     'src/app/onboarding/onboarding-wizard.tsx',
-    'src/app/dashboard/profile-editor.tsx',
   ])('%s gives every form control an ID and every label an explicit target', (path) => {
     const elements = collectOpeningElements(parseTsx(path))
     const controls = elements.filter((element) => ['input', 'textarea'].includes(jsxName(element)))
@@ -122,6 +121,13 @@ describe('dialog and form accessibility contracts', () => {
     expect(controls.every((control) => Boolean(jsxAttribute(control, 'id')))).toBe(true)
     expect(labels.every((label) => Boolean(jsxAttribute(label, 'htmlFor')))).toBe(true)
     expect(new Set(literalIds).size).toBe(literalIds.length)
+  })
+
+  it('keeps the owner dashboard free of the retired embedded setup form', () => {
+    const elements = collectOpeningElements(parseTsx('src/app/dashboard/profile-editor.tsx'))
+    const controls = elements.filter((element) => ['input', 'textarea'].includes(jsxName(element)))
+
+    expect(controls).toHaveLength(0)
   })
 
   it('does not nest contact or visibility labels', () => {

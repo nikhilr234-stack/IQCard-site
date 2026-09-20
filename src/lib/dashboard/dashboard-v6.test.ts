@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { LIVE_WIDGETS, getDashboardMode, handoffIdentityName, normalizeWidgetOrder } from './dashboard-v6'
+import { LIVE_WIDGETS, handoffIdentityName, normalizeWidgetOrder } from './dashboard-v6'
 
 describe('dashboard v6', () => {
-  it('switches from setup to live after publication', () => {
-    expect(getDashboardMode('draft', false)).toBe('setup')
-    expect(getDashboardMode('published', false)).toBe('live')
-    expect(getDashboardMode('draft', true)).toBe('setup')
+  it('uses the owner center for every dashboard, regardless of publish status', () => {
+    const editor = readFileSync(resolve(process.cwd(), 'src/app/dashboard/profile-editor.tsx'), 'utf8')
+
+    expect(editor).toContain('return <LiveOwnerCenter')
+    expect(editor).not.toContain('getDashboardMode')
+    expect(editor).not.toContain('function SetupDashboard')
+    expect(editor).not.toContain('function LiveDashboard')
   })
 
   it('normalizes saved widget order without allowing unknown or duplicate widgets', () => {
@@ -34,10 +37,12 @@ describe('dashboard v6', () => {
 
     expect(page).toContain('getLatestCheckoutHandoff(account.id)')
     expect(page).toContain('getLatestClaimedRegistrationIntent(account.id)')
-    expect(page).toContain('redirect(onboardingPath(progress.currentStep))')
+    expect(page).toContain('getOwnProfilePresentation(account.id)')
+    expect(page).not.toContain('redirect(onboardingPath(progress.currentStep))')
     expect(page).toContain('savedDesign={savedDesign}')
+    expect(page).toContain('presentation={presentation}')
     expect(editor).toContain('savedDesign: SavedDesign | null')
-    expect(editor).toContain('savedDesign?.design_id')
-    expect(editor).toContain('savedDesign?.payload')
+    expect(editor).toContain('savedDesign={savedDesign}')
+    expect(editor).toContain('<LiveOwnerCenter')
   })
 })
