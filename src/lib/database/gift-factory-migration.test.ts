@@ -26,6 +26,27 @@ describe('gift factory transaction migration', () => {
     expect(migration).not.toMatch(/create\s+(table|schema)\b/)
   })
 
+  it('installs its own shared link validator without relying on historical publication migrations', () => {
+    const migration = sql()
+
+    expect(migration).toContain('create or replace function public.decode_profile_link_percent')
+    expect(migration).toContain('create or replace function public.is_valid_profile_link(p_label text, p_url text)')
+    expect(migration).toContain('revoke all on function public.is_valid_profile_link(text, text)')
+    expect(migration).not.toContain('enforce_published_profile_validity')
+  })
+
+  it('rejects invalid links inside the create RPC before publishing without a trigger', () => {
+    const migration = sql()
+    const functionBody = migration.slice(migration.indexOf('create or replace function public.admin_create_and_publish_gift_profile'))
+    const validationIndex = functionBody.indexOf('not public.is_valid_profile_link(v_link.value ->> \'label\', v_link.value ->> \'url\')')
+    const publishIndex = functionBody.indexOf("update public.profiles set status = 'published'")
+
+    expect(validationIndex).toBeGreaterThanOrEqual(0)
+    expect(functionBody.indexOf("raise sqlstate '22023' using message = 'gift links are invalid'", validationIndex)).toBeGreaterThan(validationIndex)
+    expect(publishIndex).toBeGreaterThan(validationIndex)
+    expect(functionBody).not.toContain('publication trigger')
+  })
+
   it('does not expose the recipient email through the public profile or add an onboarding row', () => {
     const migration = sql()
     const functionStart = migration.indexOf('create or replace function public.admin_create_and_publish_gift_profile')
@@ -44,7 +65,7 @@ describe('gift factory transaction migration', () => {
     expect(functionBody).toContain('pg_advisory_xact_lock')
     expect(functionBody).toContain('for v_attempt in 1..100 loop')
     expect(functionBody).toContain("v_slug_root := pg_catalog.btrim(pg_catalog.regexp_replace(pg_catalog.lower(v_full_name), '[^a-z0-9]+', '-', 'g'), '-')")
-    expect(functionBody).toContain("if v_slug_root in ('admin','api','auth','dashboard','login','iq','register','onboarding','customize')")
+    expect(functionBody).toContain("if v_slug_root in ('admin','api','auth','dashboard','login','iq','register','onboarding','customize','claim-gift')")
     expect(publishIndex).toBeGreaterThan(functionBody.indexOf('insert into public.profile_gift_claims'))
     expect(publishIndex).toBeGreaterThan(functionBody.indexOf('insert into public.profile_presentations'))
     expect(publishIndex).toBeGreaterThan(functionBody.indexOf('insert into public.profile_links'))

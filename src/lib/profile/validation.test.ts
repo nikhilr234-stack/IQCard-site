@@ -35,6 +35,10 @@ describe('profile slugs', () => {
     expect(isReservedSlug('onboarding')).toBe(true)
     expect(isReservedSlug('customize')).toBe(true)
   })
+  it('never allocates the gift claim route as a profile slug', () => {
+    expect(isReservedSlug('claim-gift')).toBe(true)
+    expect(validateSlug('claim-gift')).toBe('That profile URL is reserved.')
+  })
   it('rejects invalid slug characters', () => expect(validateSlug('Nikhil Rakesh')).toBe('Use lowercase letters, numbers, and hyphens only.'))
 
   it('rejects empty names when publishing', () => {

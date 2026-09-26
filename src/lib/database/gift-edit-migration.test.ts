@@ -22,4 +22,13 @@ describe('unclaimed gift edit migration', () => {
     expect(sql).toContain('to service_role')
     expect(sql).not.toMatch(/create\s+(table|schema)\b/)
   })
+
+  it('rejects invalid links inside the update RPC and fails when its presentation row is missing', () => {
+    const sql = readFileSync(path, 'utf8').toLowerCase().replace(/\s+/g, ' ')
+    const validationIndex = sql.indexOf('or not public.is_valid_profile_link(v_link.value ->> \'label\', v_link.value ->> \'url\')')
+
+    expect(validationIndex).toBeGreaterThanOrEqual(0)
+    expect(sql.indexOf("raise sqlstate '22023' using message = 'gift links are invalid'", validationIndex)).toBeGreaterThan(validationIndex)
+    expect(sql).toContain('select published into strict v_presentation from public.profile_presentations')
+  })
 })

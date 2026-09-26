@@ -44,7 +44,7 @@ begin
     location = pg_catalog.btrim(coalesce(p_location, '')) where id = p_profile_id;
   update public.profile_gift_claims set recipient_name = v_name where profile_id = p_profile_id and status = 'unclaimed';
 
-  select published into v_presentation from public.profile_presentations where profile_id = p_profile_id for update;
+  select published into strict v_presentation from public.profile_presentations where profile_id = p_profile_id for update;
   update public.profile_presentations set draft = v_presentation, published = v_presentation where profile_id = p_profile_id;
   delete from public.profile_links where profile_id = p_profile_id;
   for v_link in select item.value, item.ordinality from pg_catalog.jsonb_array_elements(p_links) with ordinality as item(value, ordinality) loop

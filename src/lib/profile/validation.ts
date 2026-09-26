@@ -1,6 +1,6 @@
 import { normalizeHandoffEmail } from '@/lib/checkout/handoff'
 
-const reserved = new Set(['admin', 'api', 'auth', 'dashboard', 'login', 'iq', 'register', 'onboarding', 'customize'])
+const reserved = new Set(['admin', 'api', 'auth', 'dashboard', 'login', 'iq', 'register', 'onboarding', 'customize', 'claim-gift'])
 
 export const PROFILE_NAME_PART_MAX_LENGTH = 80
 export const PROFILE_FULL_NAME_MAX_LENGTH = PROFILE_NAME_PART_MAX_LENGTH * 2 + 1

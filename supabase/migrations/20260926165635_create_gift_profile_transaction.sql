@@ -1,6 +1,73 @@
 -- Creates a complete unclaimed gift in one transaction. The service-role-only
 -- RPC is called only by an admin-authorized server action; recipients never
 -- receive access to private claim data or internal media object paths.
+-- Keep Gift Factory self-contained on production installs that never applied
+-- the older publication-boundary migrations.
+create or replace function public.decode_profile_link_percent(p_value text)
+returns text language plpgsql immutable strict security invoker set search_path = '' as $$
+declare
+  v_result text := '';
+  v_index integer := 1;
+  v_hex text;
+  v_byte integer;
+begin
+  if pg_catalog.length(p_value) > 2048 then return null; end if;
+
+  while v_index <= pg_catalog.length(p_value) loop
+    if pg_catalog.substr(p_value, v_index, 1) = '%' then
+      if v_index + 2 > pg_catalog.length(p_value) then return null; end if;
+      v_hex := pg_catalog.substr(p_value, v_index + 1, 2);
+      if v_hex !~ '^[0-9A-Fa-f]{2}$' then return null; end if;
+      v_byte := pg_catalog.get_byte(pg_catalog.decode(v_hex, 'hex'), 0);
+      if v_byte > 127 then return null; end if;
+      v_result := v_result || pg_catalog.chr(v_byte);
+      v_index := v_index + 3;
+    else
+      v_result := v_result || pg_catalog.substr(p_value, v_index, 1);
+      v_index := v_index + 1;
+    end if;
+  end loop;
+
+  return v_result;
+end;
+$$;
+revoke all on function public.decode_profile_link_percent(text) from public, anon, authenticated, service_role;
+
+create or replace function public.is_valid_profile_link(p_label text, p_url text)
+returns boolean language plpgsql immutable security invoker set search_path = '' as $$
+declare
+  v_url text := pg_catalog.btrim(coalesce(p_url, ''));
+  v_match text[];
+  v_host text;
+  v_mailto_path text;
+  v_decoded_mailto text;
+begin
+  if pg_catalog.length(pg_catalog.btrim(coalesce(p_label, ''))) not between 1 and 60
+    or pg_catalog.length(v_url) not between 1 and 2048 then return false; end if;
+
+  v_match := pg_catalog.regexp_match(v_url, '^https?://([a-z0-9.-]+)(?::(?:[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))?(?:[/?#][^[:space:]]*)?$', 'i');
+  if v_match is not null then
+    v_host := v_match[1];
+    if pg_catalog.length(v_host) > 253 then return false; end if;
+    if v_host ~ '^[0-9.]+$' then
+      return v_host ~ '^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$';
+    end if;
+    return v_host ~ '^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?))*$';
+  end if;
+
+  if v_url ~* '^mailto:[^[:space:]?]+(?:\?[^[:space:]]*)?$' then
+    v_mailto_path := pg_catalog.split_part(pg_catalog.substr(v_url, 8), '?', 1);
+    v_decoded_mailto := public.decode_profile_link_percent(v_mailto_path);
+    return v_decoded_mailto is not null
+      and v_decoded_mailto ~* '^[^[:space:]@?]+@[^[:space:]@?]+\.[^[:space:]@?]+$';
+  end if;
+
+  return v_url ~* '^tel:[+0-9][0-9[:space:]().-]+$'
+    and pg_catalog.length(pg_catalog.regexp_replace(pg_catalog.substr(v_url, 5), '[^0-9]', '', 'g')) between 7 and 15;
+end;
+$$;
+revoke all on function public.is_valid_profile_link(text, text) from public, anon, authenticated, service_role;
+
 create or replace function public.admin_create_and_publish_gift_profile(
   p_profile_id uuid,
   p_full_name text,
@@ -62,7 +129,7 @@ begin
 
   v_slug_root := pg_catalog.btrim(pg_catalog.regexp_replace(pg_catalog.lower(v_full_name), '[^a-z0-9]+', '-', 'g'), '-');
   if v_slug_root = '' then v_slug_root := 'gift'; end if;
-  if v_slug_root in ('admin','api','auth','dashboard','login','iq','register','onboarding','customize') then
+  if v_slug_root in ('admin','api','auth','dashboard','login','iq','register','onboarding','customize','claim-gift') then
     v_slug_root := v_slug_root || '-gift';
   end if;
 
@@ -111,15 +178,16 @@ begin
   loop
     if pg_catalog.jsonb_typeof(v_link.value) is distinct from 'object'
       or pg_catalog.jsonb_typeof(v_link.value -> 'label') is distinct from 'string'
-      or pg_catalog.jsonb_typeof(v_link.value -> 'url') is distinct from 'string' then
+      or pg_catalog.jsonb_typeof(v_link.value -> 'url') is distinct from 'string'
+      or not public.is_valid_profile_link(v_link.value ->> 'label', v_link.value ->> 'url') then
       raise sqlstate '22023' using message = 'Gift links are invalid';
     end if;
     insert into public.profile_links (profile_id, label, url, sort_order)
     values (p_profile_id, pg_catalog.btrim(v_link.value ->> 'label'), pg_catalog.btrim(v_link.value ->> 'url'), (v_link.ordinality - 1)::integer);
   end loop;
 
-  -- The publication trigger validates the full row and links here. Because all
-  -- writes above are in this function call, any failure rolls back the gift.
+  -- Link validation above is explicit and self-contained; any failure rolls
+  -- back all writes in this function call.
   update public.profiles
   set status = 'published', published_at = pg_catalog.now()
   where id = p_profile_id;
