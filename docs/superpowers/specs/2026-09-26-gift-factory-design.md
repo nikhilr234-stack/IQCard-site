@@ -30,7 +30,7 @@ Use one narrowly scoped database function/transaction for the profile, its exist
 
 Use a dedicated private Supabase Storage bucket named `gift-media`. Optional portrait and cover uploads are validated and uploaded server-side to stable paths under `gift/<profile-uuid>/...`. Store those same paths on the gift profile/presentation and retain them unchanged after claim; ownership transfer must not move or rename the objects.
 
-Public media is served only through the existing media endpoints’ controlled path, extended for gift paths: resolve a requested object only when the exact path is referenced by a currently published profile’s photo or presentation. Reject arbitrary paths, unreferenced paths, drafts, and private claim data. Existing customer media behavior and policies are not broadened. A gift-specific server-side storage read is used after the published-reference check because the bucket itself remains private.
+Gift public media is addressed by public profile slug plus asset type (portrait or cover), never by a caller-supplied storage path. The server resolves the private object path only when that exact asset is referenced by the currently published profile and downloads it from the private bucket. Reject unknown slugs, drafts, missing references, and private claim data. Existing customer media behavior and policies are not broadened. Internal gift-media paths remain stable after a claim and are never returned to the browser.
 
 ### Failure behavior
 
