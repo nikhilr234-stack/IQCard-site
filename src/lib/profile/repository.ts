@@ -3,6 +3,8 @@ import { unstable_cache } from 'next/cache'
 import type { CoverPresentation, Profile } from './types'
 import { createDefaultProfileDraft } from './defaults'
 import { DEFAULT_PRESENTATION, normalizePresentation } from './presentation'
+import { redirect } from 'next/navigation'
+import { discoverOwnGiftProfile } from '@/lib/gifts/claims'
 
 export function profilePhotoUrl(path: string | null | undefined): string | null {
   return path ? `/api/profile-photo?path=${encodeURIComponent(path)}` : null
@@ -23,6 +25,8 @@ export async function getOwnProfile(user: { id: string; email: string }, preferr
   const supabase = await createServerClient()
   const { data } = await supabase.from('profiles').select('*, profile_links(*)').eq('owner_id', user.id).maybeSingle()
   if (data) return withPhotoUrl({ ...data, profile_links: data.profile_links ?? [] }) as Profile
+  const gift = await discoverOwnGiftProfile()
+  if (gift.status !== 'none') redirect('/claim-gift')
   const { data: created, error } = await supabase.rpc('create_own_profile_draft', {
     p_full_name: preferredFullName?.trim() || null,
   })

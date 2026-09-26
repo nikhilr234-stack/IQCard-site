@@ -29,7 +29,7 @@ export type ProfileLink = {
 
 export type Profile = {
   id: string
-  owner_id: string
+  owner_id: string | null
   slug: string
   status: ProfileStatus
   full_name: string

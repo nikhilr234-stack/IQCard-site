@@ -5,6 +5,7 @@ import type { OnboardingStep } from '@/lib/onboarding/types'
 import { getOwnProfile } from '@/lib/profile/repository'
 import { getLatestClaimedRegistrationIntent } from '@/lib/registration/repository'
 import { OnboardingWizard } from '../onboarding-wizard'
+import { discoverOwnGiftProfile } from '@/lib/gifts/claims'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +14,7 @@ export default async function OnboardingStepPage({ params }: { params: Promise<{
   if (!onboardingSteps.includes(requestedStep as OnboardingStep)) notFound()
   const step = requestedStep as OnboardingStep
   const account = await requireAuthenticatedAccount()
+  if ((await discoverOwnGiftProfile()).status !== 'none') redirect('/claim-gift')
   const [progress, registration] = await Promise.all([
     getOnboardingProgress(account.id),
     getLatestClaimedRegistrationIntent(account.id),
