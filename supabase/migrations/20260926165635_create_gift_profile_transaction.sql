@@ -104,7 +104,7 @@ begin
   if p_profile_id is null
     or pg_catalog.cardinality(pg_catalog.regexp_split_to_array(v_full_name, '\s+')) < 2
     or pg_catalog.length(pg_catalog.split_part(v_full_name, ' ', 1)) > 80
-    or pg_catalog.length(pg_catalog.btrim(pg_catalog.substr(v_full_name, pg_catalog.position(' ' in v_full_name)))) > 80
+    or pg_catalog.length(pg_catalog.btrim(pg_catalog.substr(v_full_name, pg_catalog.strpos(v_full_name, ' ')))) > 80
     or pg_catalog.lower(v_full_name) = 'your name'
     or pg_catalog.length(v_full_name) > 161
     or v_email !~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$'
