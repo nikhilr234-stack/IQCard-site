@@ -38,8 +38,8 @@ const storedProfile = {
   profile_links: [],
 }
 
-function profileClient() {
-  const maybeSingle = vi.fn().mockResolvedValue({ data: storedProfile, error: null })
+function profileClient(profile = storedProfile) {
+  const maybeSingle = vi.fn().mockResolvedValue({ data: profile, error: null })
   const createSignedUrl = vi.fn().mockResolvedValue({ data: { signedUrl: 'https://storage.example/bearer-token' }, error: null })
   return {
     from: vi.fn(() => ({ select: vi.fn(() => ({ eq: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle })), maybeSingle })) })) })),
@@ -78,6 +78,16 @@ describe('profile photo delivery URLs', () => {
       revalidate: 60,
       tags: ['published-profile:owner'],
     })
+  })
+
+  it('does not serialize internal gift-media paths into a public profile DTO', async () => {
+    const giftProfile = { ...storedProfile, slug: 'yatish-p', photo_path: 'gift/profile-1/portrait.png' }
+    vi.mocked(createPublicClient).mockReturnValue(profileClient(giftProfile) as never)
+
+    const profile = await getPublishedProfile('yatish-p')
+
+    expect(profile?.photo_path).toBeNull()
+    expect(profile?.photo_url).toBe('/api/gift-media?slug=yatish-p&asset=portrait')
   })
 
   it('creates a new owner draft only through the server-controlled draft RPC', async () => {
@@ -132,6 +142,35 @@ describe('profile presentation readers', () => {
       revalidate: 60,
       tags: ['published-profile:owner'],
     })
+  })
+
+  it('replaces private gift paths with slug-and-asset URLs before returning a public presentation', async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: { published: { template: 'cover', cover: { coverPath: 'gift/profile-1/cover.webp', photoPathOverride: 'gift/profile-1/portrait.png' } } },
+      error: null,
+    })
+    vi.mocked(createPublicClient).mockReturnValue({
+      from: vi.fn(() => ({ select: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle })) })) })),
+    } as never)
+
+    const presentation = await getPublishedProfilePresentationBySlug('yatish-p')
+
+    expect(presentation.cover.coverPath).toBe('/api/gift-media?slug=yatish-p&asset=cover')
+    expect(presentation.cover.photoPathOverride).toBe('/api/gift-media?slug=yatish-p&asset=portrait')
+    expect(JSON.stringify(presentation)).not.toContain('gift/profile-1')
+  })
+
+  it('uses stable gift-media URLs for claimed owners without exposing the private object key', async () => {
+    const giftProfile = { ...storedProfile, owner_id: 'owner-1', photo_path: 'gift/profile-1/portrait.webp' }
+    const maybeSingle = vi.fn().mockResolvedValue({ data: giftProfile, error: null })
+    vi.mocked(createServerClient).mockResolvedValue({
+      from: vi.fn(() => ({ select: vi.fn(() => ({ eq: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle })), maybeSingle })) })) })),
+    } as never)
+
+    const profile = await getOwnProfile({ id: 'owner-1', email: 'owner@example.com' })
+
+    expect(profile.photo_path).toBeNull()
+    expect(profile.photo_url).toBe('/api/gift-media?slug=owner&asset=portrait')
   })
 
   it('does not treat a failed public presentation query as a legacy profile', async () => {

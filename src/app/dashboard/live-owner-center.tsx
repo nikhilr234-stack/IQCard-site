@@ -18,6 +18,7 @@ const clientGreeting = () => greetingForHour(new Date().getHours())
 
 function profilePhotoUrl(profile: Profile, photoPathOverride: string | null) {
   if (!photoPathOverride || photoPathOverride === profile.photo_path) return profile.photo_url ?? null
+  if (photoPathOverride.startsWith('/api/gift-media?')) return photoPathOverride
   return `/api/profile-photo?path=${encodeURIComponent(photoPathOverride)}`
 }
 
@@ -34,7 +35,7 @@ export function LiveOwnerCenter({ profile, presentation, savedDesign, siteUrl, o
   const firstName = profile.full_name.trim().split(/\s+/)[0] || 'there'
   const links = profile.profile_links
   const coverUrl = presentation.template === 'cover' && presentation.cover.coverPath
-    ? `/api/profile-cover?path=${encodeURIComponent(presentation.cover.coverPath)}`
+    ? presentation.cover.coverPath.startsWith('/api/gift-media?') ? presentation.cover.coverPath : `/api/profile-cover?path=${encodeURIComponent(presentation.cover.coverPath)}`
     : null
   const photoUrl = profilePhotoUrl(profile, presentation.cover.photoPathOverride)
   const copy = async () => {

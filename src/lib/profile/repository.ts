@@ -7,7 +7,28 @@ import { redirect } from 'next/navigation'
 import { discoverOwnGiftProfile } from '@/lib/gifts/claims'
 
 export function profilePhotoUrl(path: string | null | undefined): string | null {
-  return path ? `/api/profile-photo?path=${encodeURIComponent(path)}` : null
+  if (!path) return null
+  if (path.startsWith('/api/gift-media?')) return path
+  return `/api/profile-photo?path=${encodeURIComponent(path)}`
+}
+
+function giftAssetUrl(slug: string, asset: 'portrait' | 'cover') {
+  return `/api/gift-media?slug=${encodeURIComponent(slug)}&asset=${asset}`
+}
+
+function giftAsset(path: string | null | undefined): 'portrait' | 'cover' | null {
+  if (!path?.startsWith('gift/')) return null
+  const filename = path.split('/').at(-1) ?? ''
+  if (filename.startsWith('portrait')) return 'portrait'
+  if (filename.startsWith('cover')) return 'cover'
+  return null
+}
+
+function mediaUrl(path: string | null | undefined, slug: string): string | null {
+  if (!path) return null
+  if (path.startsWith('/api/gift-media?')) return path
+  const asset = giftAsset(path)
+  return asset ? giftAssetUrl(slug, asset) : profilePhotoUrl(path)
 }
 
 function isPresentationSchemaUnavailable(error: { code?: string; message?: string } | null): boolean {
@@ -18,7 +39,33 @@ function isPresentationSchemaUnavailable(error: { code?: string; message?: strin
 
 function withPhotoUrl<T extends { photo_path?: string | null }>(profile: T) {
   if (!profile.photo_path) return { ...profile, photo_url: null }
-  return { ...profile, photo_url: profilePhotoUrl(profile.photo_path) }
+  const asset = giftAsset(profile.photo_path)
+  return {
+    ...profile,
+    ...(asset ? { photo_path: null } : {}),
+    photo_url: mediaUrl(profile.photo_path, 'slug' in profile && typeof profile.slug === 'string' ? profile.slug : ''),
+  }
+}
+
+function publicPresentation(presentation: CoverPresentation, slug: string): CoverPresentation {
+  const cover = presentation.cover
+  return {
+    ...presentation,
+    cover: {
+      ...cover,
+      coverPath: mediaUrl(cover.coverPath, slug),
+      photoPathOverride: mediaUrl(cover.photoPathOverride, slug),
+    },
+  }
+}
+
+function ownerPresentation(presentation: CoverPresentation, slug: string): CoverPresentation {
+  const assetUrl = (path: string | null) => {
+    if (path?.startsWith('/api/gift-media?')) return path
+    const asset = giftAsset(path)
+    return asset ? giftAssetUrl(slug, asset) : path
+  }
+  return { ...presentation, cover: { ...presentation.cover, coverPath: assetUrl(presentation.cover.coverPath), photoPathOverride: assetUrl(presentation.cover.photoPathOverride) } }
 }
 
 export async function getOwnProfile(user: { id: string; email: string }, preferredFullName: string | null = null): Promise<Profile> {
@@ -59,7 +106,7 @@ export async function getOwnProfilePresentation(ownerId: string): Promise<CoverP
   const supabase = await createServerClient()
   const { data, error } = await supabase
     .from('profile_presentations')
-    .select('draft, profiles!inner(owner_id)')
+    .select('draft, profiles!inner(owner_id, slug)')
     .eq('profiles.owner_id', ownerId)
     .maybeSingle()
 
@@ -69,7 +116,8 @@ export async function getOwnProfilePresentation(ownerId: string): Promise<CoverP
   if (error) return DEFAULT_PRESENTATION.draft
   if (data === null) return DEFAULT_PRESENTATION.draft
   if (!data) throw new Error('Unable to load your profile presentation')
-  return normalizePresentation({ draft: data.draft }).draft
+  const slug = (data.profiles as { slug?: string } | null)?.slug ?? ''
+  return ownerPresentation(normalizePresentation({ draft: data.draft }).draft, slug)
 }
 
 export async function getPublishedProfilePresentation(profileId: string): Promise<CoverPresentation> {
@@ -101,7 +149,7 @@ export async function getPublishedProfilePresentationBySlug(slug: string): Promi
     if (error && !isPresentationSchemaUnavailable(error)) throw error
     if (error || data === null) return DEFAULT_PRESENTATION.published
     if (!data) throw new Error('Unable to load published profile presentation')
-    return normalizePresentation({ published: data.published }).published
+    return publicPresentation(normalizePresentation({ published: data.published }).published, slug)
   }, ['published-presentation', slug], {
     revalidate: 60,
     tags: [`published-profile:${slug}`],

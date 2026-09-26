@@ -48,6 +48,7 @@ function CoverMedia({
   const inputRef = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const giftMedia = coverPath?.startsWith('/api/gift-media?') ?? false
   const maxMegabytes = PROFILE_PHOTO_MAX_BYTES / (1024 * 1024)
 
   const upload = async (formData: FormData) => {
@@ -74,12 +75,12 @@ function CoverMedia({
 
   return <div className="digital-profile-media">
     <div className={`digital-profile-cover-thumb${coverPath ? '' : ' is-empty'}`}>
-      {coverPath ? <Image src={`/api/profile-cover?path=${encodeURIComponent(coverPath)}`} alt="Current Cover image" fill sizes="220px" unoptimized /> : <span>Add a Cover image</span>}
+      {coverPath ? <Image src={coverPath.startsWith('/api/gift-media?') ? coverPath : `/api/profile-cover?path=${encodeURIComponent(coverPath)}`} alt="Current Cover image" fill sizes="220px" unoptimized /> : <span>Add a Cover image</span>}
     </div>
     <div className="digital-profile-media-copy">
       <strong>{coverPath ? 'Your Cover image' : 'Choose a Cover image'}</strong>
       <p>JPEG, PNG, or WebP · up to {maxMegabytes} MB</p>
-      <div className="digital-profile-media-actions">
+      {giftMedia ? <p>Your gift cover stays in its original private storage.</p> : <div className="digital-profile-media-actions">
         <form action={upload}>
           <label className="digital-profile-button digital-profile-button--light" htmlFor="digital-profile-cover-input">{coverPath ? 'Change Cover' : 'Add Cover'}</label>
           <input
@@ -95,7 +96,7 @@ function CoverMedia({
           />
         </form>
         {coverPath ? <form action={remove}><PendingButton className="digital-profile-text-button" idle="Remove" pending="Removing…" /></form> : null}
-      </div>
+      </div>}
       <p className="digital-profile-feedback" role={error ? 'alert' : 'status'} aria-live="polite">{error || message}</p>
     </div>
   </div>
@@ -104,6 +105,7 @@ function CoverMedia({
 function ProfilePhotoControls({ profile, uploadPhotoAction, deletePhotoAction }: Pick<DigitalProfileEditorProps, 'profile' | 'uploadPhotoAction' | 'deletePhotoAction'>) {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const giftMedia = profile.photo_url?.startsWith('/api/gift-media?') ?? false
   const upload = async (formData: FormData) => {
     setMessage('')
     setError('')
@@ -132,9 +134,9 @@ function ProfilePhotoControls({ profile, uploadPhotoAction, deletePhotoAction }:
     <div>
       <strong>Profile photo</strong>
       <p>Shared with Minimal and your profile details.</p>
-      <div className="digital-profile-media-actions">
+      {giftMedia ? <p>Your gift portrait stays in its original private storage.</p> : <div className="digital-profile-media-actions">
         <form action={upload}>
-          <label className="digital-profile-button digital-profile-button--light" htmlFor="digital-profile-photo-input">{profile.photo_path ? 'Change photo' : 'Add photo'}</label>
+          <label className="digital-profile-button digital-profile-button--light" htmlFor="digital-profile-photo-input">{profile.photo_url ? 'Change photo' : 'Add photo'}</label>
           <input
             className="digital-profile-file-input"
             id="digital-profile-photo-input"
@@ -146,8 +148,8 @@ function ProfilePhotoControls({ profile, uploadPhotoAction, deletePhotoAction }:
             }}
           />
         </form>
-        {profile.photo_path ? <form action={remove}><PendingButton className="digital-profile-text-button" idle="Remove photo" pending="Removing…" /></form> : null}
-      </div>
+        {profile.photo_url ? <form action={remove}><PendingButton className="digital-profile-text-button" idle="Remove photo" pending="Removing…" /></form> : null}
+      </div>}
       <p className="digital-profile-feedback" role={error ? 'alert' : 'status'} aria-live="polite">{error || message}</p>
     </div>
   </div>

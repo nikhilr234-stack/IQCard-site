@@ -24,9 +24,20 @@ function readPresentationDraft(formData: FormData) {
 }
 
 export async function savePresentationDraft(formData: FormData) {
-  await requireAuthenticatedAccount()
+  const account = await requireAuthenticatedAccount()
   const draft = readPresentationDraft(formData)
   const supabase = await createServerClient()
+  const { data: profile, error: profileError } = await supabase.from('profiles').select('id,slug').eq('owner_id', account.id).single()
+  if (profileError || !profile) throw new Error('Unable to save presentation.')
+  const { data: existing } = await supabase.from('profile_presentations').select('draft').eq('profile_id', profile.id).maybeSingle()
+  const storedCover = typeof existing?.draft === 'object' && existing.draft !== null ? (existing.draft as { cover?: Record<string, unknown> }).cover : null
+  for (const [key, asset] of [['coverPath', 'cover'], ['photoPathOverride', 'portrait']] as const) {
+    const expectedUrl = `/api/gift-media?slug=${encodeURIComponent(profile.slug)}&asset=${asset}`
+    const previousPath = storedCover?.[key]
+    if (draft.cover[key] === expectedUrl && typeof previousPath === 'string' && previousPath.startsWith(`gift/${profile.id}/`)) {
+      draft.cover[key] = previousPath
+    }
+  }
   const { error } = await supabase.rpc('save_own_profile_presentation', { p_draft: draft })
   if (error) throw new Error('Unable to save presentation.')
 

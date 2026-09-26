@@ -18,6 +18,7 @@ type CoverStyle = CSSProperties & {
 
 function profilePhotoUrl(profile: Profile, photoPathOverride: string | null) {
   if (!photoPathOverride || photoPathOverride === profile.photo_path) return profile.photo_url ?? null
+  if (photoPathOverride.startsWith('/api/gift-media?')) return photoPathOverride
   return `/api/profile-photo?path=${encodeURIComponent(photoPathOverride)}`
 }
 
@@ -25,7 +26,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
   const view = buildPublicProfileView(profile)
   const displayName = profile.full_name || 'Your name'
   const { cover } = presentation
-  const coverUrl = cover.coverPath ? `/api/profile-cover?path=${encodeURIComponent(cover.coverPath)}` : null
+  const coverUrl = cover.coverPath ? cover.coverPath.startsWith('/api/gift-media?') ? cover.coverPath : `/api/profile-cover?path=${encodeURIComponent(cover.coverPath)}` : null
   const photoUrl = profilePhotoUrl(profile, cover.photoPathOverride)
   const style: CoverStyle = {
     '--cover-overlay': cover.overlay,

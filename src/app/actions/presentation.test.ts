@@ -18,9 +18,20 @@ describe('presentation actions', () => {
     })
   })
 
+  function editableClient(rpc: ReturnType<typeof vi.fn>, draft: unknown = null) {
+    const from = vi.fn((table: string) => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => table === 'profiles'
+          ? { single: vi.fn().mockResolvedValue({ data: { id: 'profile-1', slug: 'owner' }, error: null }) }
+          : { maybeSingle: vi.fn().mockResolvedValue({ data: draft === null ? null : { draft }, error: null }) }),
+      })),
+    }))
+    return { from, rpc }
+  }
+
   it('saves a normalized draft without invoking the profile publication RPC', async () => {
     const rpc = vi.fn().mockResolvedValue({ error: null })
-    vi.mocked(createServerClient).mockResolvedValue({ rpc } as never)
+    vi.mocked(createServerClient).mockResolvedValue(editableClient(rpc) as never)
     const formData = new FormData()
     formData.set('presentation', JSON.stringify({
       template: 'cover',
@@ -44,6 +55,27 @@ describe('presentation actions', () => {
     expect(rpc).not.toHaveBeenCalledWith('complete_own_onboarding_publish', expect.anything())
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard')
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard/digital-profile')
+  })
+
+  it('restores the exact stored gift media keys when saving safe browser-facing media URLs', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    const savedDraft = {
+      template: 'cover',
+      cover: { coverPath: 'gift/profile-1/cover-a.webp', photoPathOverride: 'gift/profile-1/portrait-b.png', overlay: 0.38, focalY: 50, alignment: 'center' },
+    }
+    vi.mocked(createServerClient).mockResolvedValue(editableClient(rpc, savedDraft) as never)
+    const formData = new FormData()
+    formData.set('presentation', JSON.stringify({
+      template: 'cover',
+      cover: { coverPath: '/api/gift-media?slug=owner&asset=cover', photoPathOverride: '/api/gift-media?slug=owner&asset=portrait', overlay: 0.4, focalY: 40, alignment: 'center' },
+    }))
+
+    await savePresentationDraft(formData)
+
+    expect(rpc).toHaveBeenCalledWith('save_own_profile_presentation', { p_draft: {
+      template: 'cover',
+      cover: { coverPath: 'gift/profile-1/cover-a.webp', photoPathOverride: 'gift/profile-1/portrait-b.png', overlay: 0.4, focalY: 40, alignment: 'center' },
+    } })
   })
 
   it('rejects malformed presentation JSON before saving a draft', async () => {

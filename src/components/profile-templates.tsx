@@ -84,9 +84,10 @@ function TextLinks({ links, card = false, light = false }: { links: ViewLink[]; 
 
 function StudioProject({ link, featured = false, coverPath }: { link?: ViewLink; featured?: boolean; coverPath?: string | null }) {
   const className = cx(styles.project, featured && styles.projectFeatured, !link && styles.projectEmpty)
+  const coverUrl = coverPath?.startsWith('/api/gift-media?') ? coverPath : coverPath ? `/api/profile-cover?path=${encodeURIComponent(coverPath)}` : null
   const content = <>
     <div className={styles.projectVisual}>
-      {featured && coverPath ? <Image src={`/api/profile-cover?path=${encodeURIComponent(coverPath)}`} alt="" fill sizes="(max-width: 760px) 100vw, 55vw" /> : <span aria-hidden="true">{link ? link.label.slice(0, 2).toUpperCase() : 'IQ'}</span>}
+      {featured && coverUrl ? <Image src={coverUrl} alt="" fill sizes="(max-width: 760px) 100vw, 55vw" /> : <span aria-hidden="true">{link ? link.label.slice(0, 2).toUpperCase() : 'IQ'}</span>}
     </div>
     <div className={styles.projectCopy}><strong>{link?.label || 'Your selected work'}</strong><small>{link ? linkDetail(link.url) : 'Add links to feature your work here.'}</small></div>
     {link ? <span className={styles.projectArrow} aria-hidden="true">↗</span> : null}
