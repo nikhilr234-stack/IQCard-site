@@ -54,4 +54,18 @@ describe('profile link actions', () => {
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard')
     expect(revalidatePath).toHaveBeenCalledWith('/owner')
   })
+
+  it('keeps link edits behind the authenticated profile-link RPC and rejects invalid URLs before saving', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    const single = vi.fn().mockResolvedValue({ data: { id: 'profile-1', slug: 'owner' }, error: null })
+    const from = vi.fn(() => ({ select: vi.fn(() => ({ eq: vi.fn(() => ({ single })) })) }))
+    vi.mocked(createServerClient).mockResolvedValue({ from, rpc } as never)
+    const form = new FormData()
+    form.set('links', JSON.stringify([{ label: 'Portfolio', url: 'javascript:alert(1)' }]))
+
+    await expect(saveProfileLinks(form)).rejects.toThrow('Use an HTTP(S) link or a contact link.')
+    expect(requireAuthenticatedAccount).toHaveBeenCalledOnce()
+    expect(createServerClient).not.toHaveBeenCalled()
+    expect(rpc).not.toHaveBeenCalled()
+  })
 })

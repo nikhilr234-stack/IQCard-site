@@ -26,6 +26,12 @@ describe('live owner center', () => {
     expect(`${ownerCenter}\n${editor}`).not.toContain('https://iqcard.in')
   })
 
+  it('routes both content management shortcuts directly to the Links editor', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/app/dashboard/live-owner-center.tsx'), 'utf8')
+    expect(source).toContain('<Link href="/dashboard/digital-profile#links">Manage ↗</Link>')
+    expect(source).toContain('<Link href="/dashboard/digital-profile#links">Add content <span>›</span></Link>')
+  })
+
   it('uses the saved Digital Profile cover and photo in the dashboard identity preview', () => {
     const ownerCenter = readFileSync(resolve(process.cwd(), 'src/app/dashboard/live-owner-center.tsx'), 'utf8')
 

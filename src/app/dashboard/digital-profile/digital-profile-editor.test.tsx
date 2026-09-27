@@ -29,7 +29,10 @@ const profile: Profile = {
   photo_path: 'owner-1/ada.webp',
   photo_url: '/api/profile-photo?path=owner-1%2Fada.webp',
   published_at: '2026-09-14T00:00:00.000Z',
-  profile_links: [],
+  profile_links: [
+    { id: 'link-1', profile_id: 'profile-1', label: 'LinkedIn', url: 'https://linkedin.com/in/ada', sort_order: 0 },
+    { id: 'link-2', profile_id: 'profile-1', label: 'Website', url: 'https://ada.example.com', sort_order: 1 },
+  ],
 }
 
 const coverPresentation: CoverPresentation = {
@@ -50,6 +53,7 @@ const actions = {
   deleteCoverAction: vi.fn(async () => ({ coverPath: null as string | null })),
   uploadPhotoAction: vi.fn(async (_formData: FormData) => undefined),
   deletePhotoAction: vi.fn(async (_formData: FormData) => undefined),
+  saveLinksAction: vi.fn(async (_formData: FormData) => undefined),
 }
 
 function button(host: HTMLElement, name: RegExp) {
@@ -122,6 +126,78 @@ describe('DigitalProfileEditor', () => {
     })
     expect(host.querySelector('[aria-label="Profile phone preview"] .cover-profile--center')).not.toBeNull()
     expect(host.querySelector('[aria-label="Profile phone preview"] .cover-profile-shell')?.getAttribute('style')).toContain('--cover-focal-y: 22%')
+  })
+
+  it('loads existing links in their saved order and quick-adds an empty labeled row', async () => {
+    expect([...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="label"]')].map((input) => input.value)).toEqual(['LinkedIn', 'Website'])
+    expect([...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="url"]')].map((input) => input.value)).toEqual(['https://linkedin.com/in/ada', 'https://ada.example.com'])
+
+    await act(async () => button(host, /^Instagram$/i).click())
+
+    expect([...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="label"]')].map((input) => input.value)).toEqual(['LinkedIn', 'Website', 'Instagram'])
+    expect([...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="url"]')].map((input) => input.value)).toEqual(['https://linkedin.com/in/ada', 'https://ada.example.com', ''])
+  })
+
+  it('supports custom links, deletion, and reorder controls', async () => {
+    await act(async () => button(host, /\+ Custom link/i).click())
+    const labels = [...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="label"]')]
+    expect(labels.at(-1)?.value).toBe('')
+    const urls = [...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="url"]')]
+    expect(urls.at(-1)?.value).toBe('')
+
+    await act(async () => button(host, /Move Website up/i).click())
+    expect([...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="label"]')].slice(0, 2).map((input) => input.value)).toEqual(['Website', 'LinkedIn'])
+    await act(async () => button(host, /Save Links/i).click())
+    expect(JSON.parse(String(vi.mocked(actions.saveLinksAction).mock.calls[0]?.[0].get('links'))).map((link: { label: string }) => link.label)).toEqual(['Website', 'LinkedIn', ''])
+
+    await act(async () => button(host, /Remove Website/i).click())
+    expect([...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="label"]')].map((input) => input.value)).toEqual(['LinkedIn', ''])
+  })
+
+  it('accepts and saves a custom label and URL', async () => {
+    await act(async () => button(host, /\+ Custom link/i).click())
+    const row = host.querySelectorAll<HTMLElement>('[data-link-row]')[2]
+    const label = row?.querySelector<HTMLInputElement>('input[name="label"]')
+    const url = row?.querySelector<HTMLInputElement>('input[name="url"]')
+    if (!label || !url) throw new Error('Missing custom link fields')
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    setter?.call(label, 'My Portfolio')
+    await act(async () => label.dispatchEvent(new Event('input', { bubbles: true })))
+    setter?.call(url, 'https://portfolio.example.com')
+    await act(async () => url.dispatchEvent(new Event('input', { bubbles: true })))
+    await act(async () => button(host, /Save Links/i).click())
+
+    expect(JSON.parse(String(vi.mocked(actions.saveLinksAction).mock.calls[0]?.[0].get('links')))).toContainEqual({ label: 'My Portfolio', url: 'https://portfolio.example.com' })
+  })
+
+  it('enforces the twelve-link limit and validates a bad URL beside its row', async () => {
+    for (let index = 0; index < 10; index += 1) {
+      await act(async () => button(host, /^YouTube$/i).click())
+    }
+    expect(button(host, /add another link/i).disabled).toBe(true)
+    expect(button(host, /GitHub/i).disabled).toBe(true)
+  })
+
+  it('saves all links through the supplied secure action and shows inline success', async () => {
+    const urlInput = host.querySelector<HTMLInputElement>('[data-link-row] input[name="url"]')
+    if (!urlInput) throw new Error('Missing URL input')
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    setter?.call(urlInput, 'not a url')
+    await act(async () => urlInput.dispatchEvent(new Event('input', { bubbles: true })))
+    await act(async () => button(host, /Save Links/i).click())
+    expect(host.querySelector('[data-link-row] [role="alert"]')?.textContent).toMatch(/HTTP\(S\)|contact link/i)
+    expect(actions.saveLinksAction).not.toHaveBeenCalled()
+
+    setter?.call(urlInput, 'https://linkedin.com/in/ada')
+    await act(async () => urlInput.dispatchEvent(new Event('input', { bubbles: true })))
+    await act(async () => button(host, /Save Links/i).click())
+
+    const formData = vi.mocked(actions.saveLinksAction).mock.calls[0]?.[0]
+    expect(JSON.parse(String(formData?.get('links')))).toEqual([
+      { label: 'LinkedIn', url: 'https://linkedin.com/in/ada' },
+      { label: 'Website', url: 'https://ada.example.com' },
+    ])
+    expect(host.textContent).toContain('Links updated.')
   })
 
   it.each([
