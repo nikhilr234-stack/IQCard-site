@@ -8,6 +8,7 @@ import {
   getPublishedProfilePresentationBySlug,
 } from './repository'
 import { DEFAULT_PRESENTATION } from './presentation'
+import { DEFAULT_PROFILE_DESIGN } from './design'
 
 const { unstableCache } = vi.hoisted(() => ({
   unstableCache: vi.fn((reader: () => unknown) => reader),
@@ -230,6 +231,7 @@ describe('profile presentation readers', () => {
         alignment: 'center',
         photoPathOverride: null,
       },
+      design: DEFAULT_PROFILE_DESIGN,
     })
   })
 

@@ -3,13 +3,15 @@ import Image from 'next/image'
 
 import { PublicProfileMenu } from '@/components/public-profile-menu'
 import { buildPublicProfileView } from '@/lib/profile/public-profile'
-import type { Profile } from '@/lib/profile/types'
+import { ProfileLinkList } from '@/components/profile-link-list'
+import { getProfileDesignDataAttributes, getProfileDesignStyle } from '@/lib/profile/design'
+import type { NormalizedCoverPresentation, Profile } from '@/lib/profile/types'
 
-export function PublicProfileCard({ profile, preview = false }: { profile: Profile; preview?: boolean }) {
+export function PublicProfileCard({ profile, presentation, preview = false }: { profile: Profile; presentation: NormalizedCoverPresentation; preview?: boolean }) {
   const view = buildPublicProfileView(profile)
   const displayName = profile.full_name || 'Your name'
 
-  return <main className="public-profile-shell">
+  return <main className="public-profile-shell profile-design-root" data-template="minimal" style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}>
     <div className="public-profile-page">
       {preview ? <div className="public-preview-badge">Private preview</div> : null}
       <header className="public-profile-topbar">
@@ -18,7 +20,7 @@ export function PublicProfileCard({ profile, preview = false }: { profile: Profi
       </header>
 
       <section className="public-profile-hero" aria-labelledby="profile-name">
-        <div className="public-profile-identity">
+        <div className="public-profile-identity" data-profile-identity>
           <p className="public-profile-eyebrow">Professional</p>
           <h1 id="profile-name">{displayName}</h1>
           {profile.headline ? <p className="public-profile-role">{profile.headline}</p> : null}
@@ -30,9 +32,7 @@ export function PublicProfileCard({ profile, preview = false }: { profile: Profi
             {preview ? <span className="public-profile-pill is-disabled">Save Contact<span aria-hidden="true">→</span></span> : <a className="public-profile-pill" href={view.saveContactHref}>Save Contact<span aria-hidden="true">→</span></a>}
           </div>
 
-          {view.links.length ? <div className="public-profile-links" aria-label="Profile links">
-            {view.links.map((link) => <a className="public-profile-pill" key={`${link.label}-${link.url}`} href={link.url} target="_blank" rel="noopener noreferrer"><span>{link.label}</span><span aria-hidden="true">↗</span></a>)}
-          </div> : null}
+          <ProfileLinkList links={view.links} design={presentation.design} className="public-profile-links" linkClassName="public-profile-pill" />
 
           {view.callHref || view.emailHref || view.whatsappHref ? <nav className="public-profile-contact-actions" aria-label={`Contact ${displayName}`}>
             {view.callHref ? <a href={view.callHref}>Call</a> : null}
@@ -50,8 +50,8 @@ export function PublicProfileCard({ profile, preview = false }: { profile: Profi
       </section>
 
       <footer className="public-profile-footer">
-        <span className="public-profile-made">Made with <strong>iq</strong></span>
-        <span className="public-profile-mode"><i aria-hidden="true" />Professional</span>
+        {presentation.design.footer.showMadeWithIq ? <span className="public-profile-made">Made with <strong>iq</strong></span> : null}
+        {presentation.design.footer.showProfessionalLabel ? <span className="public-profile-mode"><i aria-hidden="true" />Professional</span> : null}
       </footer>
     </div>
   </main>

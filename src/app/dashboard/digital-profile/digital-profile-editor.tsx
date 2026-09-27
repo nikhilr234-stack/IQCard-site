@@ -7,11 +7,15 @@ import { useFormStatus } from 'react-dom'
 
 import { PublicProfile } from '@/components/public-profile'
 import { PROFILE_PHOTO_MAX_BYTES } from '@/lib/profile/photo'
+import { normalizePresentation } from '@/lib/profile/presentation'
 import { PROFILE_TEMPLATE_OPTIONS } from '@/lib/profile/presentation'
+import { validateLinkInput } from '@/lib/profile/validation'
 import type { CoverPresentation, Profile, ProfileTemplate } from '@/lib/profile/types'
+import { DesignStudioControls } from './design-studio-controls'
 
 type FormAction = (formData: FormData) => void | Promise<void>
-type ButtonAction = () => void | Promise<void>
+type PublishActionResult = { success: true } | { success: false; error: string }
+type ButtonAction = () => PublishActionResult | Promise<PublishActionResult>
 type CoverResult = { coverPath: string | null }
 type CoverFormAction = (formData: FormData) => CoverResult | Promise<CoverResult>
 type CoverButtonAction = () => CoverResult | Promise<CoverResult>
@@ -25,6 +29,7 @@ type DigitalProfileEditorProps = {
   deleteCoverAction: CoverButtonAction
   uploadPhotoAction: FormAction
   deletePhotoAction: FormAction
+  saveLinksAction: FormAction
 }
 
 function PendingButton({ idle, pending, className = '' }: { idle: string; pending: string; className?: string }) {
@@ -155,6 +160,96 @@ function ProfilePhotoControls({ profile, uploadPhotoAction, deletePhotoAction }:
   </div>
 }
 
+const QUICK_LINKS = ['LinkedIn', 'Instagram', 'Website', 'Portfolio', 'WhatsApp', 'Email', 'Phone', 'YouTube', 'GitHub', 'Behance', 'Dribbble', 'X']
+type EditableLink = { key: string; label: string; url: string }
+
+function ProfileLinksEditor({ profile, saveLinksAction }: Pick<DigitalProfileEditorProps, 'profile' | 'saveLinksAction'>) {
+  const [links, setLinks] = useState<EditableLink[]>(() => profile.profile_links.map((link, index) => ({ key: `saved-${link.id}-${index}`, label: link.label, url: link.url })))
+  const [rowErrors, setRowErrors] = useState<Record<string, string>>({})
+  const [message, setMessage] = useState('')
+  const [saveError, setSaveError] = useState('')
+
+  const addLink = (label = '') => {
+    if (links.length >= 12) return
+    setLinks((current) => [...current, { key: `new-${Date.now()}-${current.length}`, label, url: '' }])
+    setMessage('')
+    setSaveError('')
+  }
+  const updateLink = (key: string, field: 'label' | 'url', value: string) => {
+    setLinks((current) => current.map((link) => link.key === key ? { ...link, [field]: value } : link))
+    setRowErrors((current) => ({ ...current, [key]: '' }))
+    setMessage('')
+  }
+  const removeLink = (key: string) => {
+    setLinks((current) => current.filter((link) => link.key !== key))
+    setRowErrors((current) => { const next = { ...current }; delete next[key]; return next })
+    setMessage('')
+  }
+  const moveLink = (index: number, direction: -1 | 1) => {
+    const target = index + direction
+    if (target < 0 || target >= links.length) return
+    setLinks((current) => {
+      const next = [...current]
+      ;[next[index], next[target]] = [next[target], next[index]]
+      return next
+    })
+    setMessage('')
+  }
+  const save = async (formData: FormData) => {
+    const errors: Record<string, string> = {}
+    links.forEach((link) => {
+      if (!link.label.trim() && !link.url.trim()) return
+      const validationError = validateLinkInput(link.label, link.url)
+      if (validationError) errors[link.key] = validationError
+    })
+    if (links.length > 12) setSaveError('You can add up to 12 links.')
+    if (Object.keys(errors).length || links.length > 12) {
+      setRowErrors(errors)
+      return
+    }
+    setRowErrors({})
+    setMessage('')
+    setSaveError('')
+    try {
+      await saveLinksAction(formData)
+      setMessage('Links updated.')
+    } catch (submissionError) {
+      setSaveError(errorMessage(submissionError, 'Unable to update links.'))
+    }
+  }
+  const serializedLinks = JSON.stringify(links.map(({ label, url }) => ({ label, url })))
+
+  return <section className="digital-profile-links" id="links" aria-labelledby="digital-profile-links-title">
+    <div className="digital-profile-links-heading"><div><span>LINKS</span><h3 id="digital-profile-links-title">Add the places people can find you.</h3></div><small>{links.length}/12</small></div>
+    <div className="digital-profile-quick-add" aria-label="Quick add a link">
+      {QUICK_LINKS.map((label) => <button key={label} type="button" disabled={links.length >= 12} onClick={() => addLink(label)}>{label}</button>)}
+      <button type="button" disabled={links.length >= 12} onClick={() => addLink()}>+ Custom link</button>
+    </div>
+    <form action={save}>
+      <input type="hidden" name="links" value={serializedLinks} readOnly />
+      <div className="digital-profile-link-rows">
+        {links.map((link, index) => <div className="digital-profile-link-row" data-link-row key={link.key}>
+          <div className="digital-profile-link-fields">
+            <label>Label<input name="label" value={link.label} maxLength={60} aria-label={`Link ${index + 1} label`} onChange={(event) => updateLink(link.key, 'label', event.currentTarget.value)} /></label>
+            <label>URL<input name="url" value={link.url} maxLength={2048} placeholder="https://" aria-label={`Link ${index + 1} URL`} onChange={(event) => updateLink(link.key, 'url', event.currentTarget.value)} /></label>
+          </div>
+          <div className="digital-profile-link-controls">
+            <button type="button" aria-label={`Move ${link.label || `link ${index + 1}`} up`} disabled={index === 0} onClick={() => moveLink(index, -1)}>↑</button>
+            <button type="button" aria-label={`Move ${link.label || `link ${index + 1}`} down`} disabled={index === links.length - 1} onClick={() => moveLink(index, 1)}>↓</button>
+            <button type="button" aria-label={`Remove ${link.label || `link ${index + 1}`}`} onClick={() => removeLink(link.key)}>Delete</button>
+          </div>
+          {rowErrors[link.key] ? <p role="alert" className="digital-profile-link-error">{rowErrors[link.key]}</p> : null}
+        </div>)}
+      </div>
+      <div className="digital-profile-links-actions">
+        <button type="button" className="digital-profile-button digital-profile-button--light" disabled={links.length >= 12} onClick={() => addLink()}>+ Add another link</button>
+        <PendingButton className="digital-profile-button digital-profile-button--dark" idle="Save Links" pending="Saving…" />
+      </div>
+    </form>
+    <p className="digital-profile-feedback" role={saveError ? 'alert' : 'status'} aria-live="polite">{saveError || message}</p>
+  </section>
+}
+
 export function DigitalProfileEditor({
   profile,
   presentation,
@@ -164,8 +259,9 @@ export function DigitalProfileEditor({
   deleteCoverAction,
   uploadPhotoAction,
   deletePhotoAction,
+  saveLinksAction,
 }: DigitalProfileEditorProps) {
-  const [draft, setDraft] = useState<CoverPresentation>(presentation)
+  const [draft, setDraft] = useState(() => normalizePresentation({ draft: presentation }).draft)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
 
@@ -173,6 +269,7 @@ export function DigitalProfileEditor({
   const updateCover = <Key extends keyof CoverPresentation['cover']>(key: Key, value: CoverPresentation['cover'][Key]) => {
     setDraft((current) => ({ ...current, cover: { ...current.cover, [key]: value } }))
   }
+  const updateDesign = (design: NonNullable<CoverPresentation['design']>) => setDraft((current) => ({ ...current, design }))
   const saveDraft = async (formData: FormData) => {
     setNotice('')
     setError('')
@@ -188,7 +285,11 @@ export function DigitalProfileEditor({
     setError('')
     try {
       await saveDraftAction(formData)
-      await publishAction()
+      const result = await publishAction()
+      if (!result.success) {
+        setError(result.error)
+        return
+      }
       setNotice('Digital profile published.')
     } catch (submissionError) {
       setError(errorMessage(submissionError, 'Unable to publish presentation.'))
@@ -227,13 +328,15 @@ export function DigitalProfileEditor({
             </div>
           </section>
 
+          <DesignStudioControls design={draft.design} template={draft.template} onChange={updateDesign} />
+
           <section className="digital-profile-panel" aria-labelledby="digital-profile-photo-title">
-            <div className="digital-profile-panel-head"><span>02 · PROFILE PHOTO</span><h2 id="digital-profile-photo-title">Your picture.</h2><p>This shared photo appears across every profile style.</p></div>
+            <div className="digital-profile-panel-head"><span>03 · PROFILE PHOTO</span><h2 id="digital-profile-photo-title">Your picture.</h2><p>This shared photo appears across every profile style.</p></div>
             <ProfilePhotoControls profile={profile} uploadPhotoAction={uploadPhotoAction} deletePhotoAction={deletePhotoAction} />
           </section>
 
           {draft.template === 'cover' ? <section className="digital-profile-panel" aria-labelledby="digital-profile-appearance-title">
-            <div className="digital-profile-panel-head"><span>03 · APPEARANCE</span><h2 id="digital-profile-appearance-title">Set the scene.</h2><p>Shape the image behind your identity.</p></div>
+            <div className="digital-profile-panel-head"><span>04 · APPEARANCE</span><h2 id="digital-profile-appearance-title">Set the scene.</h2><p>Shape the image behind your identity.</p></div>
             <CoverMedia coverPath={draft.cover.coverPath} onUpload={uploadCover} onDelete={deleteCover} />
             <div className="digital-profile-range">
               <label htmlFor="digital-profile-overlay"><span>Darken background</span><output>{Math.round(draft.cover.overlay * 100)}%</output></label>
@@ -253,9 +356,10 @@ export function DigitalProfileEditor({
           </section> : null}
 
           <section className="digital-profile-panel digital-profile-content-panel" aria-labelledby="digital-profile-content-title">
-            <div className="digital-profile-panel-head"><span>{draft.template === 'cover' ? '04' : '03'} · CONTENT</span><h2 id="digital-profile-content-title">The details are shared.</h2><p>Edit your identity and links once. Every template uses them.</p></div>
-            <dl><div><dt>Identity</dt><dd>{profile.full_name || 'Add your name'} · {profile.headline || 'Add your role'}</dd></div><div><dt>Content</dt><dd>{profile.profile_links.length} link{profile.profile_links.length === 1 ? '' : 's'} · {profile.bio ? 'Bio ready' : 'Add a bio'}</dd></div></dl>
-            <div className="digital-profile-content-links"><Link href="/dashboard#identity">Edit identity →</Link><Link href="/dashboard#content">Manage content →</Link></div>
+            <div className="digital-profile-panel-head"><span>{draft.template === 'cover' ? '05' : '04'} · CONTENT</span><h2 id="digital-profile-content-title">The details are shared.</h2><p>Edit your identity and links once. Every template uses them.</p></div>
+            <dl><div><dt>Identity</dt><dd>{profile.full_name || 'Add your name'} · {profile.headline || 'Add your role'}</dd></div><div><dt>Content</dt><dd>{profile.bio ? 'Bio ready' : 'Add a bio'}</dd></div></dl>
+            <div className="digital-profile-content-links"><Link href="/dashboard#identity">Edit identity →</Link></div>
+            <ProfileLinksEditor profile={profile} saveLinksAction={saveLinksAction} />
           </section>
 
           <section className="digital-profile-publish" aria-labelledby="digital-profile-publish-title">

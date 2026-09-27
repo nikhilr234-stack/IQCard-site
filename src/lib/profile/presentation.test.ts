@@ -38,6 +38,24 @@ describe('profile presentation normalization', () => {
     expect(resolvePresentation(value, 'draft').cover.coverPath).toBe('draft.jpg')
   })
 
+  it('adds complete version 1 design defaults to legacy presentation JSON', () => {
+    const value = normalizePresentation({ draft: { template: 'minimal', cover: { coverPath: null } } })
+
+    expect(value.draft.design.version).toBe(1)
+    expect(value.draft.design.background.text).toBe('auto')
+    expect(value.draft.design).toEqual(DEFAULT_PRESENTATION.draft.design)
+    expect(value.published.design).toEqual(DEFAULT_PRESENTATION.published.design)
+  })
+
+  it('normalizes malformed and missing text overrides to Auto without changing old cover fields', () => {
+    const value = normalizePresentation({
+      draft: { template: 'cover', cover: { coverPath: 'cover.webp', overlay: 0.52 }, design: { version: 0, background: { color: '#112233', text: 'rgb(0, 0, 0)' } } },
+    })
+
+    expect(value.draft.design).toMatchObject({ version: 1, background: { color: '#112233', text: 'auto' } })
+    expect(value.draft.cover).toMatchObject({ coverPath: 'cover.webp', overlay: 0.52 })
+  })
+
   it.each(['studio', 'executive', 'signal', 'index'] as const)('keeps the %s template selected when normalizing stored settings', (template) => {
     const value = normalizePresentation({ draft: { template }, published: { template } })
 

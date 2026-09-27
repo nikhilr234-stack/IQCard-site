@@ -2,6 +2,45 @@ export type ProfileStatus = 'draft' | 'published'
 
 export type ProfileTemplate = 'minimal' | 'cover' | 'studio' | 'executive' | 'signal' | 'index'
 
+export type ProfileDesign = {
+  version: 1
+  /** Rendering-only marker; normalizeDesign never persists this field. */
+  effectiveLinkStyleFallback?: boolean
+  theme: 'light' | 'dark' | 'auto'
+  background: { color: string; text: string | 'auto'; accent: string }
+  typography: {
+    family: 'neo' | 'serif' | 'mono' | 'humanist'
+    scale: 'compact' | 'balanced' | 'large'
+    weight: 'regular' | 'medium' | 'bold'
+  }
+  profile: {
+    photoShape: 'circle' | 'rounded' | 'square'
+    photoSize: 'small' | 'medium' | 'large'
+    alignment: 'left' | 'center'
+  }
+  links: {
+    style: 'icons' | 'pills' | 'rows' | 'cards'
+    showIcons: boolean
+    iconStyle: 'brand' | 'mono'
+    radius: 'square' | 'soft' | 'round'
+    density: 'compact' | 'comfortable'
+  }
+  buttons: { style: 'solid' | 'outline' | 'soft'; radius: 'square' | 'soft' | 'pill' }
+  footer: { showMadeWithIq: boolean; showProfessionalLabel: boolean }
+}
+
+export type NormalizedCoverPresentation = {
+  template: ProfileTemplate
+  cover: {
+    coverPath: string | null
+    overlay: number
+    focalY: number
+    alignment: 'lower-left' | 'center'
+    photoPathOverride: string | null
+  }
+  design: ProfileDesign
+}
+
 export type CoverPresentation = {
   template: ProfileTemplate
   cover: {
@@ -11,12 +50,13 @@ export type CoverPresentation = {
     alignment: 'lower-left' | 'center'
     photoPathOverride: string | null
   }
+  design?: ProfileDesign
 }
 
 export type ProfilePresentation = {
   profile_id?: string
-  draft: CoverPresentation
-  published: CoverPresentation
+  draft: NormalizedCoverPresentation
+  published: NormalizedCoverPresentation
 }
 
 export type ProfileLink = {

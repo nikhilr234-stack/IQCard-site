@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { revalidatePath } from 'next/cache'
 import { requireAuthenticatedAccount } from '@/lib/auth/account'
 import { createServerClient } from '@/lib/supabase/server'
+import { DEFAULT_PROFILE_DESIGN } from '@/lib/profile/design'
 import { publishPresentation, savePresentationDraft } from './presentation'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
@@ -50,6 +51,7 @@ describe('presentation actions', () => {
           alignment: 'center',
           photoPathOverride: null,
         },
+        design: DEFAULT_PROFILE_DESIGN,
       },
     })
     expect(rpc).not.toHaveBeenCalledWith('complete_own_onboarding_publish', expect.anything())
@@ -75,7 +77,30 @@ describe('presentation actions', () => {
     expect(rpc).toHaveBeenCalledWith('save_own_profile_presentation', { p_draft: {
       template: 'cover',
       cover: { coverPath: 'gift/profile-1/cover-a.webp', photoPathOverride: 'gift/profile-1/portrait-b.png', overlay: 0.4, focalY: 40, alignment: 'center' },
+      design: DEFAULT_PROFILE_DESIGN,
     } })
+  })
+
+  it('persists valid Design Studio customization in the existing presentation JSON RPC', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    vi.mocked(createServerClient).mockResolvedValue(editableClient(rpc) as never)
+    const formData = new FormData()
+    formData.set('presentation', JSON.stringify({
+      template: 'studio',
+      design: {
+        ...DEFAULT_PROFILE_DESIGN,
+        background: { color: '#123456', text: '#FFFFFF', accent: '#ABCDEF' },
+        typography: { family: 'serif', scale: 'large', weight: 'bold' },
+      },
+    }))
+
+    await savePresentationDraft(formData)
+
+    expect(rpc).toHaveBeenCalledWith('save_own_profile_presentation', expect.objectContaining({
+      p_draft: expect.objectContaining({
+        design: expect.objectContaining({ version: 1, background: { color: '#123456', text: '#FFFFFF', accent: '#ABCDEF' }, typography: { family: 'serif', scale: 'large', weight: 'bold' } }),
+      }),
+    }))
   })
 
   it('rejects malformed presentation JSON before saving a draft', async () => {
@@ -89,36 +114,107 @@ describe('presentation actions', () => {
     expect(rpc).not.toHaveBeenCalled()
   })
 
-  it('promotes the presentation before publishing the profile and revalidates its destinations', async () => {
+  function mockOwnedProfile(status: 'draft' | 'published', slug = 'owner') {
+    const single = vi.fn().mockResolvedValue({ data: { slug, status }, error: null })
+    const eq = vi.fn(() => ({ single }))
+    const select = vi.fn(() => ({ eq }))
+    const from = vi.fn(() => ({ select }))
+    return { from, select, eq, single }
+  }
+
+  it('skips onboarding publication for an already-published profile', async () => {
     const rpc = vi.fn().mockResolvedValue({ error: null })
-    const from = vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({ single: vi.fn().mockResolvedValue({ data: { slug: 'owner' }, error: null }) })),
-      })),
-    }))
-    vi.mocked(createServerClient).mockResolvedValue({ from, rpc } as never)
+    const profile = mockOwnedProfile('published')
+    vi.mocked(createServerClient).mockResolvedValue({ from: profile.from, rpc } as never)
 
-    await publishPresentation()
+    const result = await publishPresentation()
 
-    expect(rpc).toHaveBeenNthCalledWith(1, 'publish_own_profile_presentation')
-    expect(rpc).toHaveBeenNthCalledWith(2, 'complete_own_onboarding_publish', { p_publish: true })
-    expect(revalidatePath).toHaveBeenCalledWith('/dashboard')
-    expect(revalidatePath).toHaveBeenCalledWith('/dashboard/digital-profile')
-    expect(revalidatePath).toHaveBeenCalledWith('/owner')
+    expect(profile.select).toHaveBeenCalledWith('slug, status')
+    expect(profile.eq).toHaveBeenCalledWith('owner_id', 'owner-1')
+    expect(rpc).toHaveBeenCalledTimes(1)
+    expect(rpc).toHaveBeenCalledWith('publish_own_profile_presentation')
+    expect(result).toEqual({ success: true })
   })
 
-  it('does not publish profile content when presentation promotion fails', async () => {
-    const rpc = vi.fn().mockResolvedValue({ error: new Error('promotion unavailable') })
-    const from = vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({ single: vi.fn().mockResolvedValue({ data: { slug: 'owner' }, error: null }) })),
-      })),
-    }))
-    vi.mocked(createServerClient).mockResolvedValue({ from, rpc } as never)
+  it('revalidates the dashboard, editor, and public profile after an existing profile is updated', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    const profile = mockOwnedProfile('published', 'ada')
+    vi.mocked(createServerClient).mockResolvedValue({ from: profile.from, rpc } as never)
 
-    await expect(publishPresentation()).rejects.toThrow('Unable to publish presentation.')
+    const result = await publishPresentation()
 
+    expect(result).toEqual({ success: true })
+    expect(revalidatePath).toHaveBeenCalledWith('/dashboard')
+    expect(revalidatePath).toHaveBeenCalledWith('/dashboard/digital-profile')
+    expect(revalidatePath).toHaveBeenCalledWith('/ada')
+  })
+
+  it('publishes an unpublished profile before promoting its presentation', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    const profile = mockOwnedProfile('draft')
+    vi.mocked(createServerClient).mockResolvedValue({ from: profile.from, rpc } as never)
+
+    const result = await publishPresentation()
+
+    expect(rpc).toHaveBeenNthCalledWith(1, 'complete_own_onboarding_publish', { p_publish: true })
+    expect(rpc).toHaveBeenNthCalledWith(2, 'publish_own_profile_presentation')
+    expect(result).toEqual({ success: true })
+  })
+
+  it('does not promote a presentation when onboarding publication fails', async () => {
+    const rpc = vi.fn().mockResolvedValueOnce({ error: new Error('onboarding incomplete') })
+    const profile = mockOwnedProfile('draft')
+    vi.mocked(createServerClient).mockResolvedValue({ from: profile.from, rpc } as never)
+
+    const result = await publishPresentation()
+
+    expect(result).toEqual({ success: false, error: 'Unable to publish profile.' })
     expect(rpc).toHaveBeenCalledTimes(1)
     expect(revalidatePath).not.toHaveBeenCalled()
   })
+
+  it('returns a clean success result when an already-published presentation is promoted', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    const profile = mockOwnedProfile('published')
+    vi.mocked(createServerClient).mockResolvedValue({ from: profile.from, rpc } as never)
+
+    await expect(publishPresentation()).resolves.toEqual({ success: true })
+  })
+
+  it('surfaces a presentation RPC failure as an action result without throwing', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: new Error('promotion unavailable') })
+    const profile = mockOwnedProfile('published')
+    vi.mocked(createServerClient).mockResolvedValue({ from: profile.from, rpc } as never)
+
+    const result = await publishPresentation()
+
+    expect(result).toEqual({ success: false, error: 'Unable to publish presentation.' })
+    expect(revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it('reports missing profiles as a normal publish failure', async () => {
+    const rpc = vi.fn()
+    const profile = mockOwnedProfile('draft')
+    profile.single.mockResolvedValue({ data: null, error: new Error('not found') })
+    vi.mocked(createServerClient).mockResolvedValue({ from: profile.from, rpc } as never)
+
+    const result = await publishPresentation()
+
+    expect(result).toEqual({ success: false, error: 'Create your profile before publishing.' })
+    expect(rpc).not.toHaveBeenCalled()
+    expect(revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it('revalidates all destinations after initial profile and presentation publication', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    const profile = mockOwnedProfile('draft', 'ada')
+    vi.mocked(createServerClient).mockResolvedValue({ from: profile.from, rpc } as never)
+
+    await publishPresentation()
+
+    expect(revalidatePath).toHaveBeenCalledWith('/dashboard')
+    expect(revalidatePath).toHaveBeenCalledWith('/dashboard/digital-profile')
+    expect(revalidatePath).toHaveBeenCalledWith('/ada')
+  })
+
 })
