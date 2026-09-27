@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 const migrationPath = resolve(process.cwd(), 'supabase/migrations/202609140001_add_profile_presentations.sql')
 const publicLookupMigrationPath = resolve(process.cwd(), 'supabase/migrations/202609160001_add_slug_to_published_profile_presentations.sql')
+const designPersistenceMigrationPath = resolve(process.cwd(), 'supabase/migrations/20260927120000_preserve_design_in_profile_presentation_rpc.sql')
 
 function sql(): string {
   return readFileSync(migrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
@@ -11,6 +12,10 @@ function sql(): string {
 
 function publicLookupSql(): string {
   return readFileSync(publicLookupMigrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+function designPersistenceSql(): string {
+  return readFileSync(designPersistenceMigrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
 }
 
 function functionBody(migration: string, name: string): string {
@@ -107,5 +112,65 @@ describe('profile presentations migration', () => {
     expect(migration).toContain('public.is_published_profile_cover(storage.objects.name)')
     expect(migration).toContain('revoke all on function public.is_published_profile_cover(text) from public, anon, authenticated, service_role')
     expect(migration).toContain('grant execute on function public.is_published_profile_cover(text) to anon, authenticated')
+  })
+})
+
+describe('additive presentation design persistence migration', () => {
+  it('keeps legacy template-and-cover drafts valid without adding a design key', () => {
+    const migration = designPersistenceSql()
+    const save = functionBody(migration, 'save_own_profile_presentation')
+
+    expect(save).toContain("if p_draft ? 'design' then")
+    expect(save).toContain("v_canonical_draft := v_canonical_draft || pg_catalog.jsonb_build_object('design', p_draft -> 'design')")
+    expect(save).toMatch(/if\s+p_draft\s*\?\s*'design'\s+then[\s\S]*?end if;/)
+    expect(migration.match(/create or replace function/g)).toHaveLength(1)
+  })
+
+  it('preserves supplied design unchanged in the canonical saved draft', () => {
+    const save = functionBody(designPersistenceSql(), 'save_own_profile_presentation')
+
+    expect(save).toContain("'design', p_draft -> 'design'")
+    expect(save).toContain('values (v_profile_id, v_canonical_draft)')
+    expect(save).not.toContain('values (v_profile_id, p_draft)')
+  })
+
+  it('rejects a supplied non-object design and bounds serialized design size', () => {
+    const save = functionBody(designPersistenceSql(), 'save_own_profile_presentation')
+
+    expect(save).toContain("p_draft ? 'design'")
+    expect(save).toContain("pg_catalog.jsonb_typeof(p_draft -> 'design') is distinct from 'object'")
+    expect(save).toContain("pg_catalog.octet_length((p_draft -> 'design')::text) > 16384")
+    expect(save).toContain("raise sqlstate '22023' using message = 'invalid presentation settings'")
+  })
+
+  it('retains authentication, ownership, media-path, template, and cover validation', () => {
+    const migration = designPersistenceSql()
+    const save = functionBody(migration, 'save_own_profile_presentation')
+
+    expect(migration).toMatch(/create or replace function public\.save_own_profile_presentation\(p_draft jsonb\)[\s\S]*?security definer[\s\S]*?set search_path = ''/)
+    expect(save).toContain('v_owner_id uuid := auth.uid()')
+    expect(save).toContain("coalesce(p_draft ->> 'template', '') not in ('minimal', 'cover', 'studio', 'executive', 'signal', 'index')")
+    expect(save).toContain("p_draft #>> '{cover,coverpath}'")
+    expect(save).toContain("v_owner_id::text || '/%'")
+    expect(save).toContain('profiles.owner_id = v_owner_id')
+    expect(save).toContain('for update')
+    expect(save).toContain("raise sqlstate '42501' using message = 'authentication required'")
+  })
+
+  it('leaves publish RPC untouched so publishing copies the saved draft verbatim', () => {
+    const migration = designPersistenceSql()
+    const originalPublish = functionBody(sql(), 'publish_own_profile_presentation')
+
+    expect(migration).not.toContain('publish_own_profile_presentation')
+    expect(originalPublish).toContain('set published = draft')
+  })
+
+  it('does not add schema, policy, or ownership changes', () => {
+    const migration = designPersistenceSql()
+
+    expect(migration).not.toMatch(/\b(create|alter|drop)\s+table\b/)
+    expect(migration).not.toMatch(/\b(create|alter|drop)\s+policy\b/)
+    expect(migration).not.toMatch(/\bowner\s+to\b/)
+    expect(migration.match(/create or replace function/g)).toEqual(['create or replace function'])
   })
 })
