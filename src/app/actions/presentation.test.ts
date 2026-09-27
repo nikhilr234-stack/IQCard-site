@@ -52,6 +52,11 @@ describe('presentation actions', () => {
           photoPathOverride: null,
         },
         design: DEFAULT_PROFILE_DESIGN,
+        templateSettings: {
+          cover: { variant: 'editorial-left' }, minimal: { variant: 'classic' },
+          studio: { variant: 'portfolio-grid' }, executive: { variant: 'authority' },
+          signal: { variant: 'poster' }, index: { variant: 'directory' },
+        },
       },
     })
     expect(rpc).not.toHaveBeenCalledWith('complete_own_onboarding_publish', expect.anything())
@@ -78,6 +83,11 @@ describe('presentation actions', () => {
       template: 'cover',
       cover: { coverPath: 'gift/profile-1/cover-a.webp', photoPathOverride: 'gift/profile-1/portrait-b.png', overlay: 0.4, focalY: 40, alignment: 'center' },
       design: DEFAULT_PROFILE_DESIGN,
+      templateSettings: {
+        cover: { variant: 'editorial-left' }, minimal: { variant: 'classic' },
+        studio: { variant: 'portfolio-grid' }, executive: { variant: 'authority' },
+        signal: { variant: 'poster' }, index: { variant: 'directory' },
+      },
     } })
   })
 

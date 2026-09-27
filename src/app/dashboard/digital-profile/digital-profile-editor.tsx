@@ -9,9 +9,11 @@ import { PublicProfile } from '@/components/public-profile'
 import { PROFILE_PHOTO_MAX_BYTES } from '@/lib/profile/photo'
 import { normalizePresentation } from '@/lib/profile/presentation'
 import { PROFILE_TEMPLATE_OPTIONS } from '@/lib/profile/presentation'
+import { normalizeTemplateSettings } from '@/lib/profile/template-variants'
 import { validateLinkInput } from '@/lib/profile/validation'
 import type { CoverPresentation, Profile, ProfileTemplate } from '@/lib/profile/types'
 import { DesignStudioControls } from './design-studio-controls'
+import { LayoutVariantSelector } from './layout-variant-selector'
 
 type FormAction = (formData: FormData) => void | Promise<void>
 type PublishActionResult = { success: true } | { success: false; error: string }
@@ -266,6 +268,13 @@ export function DigitalProfileEditor({
   const [error, setError] = useState('')
 
   const selectTemplate = (template: ProfileTemplate) => setDraft((current) => ({ ...current, template }))
+  const selectVariant = (variant: string) => setDraft((current) => ({
+    ...current,
+    templateSettings: normalizeTemplateSettings({
+      ...current.templateSettings,
+      [current.template]: { variant },
+    }),
+  }))
   const updateCover = <Key extends keyof CoverPresentation['cover']>(key: Key, value: CoverPresentation['cover'][Key]) => {
     setDraft((current) => ({ ...current, cover: { ...current.cover, [key]: value } }))
   }
@@ -328,15 +337,21 @@ export function DigitalProfileEditor({
             </div>
           </section>
 
+          <LayoutVariantSelector
+            template={draft.template}
+            value={draft.templateSettings[draft.template].variant}
+            onChange={selectVariant}
+          />
+
           <DesignStudioControls design={draft.design} template={draft.template} onChange={updateDesign} />
 
           <section className="digital-profile-panel" aria-labelledby="digital-profile-photo-title">
-            <div className="digital-profile-panel-head"><span>03 · PROFILE PHOTO</span><h2 id="digital-profile-photo-title">Your picture.</h2><p>This shared photo appears across every profile style.</p></div>
+            <div className="digital-profile-panel-head"><span>04 · PROFILE PHOTO</span><h2 id="digital-profile-photo-title">Your picture.</h2><p>This shared photo appears across every profile style.</p></div>
             <ProfilePhotoControls profile={profile} uploadPhotoAction={uploadPhotoAction} deletePhotoAction={deletePhotoAction} />
           </section>
 
           {draft.template === 'cover' ? <section className="digital-profile-panel" aria-labelledby="digital-profile-appearance-title">
-            <div className="digital-profile-panel-head"><span>04 · APPEARANCE</span><h2 id="digital-profile-appearance-title">Set the scene.</h2><p>Shape the image behind your identity.</p></div>
+            <div className="digital-profile-panel-head"><span>05 · APPEARANCE</span><h2 id="digital-profile-appearance-title">Set the scene.</h2><p>Shape the image behind your identity.</p></div>
             <CoverMedia coverPath={draft.cover.coverPath} onUpload={uploadCover} onDelete={deleteCover} />
             <div className="digital-profile-range">
               <label htmlFor="digital-profile-overlay"><span>Darken background</span><output>{Math.round(draft.cover.overlay * 100)}%</output></label>
@@ -356,7 +371,7 @@ export function DigitalProfileEditor({
           </section> : null}
 
           <section className="digital-profile-panel digital-profile-content-panel" aria-labelledby="digital-profile-content-title">
-            <div className="digital-profile-panel-head"><span>{draft.template === 'cover' ? '05' : '04'} · CONTENT</span><h2 id="digital-profile-content-title">The details are shared.</h2><p>Edit your identity and links once. Every template uses them.</p></div>
+            <div className="digital-profile-panel-head"><span>{draft.template === 'cover' ? '06' : '05'} · CONTENT</span><h2 id="digital-profile-content-title">The details are shared.</h2><p>Edit your identity and links once. Every template uses them.</p></div>
             <dl><div><dt>Identity</dt><dd>{profile.full_name || 'Add your name'} · {profile.headline || 'Add your role'}</dd></div><div><dt>Content</dt><dd>{profile.bio ? 'Bio ready' : 'Add a bio'}</dd></div></dl>
             <div className="digital-profile-content-links"><Link href="/dashboard#identity">Edit identity →</Link></div>
             <ProfileLinksEditor profile={profile} saveLinksAction={saveLinksAction} />

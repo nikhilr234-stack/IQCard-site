@@ -82,7 +82,7 @@ export function DesignStudioControls({
 
   return <section className="digital-profile-panel digital-profile-design" aria-labelledby="digital-profile-design-title">
     <div className="digital-profile-panel-head">
-      <span>DESIGN STUDIO</span>
+      <span>03 · DESIGN STUDIO</span>
       <div className="digital-profile-design-heading"><div><h2 id="digital-profile-design-title">Make it yours.</h2><p>A shared visual system, tuned without changing your profile content.</p></div>
         <button type="button" className="digital-profile-reset-all" onClick={() => onChange(resetProfileDesign())}>Reset design</button>
       </div>

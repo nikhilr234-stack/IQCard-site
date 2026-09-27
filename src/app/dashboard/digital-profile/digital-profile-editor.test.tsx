@@ -99,6 +99,37 @@ describe('DigitalProfileEditor', () => {
     expect(button(host, /Lower left/i).getAttribute('aria-pressed')).toBe('true')
   })
 
+  it('keeps one selected layout per template and updates only the live draft preview', async () => {
+    const initial = JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '')
+
+    await act(async () => button(host, /Centered Hero/i).click())
+    expect(host.querySelector('.digital-profile-phone-screen [data-template="cover"]')?.getAttribute('data-layout-variant')).toBe('centered-hero')
+
+    await act(async () => button(host, /01 Minimal/i).click())
+    await act(async () => button(host, /Swiss Grid/i).click())
+    await act(async () => button(host, /03 Studio/i).click())
+    await act(async () => button(host, /Hero Project/i).click())
+    await act(async () => button(host, /04 Executive/i).click())
+    await act(async () => button(host, /Compact Board/i).click())
+    await act(async () => button(host, /05 Signal/i).click())
+    await act(async () => button(host, /Type First/i).click())
+    await act(async () => button(host, /06 Index/i).click())
+    await act(async () => button(host, /Grid Index/i).click())
+    await act(async () => button(host, /02 Cover/i).click())
+
+    const serialized = JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '')
+    expect(serialized.templateSettings).toEqual({
+      cover: { variant: 'centered-hero' },
+      minimal: { variant: 'swiss-grid' },
+      studio: { variant: 'hero-project' },
+      executive: { variant: 'compact-board' },
+      signal: { variant: 'type-first' },
+      index: { variant: 'grid-index' },
+    })
+    expect(serialized.design).toEqual(initial.design)
+    expect(host.querySelector('.digital-profile-phone-screen [data-template="cover"]')?.getAttribute('data-layout-variant')).toBe('centered-hero')
+  })
+
   it('keeps the shared profile photo controls available in Minimal', async () => {
     await act(async () => button(host, /01 Minimal/i).click())
 
@@ -112,7 +143,9 @@ describe('DigitalProfileEditor', () => {
     const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
     valueSetter?.call(focal, '22')
     await act(async () => focal.dispatchEvent(new Event('input', { bubbles: true })))
-    await act(async () => button(host, /Centered/i).click())
+    const centeredAlignment = host.querySelector<HTMLButtonElement>('.digital-profile-alignment button:nth-of-type(2)')
+    expect(centeredAlignment).not.toBeNull()
+    await act(async () => centeredAlignment?.click())
 
     const serialized = host.querySelector<HTMLInputElement>('input[name="presentation"]')
     expect(JSON.parse(serialized?.value ?? '')).toEqual({
@@ -125,6 +158,14 @@ describe('DigitalProfileEditor', () => {
         photoPathOverride: null,
       },
       design: DEFAULT_PROFILE_DESIGN,
+      templateSettings: {
+        cover: { variant: 'editorial-left' },
+        minimal: { variant: 'classic' },
+        studio: { variant: 'portfolio-grid' },
+        executive: { variant: 'authority' },
+        signal: { variant: 'poster' },
+        index: { variant: 'directory' },
+      },
     })
     expect(host.querySelector('[aria-label="Profile phone preview"] .cover-profile--center')).not.toBeNull()
     expect(host.querySelector('[aria-label="Profile phone preview"] .cover-profile-shell')?.getAttribute('style')).toContain('--cover-focal-y: 22%')

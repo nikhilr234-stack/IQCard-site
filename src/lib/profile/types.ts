@@ -1,3 +1,5 @@
+import type { TemplateSettings } from './template-variants'
+
 export type ProfileStatus = 'draft' | 'published'
 
 export type ProfileTemplate = 'minimal' | 'cover' | 'studio' | 'executive' | 'signal' | 'index'
@@ -39,6 +41,7 @@ export type NormalizedCoverPresentation = {
     photoPathOverride: string | null
   }
   design: ProfileDesign
+  templateSettings: TemplateSettings
 }
 
 export type CoverPresentation = {
@@ -51,6 +54,7 @@ export type CoverPresentation = {
     photoPathOverride: string | null
   }
   design?: ProfileDesign
+  templateSettings?: TemplateSettings
 }
 
 export type ProfilePresentation = {

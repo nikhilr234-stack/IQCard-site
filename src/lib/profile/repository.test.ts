@@ -232,6 +232,11 @@ describe('profile presentation readers', () => {
         photoPathOverride: null,
       },
       design: DEFAULT_PROFILE_DESIGN,
+      templateSettings: {
+        cover: { variant: 'editorial-left' }, minimal: { variant: 'classic' },
+        studio: { variant: 'portfolio-grid' }, executive: { variant: 'authority' },
+        signal: { variant: 'poster' }, index: { variant: 'directory' },
+      },
     })
   })
 

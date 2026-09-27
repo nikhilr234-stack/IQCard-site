@@ -139,7 +139,7 @@ function StudioMobile({ profile, presentation, preview }: Required<TemplateProps
 
 export function StudioProfile({ profile, presentation, preview = false }: TemplateProps) {
   const props = { profile, presentation, preview }
-  return <main className={cx(styles.shell, styles.studioShell, 'studio-profile', 'profile-design-root')} data-template="studio" style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><StudioDesktop {...props} /><StudioMobile {...props} /></main>
+  return <main className={cx(styles.shell, styles.studioShell, 'studio-profile', 'profile-design-root')} data-template="studio" data-layout-variant={presentation.templateSettings.studio.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><StudioDesktop {...props} /><StudioMobile {...props} /></main>
 }
 
 function ExecutiveDesktop({ profile, presentation, preview }: Required<TemplateProps>) {
@@ -170,7 +170,7 @@ function ExecutiveMobile({ profile, presentation, preview }: Required<TemplatePr
 
 export function ExecutiveProfile({ profile, presentation, preview = false }: TemplateProps) {
   const props = { profile, presentation, preview }
-  return <main className={cx(styles.shell, styles.executiveShell, 'executive-profile', 'profile-design-root')} data-template="executive" style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><ExecutiveDesktop {...props} /><ExecutiveMobile {...props} /></main>
+  return <main className={cx(styles.shell, styles.executiveShell, 'executive-profile', 'profile-design-root')} data-template="executive" data-layout-variant={presentation.templateSettings.executive.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><ExecutiveDesktop {...props} /><ExecutiveMobile {...props} /></main>
 }
 
 function SignalDesktop({ profile, presentation, preview }: Required<TemplateProps>) {
@@ -198,7 +198,7 @@ function SignalMobile({ profile, presentation, preview }: Required<TemplateProps
 
 export function SignalProfile({ profile, presentation, preview = false }: TemplateProps) {
   const props = { profile, presentation, preview }
-  return <main className={cx(styles.shell, styles.signalShell, 'signal-profile', 'profile-design-root')} data-template="signal" style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><SignalDesktop {...props} /><SignalMobile {...props} /></main>
+  return <main className={cx(styles.shell, styles.signalShell, 'signal-profile', 'profile-design-root')} data-template="signal" data-layout-variant={presentation.templateSettings.signal.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><SignalDesktop {...props} /><SignalMobile {...props} /></main>
 }
 
 function directoryGroups(profile: Profile) {
@@ -234,5 +234,5 @@ function IndexMobile({ profile, presentation, preview }: Required<TemplateProps>
 
 export function IndexProfile({ profile, presentation, preview = false }: TemplateProps) {
   const props = { profile, presentation, preview }
-  return <main className={cx(styles.shell, styles.indexShell, 'index-profile', 'profile-design-root')} data-template="index" style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><IndexDesktop {...props} /><IndexMobile {...props} /></main>
+  return <main className={cx(styles.shell, styles.indexShell, 'index-profile', 'profile-design-root')} data-template="index" data-layout-variant={presentation.templateSettings.index.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><IndexDesktop {...props} /><IndexMobile {...props} /></main>
 }

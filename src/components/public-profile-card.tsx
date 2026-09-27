@@ -11,7 +11,7 @@ export function PublicProfileCard({ profile, presentation, preview = false }: { 
   const view = buildPublicProfileView(profile)
   const displayName = profile.full_name || 'Your name'
 
-  return <main className="public-profile-shell profile-design-root" data-template="minimal" style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}>
+  return <main className="public-profile-shell profile-design-root" data-template="minimal" data-layout-variant={presentation.templateSettings.minimal.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}>
     <div className="public-profile-page">
       {preview ? <div className="public-preview-badge">Private preview</div> : null}
       <header className="public-profile-topbar">

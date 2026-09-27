@@ -20,6 +20,82 @@ describe('profile presentation normalization', () => {
     expect(DEFAULT_PRESENTATION.published.template).toBe('cover')
   })
 
+  it('normalizes legacy rows to each template current-layout default without rewriting input', () => {
+    const legacy = { draft: { template: 'cover', cover: { coverPath: 'legacy.webp' } } }
+    const original = JSON.stringify(legacy)
+    const normalized = normalizePresentation(legacy)
+
+    expect(normalized.draft.templateSettings).toEqual({
+      cover: { variant: 'editorial-left' },
+      minimal: { variant: 'classic' },
+      studio: { variant: 'portfolio-grid' },
+      executive: { variant: 'authority' },
+      signal: { variant: 'poster' },
+      index: { variant: 'directory' },
+    })
+    expect(JSON.stringify(legacy)).toBe(original)
+  })
+
+  it.each([
+    ['cover', ['editorial-left', 'centered-hero', 'bottom-sheet']],
+    ['minimal', ['classic', 'oversized-name', 'swiss-grid']],
+    ['studio', ['portfolio-grid', 'hero-project', 'split-canvas']],
+    ['executive', ['authority', 'centered-card', 'compact-board']],
+    ['signal', ['poster', 'type-first', 'split-signal']],
+    ['index', ['directory', 'compact-stack', 'grid-index']],
+  ] as const)('accepts all curated %s variants without changing shared design', (template, variants) => {
+    for (const variant of variants) {
+      const value = normalizePresentation({ draft: {
+        template,
+        templateSettings: { [template]: { variant } },
+        design: { background: { color: '#123456', text: '#FFFFFF', accent: '#ABCDEF' } },
+      } })
+
+      expect(value.draft.templateSettings[template].variant).toBe(variant)
+      expect(value.draft.design.background).toEqual({ color: '#123456', text: '#FFFFFF', accent: '#ABCDEF' })
+    }
+  })
+
+  it('safely falls back for malformed template settings and invalid variant IDs', () => {
+    const value = normalizePresentation({ draft: {
+      templateSettings: {
+        cover: { variant: 'not-a-cover-layout' },
+        minimal: null,
+        studio: 'hero-project',
+        executive: { variant: [] },
+        signal: { variant: 'split-signal' },
+      },
+    } })
+
+    expect(value.draft.templateSettings).toEqual({
+      cover: { variant: 'editorial-left' },
+      minimal: { variant: 'classic' },
+      studio: { variant: 'portfolio-grid' },
+      executive: { variant: 'authority' },
+      signal: { variant: 'split-signal' },
+      index: { variant: 'directory' },
+    })
+    expect(normalizePresentation({ draft: { templateSettings: [] } }).draft.templateSettings).toEqual({
+      cover: { variant: 'editorial-left' },
+      minimal: { variant: 'classic' },
+      studio: { variant: 'portfolio-grid' },
+      executive: { variant: 'authority' },
+      signal: { variant: 'poster' },
+      index: { variant: 'directory' },
+    })
+  })
+
+  it('normalizes draft and published template variants independently', () => {
+    const value = normalizePresentation({
+      draft: { template: 'cover', templateSettings: { cover: { variant: 'bottom-sheet' } } },
+      published: { template: 'minimal', templateSettings: { minimal: { variant: 'swiss-grid' } } },
+    })
+
+    expect(resolvePresentation(value, 'draft').templateSettings.cover.variant).toBe('bottom-sheet')
+    expect(resolvePresentation(value, 'published').templateSettings.minimal.variant).toBe('swiss-grid')
+    expect(resolvePresentation(value, 'published').templateSettings.cover.variant).toBe('editorial-left')
+  })
+
   it('preserves an explicit non-Cover template', () => {
     expect(normalizePresentation({ draft: { template: 'studio' }, published: { template: 'signal' } })).toMatchObject({
       draft: { template: 'studio' },
