@@ -14,7 +14,8 @@ import type { CoverPresentation, Profile, ProfileTemplate } from '@/lib/profile/
 import { DesignStudioControls } from './design-studio-controls'
 
 type FormAction = (formData: FormData) => void | Promise<void>
-type ButtonAction = () => void | Promise<void>
+type PublishActionResult = { success: true } | { success: false; error: string }
+type ButtonAction = () => PublishActionResult | Promise<PublishActionResult>
 type CoverResult = { coverPath: string | null }
 type CoverFormAction = (formData: FormData) => CoverResult | Promise<CoverResult>
 type CoverButtonAction = () => CoverResult | Promise<CoverResult>
@@ -282,7 +283,11 @@ export function DigitalProfileEditor({
     setError('')
     try {
       await saveDraftAction(formData)
-      await publishAction()
+      const result = await publishAction()
+      if (!result.success) {
+        setError(result.error)
+        return
+      }
       setNotice('Digital profile published.')
     } catch (submissionError) {
       setError(errorMessage(submissionError, 'Unable to publish presentation.'))

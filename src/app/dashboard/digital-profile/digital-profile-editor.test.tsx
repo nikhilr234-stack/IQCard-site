@@ -49,7 +49,7 @@ const coverPresentation: CoverPresentation = {
 
 const actions = {
   saveDraftAction: vi.fn(async (_formData: FormData) => undefined),
-  publishAction: vi.fn(async () => undefined),
+  publishAction: vi.fn(async (): Promise<{ success: true } | { success: false; error: string }> => ({ success: true })),
   uploadCoverAction: vi.fn(async (_formData: FormData) => ({ coverPath: 'owner-1/new-cover.webp' as string | null })),
   deleteCoverAction: vi.fn(async () => ({ coverPath: null as string | null })),
   uploadPhotoAction: vi.fn(async (_formData: FormData) => undefined),
@@ -209,6 +209,25 @@ describe('DigitalProfileEditor', () => {
     const saved = actions.saveDraftAction.mock.calls.at(-1)?.[0]
     expect(JSON.parse(String(saved?.get('presentation'))).design.profile.photoShape).toBe('circle')
     expect(actions.saveDraftAction.mock.invocationCallOrder.at(-1)).toBeLessThan(actions.publishAction.mock.invocationCallOrder.at(-1) ?? Infinity)
+  })
+
+  it('shows a server-action publish failure inline without replacing the editor', async () => {
+    actions.publishAction.mockResolvedValueOnce({ success: false, error: 'Unable to publish profile.' })
+
+    await act(async () => button(host, /Publish/i).click())
+
+    const feedback = host.querySelector('.digital-profile-action-feedback')
+    expect(feedback?.getAttribute('role')).toBe('alert')
+    expect(feedback?.textContent).toBe('Unable to publish profile.')
+    expect(host.querySelector('.digital-profile-controls')).not.toBeNull()
+  })
+
+  it('shows success feedback after a clean publish action result', async () => {
+    await act(async () => button(host, /Publish/i).click())
+
+    const feedback = host.querySelector('.digital-profile-action-feedback')
+    expect(feedback?.getAttribute('role')).toBe('status')
+    expect(feedback?.textContent).toBe('Digital profile published.')
   })
 
   it('loads existing links in their saved order and quick-adds an empty labeled row', async () => {

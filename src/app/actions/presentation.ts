@@ -34,23 +34,36 @@ export async function savePresentationDraft(formData: FormData) {
   revalidatePath('/dashboard/digital-profile')
 }
 
-export async function publishPresentation() {
+export type PublishPresentationResult =
+  | { success: true }
+  | { success: false; error: string }
+
+export async function publishPresentation(): Promise<PublishPresentationResult> {
   const account = await requireAuthenticatedAccount()
-  const supabase = await createServerClient()
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('slug')
-    .eq('owner_id', account.id)
-    .single()
-  if (profileError || !profile?.slug) throw new Error('Create your profile before publishing.')
+  try {
+    const supabase = await createServerClient()
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('slug, status')
+      .eq('owner_id', account.id)
+      .single()
+    if (profileError || !profile?.slug) {
+      return { success: false, error: 'Create your profile before publishing.' }
+    }
 
-  const { error: promotionError } = await supabase.rpc('publish_own_profile_presentation')
-  if (promotionError) throw new Error('Unable to publish presentation.')
+    if (profile.status !== 'published') {
+      const { error: publicationError } = await supabase.rpc('complete_own_onboarding_publish', { p_publish: true })
+      if (publicationError) return { success: false, error: 'Unable to publish profile.' }
+    }
 
-  const { error: publicationError } = await supabase.rpc('complete_own_onboarding_publish', { p_publish: true })
-  if (publicationError) throw new Error('Unable to publish profile.')
+    const { error: promotionError } = await supabase.rpc('publish_own_profile_presentation')
+    if (promotionError) return { success: false, error: 'Unable to publish presentation.' }
 
-  revalidatePath('/dashboard')
-  revalidatePath('/dashboard/digital-profile')
-  revalidatePath(`/${profile.slug}`)
+    revalidatePath('/dashboard')
+    revalidatePath('/dashboard/digital-profile')
+    revalidatePath(`/${profile.slug}`)
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Unable to publish presentation.' }
+  }
 }
