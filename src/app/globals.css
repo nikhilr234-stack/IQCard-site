@@ -305,6 +305,19 @@ body:has(.public-profile-shell) { background: #fff; color: #111113; }
   .public-profile-contact-actions a:last-child { border-bottom: 0; }
   .public-profile-footer { padding-top: 24px; align-items: center; }
   .public-menu-panel { left: 10px; right: 10px; top: auto; bottom: 10px; width: auto; padding: 23px 22px 26px; border-radius: 28px; }
+  .cover-profile-shell[data-photo-size="large"] .cover-profile-nameplate h1 { font-size:calc(clamp(40px,12vw,58px) * var(--profile-type-scale,1)); }
+  .cover-profile-shell[data-photo-size="large"] .cover-profile-photo { transform-origin:right center; }
+  .cover-profile-shell[data-layout-variant="bottom-sheet"] .cover-profile-identity { align-items:flex-start; flex-direction:column; }
+  .cover-profile-shell[data-photo-size="large"][data-layout-variant="bottom-sheet"] .cover-profile-nameplate h1 { font-size:calc(clamp(38px,11vw,54px) * var(--profile-type-scale,1)); }
+  .public-profile-shell[data-photo-size="large"] .public-profile-portrait { transform-origin:left center; }
+  .profile-design-root .profile-link-list[data-link-style="cards"] { grid-template-columns:minmax(0,1fr)!important; }
+}
+
+@media (min-width:761px) and (max-width:1000px) {
+  .cover-profile-shell[data-photo-size="large"] .cover-profile-nameplate h1 { font-size:calc(clamp(42px,6vw,60px) * var(--profile-type-scale,1)); }
+  .public-profile-shell .public-profile-hero { grid-template-columns:minmax(0,1.3fr) minmax(190px,.45fr); gap:32px; }
+  .public-profile-shell .public-profile-identity h1 { font-size:calc(clamp(56px,7vw,78px) * var(--profile-type-scale,1)); }
+  .public-profile-shell .public-profile-portrait-wrap { width:min(100%,190px); }
 }
 
 /* Cover public profile: page-level wallpaper with an editorial lower third. */

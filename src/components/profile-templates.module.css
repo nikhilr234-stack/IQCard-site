@@ -187,7 +187,7 @@
   .mobile .contactActions a { flex: 1; justify-content: space-between; }
   .mobileSectionLabel { margin: 34px 0 13px; }
   .mobile .projectFeatured .projectVisual { min-height: 280px; }
-  .mobile .projectGrid { grid-template-columns: repeat(2,minmax(0,1fr)); margin-top: 12px; }
+  .mobile .projectGrid { grid-template-columns: minmax(0,1fr); margin-top: 12px; }
   .mobile .projectGrid .projectVisual { min-height: 128px; }
   .mobile .projectGrid .projectCopy { padding: 12px; }
   .mobile .projectGrid .projectArrow { display: none; }
@@ -213,6 +213,9 @@
   .indexIdentity p { font-size: 11px; }
   .mobile .directory { display: grid; margin-top: 30px; }
   .mobile .directory .textLinks { margin: 0; }
+  :global(.studio-profile[data-photo-size="large"]) .mobileIdentity { grid-template-columns:106px minmax(0,1fr); }
+  :global(.executive-profile[data-photo-size="large"]) .executivePhoto { width:83.333%; align-self:center; }
+  :global(.index-profile[data-photo-size="large"]) .indexIdentity { grid-template-columns:103px minmax(0,1fr); }
 }
 
 @container (min-width: 761px) and (max-width: 1000px) {
