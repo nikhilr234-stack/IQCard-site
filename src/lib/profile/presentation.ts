@@ -1,6 +1,7 @@
-import type { CoverPresentation, ProfilePresentation, ProfileTemplate } from './types'
+import { DEFAULT_PROFILE_DESIGN, normalizeDesign } from './design'
+import type { CoverPresentation, NormalizedCoverPresentation, ProfilePresentation, ProfileTemplate } from './types'
 
-export type { CoverPresentation, ProfilePresentation, ProfileTemplate }
+export type { CoverPresentation, NormalizedCoverPresentation, ProfilePresentation, ProfileTemplate }
 
 export const PROFILE_TEMPLATE_OPTIONS = [
   { id: 'minimal', number: '01', name: 'Minimal', description: 'Clean and editorial' },
@@ -13,7 +14,7 @@ export const PROFILE_TEMPLATE_OPTIONS = [
 
 const PROFILE_TEMPLATE_IDS = new Set<ProfileTemplate>(PROFILE_TEMPLATE_OPTIONS.map(({ id }) => id))
 
-function createDefaultSettings(): CoverPresentation {
+function createDefaultSettings(): NormalizedCoverPresentation {
   return {
     template: 'cover',
     cover: {
@@ -23,6 +24,7 @@ function createDefaultSettings(): CoverPresentation {
       alignment: 'lower-left',
       photoPathOverride: null,
     },
+    design: normalizeDesign(DEFAULT_PROFILE_DESIGN),
   }
 }
 
@@ -43,7 +45,7 @@ function clampNumber(value: unknown, fallback: number, min: number, max: number)
   return typeof value === 'number' && Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback
 }
 
-function normalizeSettings(input: unknown): CoverPresentation {
+function normalizeSettings(input: unknown): NormalizedCoverPresentation {
   const source = isRecord(input) ? input : {}
   const cover = isRecord(source.cover) ? source.cover : {}
   const template = typeof source.template === 'string' && PROFILE_TEMPLATE_IDS.has(source.template as ProfileTemplate)
@@ -59,6 +61,7 @@ function normalizeSettings(input: unknown): CoverPresentation {
       alignment: cover.alignment === 'center' ? 'center' : 'lower-left',
       photoPathOverride: optionalPath(cover.photoPathOverride),
     },
+    design: normalizeDesign(source.design),
   }
 }
 
@@ -73,6 +76,6 @@ export function normalizePresentation(input: unknown): ProfilePresentation {
   return value
 }
 
-export function resolvePresentation(value: ProfilePresentation, mode: 'draft' | 'published'): CoverPresentation {
+export function resolvePresentation(value: ProfilePresentation, mode: 'draft' | 'published'): NormalizedCoverPresentation {
   return mode === 'draft' ? value.draft : value.published
 }

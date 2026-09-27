@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { revalidatePath } from 'next/cache'
 import { requireAuthenticatedAccount } from '@/lib/auth/account'
 import { createServerClient } from '@/lib/supabase/server'
+import { DEFAULT_PROFILE_DESIGN } from '@/lib/profile/design'
 import { publishPresentation, savePresentationDraft } from './presentation'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
@@ -39,11 +40,34 @@ describe('presentation actions', () => {
           alignment: 'center',
           photoPathOverride: null,
         },
+        design: DEFAULT_PROFILE_DESIGN,
       },
     })
     expect(rpc).not.toHaveBeenCalledWith('complete_own_onboarding_publish', expect.anything())
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard')
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard/digital-profile')
+  })
+
+  it('persists valid Design Studio customization in the existing presentation JSON RPC', async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null })
+    vi.mocked(createServerClient).mockResolvedValue({ rpc } as never)
+    const formData = new FormData()
+    formData.set('presentation', JSON.stringify({
+      template: 'studio',
+      design: {
+        ...DEFAULT_PROFILE_DESIGN,
+        background: { color: '#123456', text: '#FFFFFF', accent: '#ABCDEF' },
+        typography: { family: 'serif', scale: 'large', weight: 'bold' },
+      },
+    }))
+
+    await savePresentationDraft(formData)
+
+    expect(rpc).toHaveBeenCalledWith('save_own_profile_presentation', expect.objectContaining({
+      p_draft: expect.objectContaining({
+        design: expect.objectContaining({ version: 1, background: { color: '#123456', text: '#FFFFFF', accent: '#ABCDEF' }, typography: { family: 'serif', scale: 'large', weight: 'bold' } }),
+      }),
+    }))
   })
 
   it('rejects malformed presentation JSON before saving a draft', async () => {

@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
 import { PublicProfile } from './public-profile'
+import { DEFAULT_PROFILE_DESIGN } from '@/lib/profile/design'
 import type { CoverPresentation, Profile, ProfileTemplate } from '@/lib/profile/types'
 
 const profile: Profile = {
@@ -78,4 +79,27 @@ describe('additional public profile templates', () => {
     expect(html).not.toContain('behance.net')
     expect(html).not.toContain('dribbble.com')
   })
+
+  it('applies shared CSS design variables and brand icons to public templates', () => {
+    const design = {
+      ...DEFAULT_PROFILE_DESIGN,
+      background: { color: '#123456', text: '#FFFFFF', accent: '#ABCDEF' },
+      links: { ...DEFAULT_PROFILE_DESIGN.links, showIcons: true, iconStyle: 'brand' as const },
+    }
+    const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={{ ...presentation('executive'), design }} />)
+
+    expect(html).toContain('--profile-bg:#123456')
+    expect(html).toContain('data-link-icon="linkedin"')
+    expect(html).toContain('<svg')
+  })
+
+  it.each(['minimal', 'cover', 'studio', 'executive', 'signal', 'index'] as const)(
+    'normalizes legacy %s profiles and keeps their default visual layer inactive',
+    (template) => {
+      const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={presentation(template)} />)
+      expect(html).toContain(`data-template="${template}"`)
+      expect(html).not.toContain('--profile-bg:')
+      expect(html).not.toContain('data-link-icon=')
+    },
+  )
 })

@@ -3,11 +3,13 @@ import Link from 'next/link'
 import type { CSSProperties } from 'react'
 
 import { buildPublicProfileView } from '@/lib/profile/public-profile'
-import type { CoverPresentation, Profile } from '@/lib/profile/types'
+import { ProfileLinkList } from '@/components/profile-link-list'
+import { getProfileDesignDataAttributes, getProfileDesignStyle } from '@/lib/profile/design'
+import type { NormalizedCoverPresentation, Profile } from '@/lib/profile/types'
 
 type CoverProfileProps = {
   profile: Profile
-  presentation: CoverPresentation
+  presentation: NormalizedCoverPresentation
   preview?: boolean
 }
 
@@ -28,11 +30,12 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
   const coverUrl = cover.coverPath ? `/api/profile-cover?path=${encodeURIComponent(cover.coverPath)}` : null
   const photoUrl = profilePhotoUrl(profile, cover.photoPathOverride)
   const style: CoverStyle = {
+    ...getProfileDesignStyle(presentation.design),
     '--cover-overlay': cover.overlay,
     '--cover-focal-y': `${cover.focalY}%`,
   }
 
-  return <main className={`cover-profile-shell cover-profile--${cover.alignment}`} style={style}>
+  return <main className={`cover-profile-shell cover-profile--${cover.alignment} profile-design-root`} data-template="cover" style={style} {...getProfileDesignDataAttributes(presentation.design)}>
     <div
       className={`cover-profile-wallpaper${coverUrl ? '' : ' is-fallback'}`}
       aria-hidden="true"
@@ -47,7 +50,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
       </header>
 
       <section className="cover-profile-lower-third" aria-labelledby="cover-profile-name">
-        <div className={`cover-profile-identity${photoUrl ? ' has-photo' : ''}`}>
+        <div className={`cover-profile-identity${photoUrl ? ' has-photo' : ''}`} data-profile-identity>
           <div className="cover-profile-photo" role={photoUrl ? undefined : 'img'} aria-label={photoUrl ? undefined : `${displayName} initials`}>
             {photoUrl ? <Image src={photoUrl} alt={`${displayName} profile photo`} fill sizes="96px" /> : <span>{view.initials}</span>}
           </div>
@@ -65,9 +68,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
             {preview ? <span className="cover-profile-save is-disabled">Save Contact<span aria-hidden="true">↓</span></span> : <a className="cover-profile-save" href={view.saveContactHref}>Save Contact<span aria-hidden="true">↓</span></a>}
           </div>
 
-          {view.links.length ? <nav className="cover-profile-links" aria-label="Profile links">
-            {view.links.map((link) => <a key={`${link.label}-${link.url}`} href={link.url} target="_blank" rel="noopener noreferrer"><span>{link.label}</span><span aria-hidden="true">↗</span></a>)}
-          </nav> : null}
+          <ProfileLinkList links={view.links} design={presentation.design} className="cover-profile-links" linkClassName="cover-profile-link" />
 
           {view.callHref || view.emailHref || view.whatsappHref ? <nav className="cover-profile-contact-actions" aria-label={`Contact ${displayName}`}>
             {view.callHref ? <a href={view.callHref}>Call</a> : null}
@@ -77,7 +78,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
         </div>
       </section>
 
-      <footer className="cover-profile-footer"><span>Made with <strong>iq</strong></span><span className="cover-profile-footer-actions"><Link href="/customize">Design yours →</Link><span>Professional</span></span></footer>
+      <footer className="cover-profile-footer">{presentation.design.footer.showMadeWithIq ? <span>Made with <strong>iq</strong></span> : null}<span className="cover-profile-footer-actions"><Link href="/customize">Design yours →</Link>{presentation.design.footer.showProfessionalLabel ? <span>Professional</span> : null}</span></footer>
     </div>
   </main>
 }

@@ -5,6 +5,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { CoverPresentation, Profile } from '@/lib/profile/types'
+import { DEFAULT_PROFILE_DESIGN } from '@/lib/profile/design'
 import { DigitalProfileEditor } from './digital-profile-editor'
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
@@ -123,9 +124,91 @@ describe('DigitalProfileEditor', () => {
         alignment: 'center',
         photoPathOverride: null,
       },
+      design: DEFAULT_PROFILE_DESIGN,
     })
     expect(host.querySelector('[aria-label="Profile phone preview"] .cover-profile--center')).not.toBeNull()
     expect(host.querySelector('[aria-label="Profile phone preview"] .cover-profile-shell')?.getAttribute('style')).toContain('--cover-focal-y: 22%')
+  })
+
+  it('applies a preset to shared design only and keeps it as an unpublished draft', async () => {
+    await act(async () => button(host, /^Editorial$/i).click())
+
+    const serialized = JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '')
+    expect(serialized.template).toBe('cover')
+    expect(serialized.design.typography.family).toBe('serif')
+    expect(serialized.design.version).toBe(1)
+    expect(host.textContent).toContain('Ada Lovelace')
+    expect(actions.publishAction).not.toHaveBeenCalled()
+  })
+
+  it('updates preview immediately when background color changes', async () => {
+    const color = host.querySelector<HTMLInputElement>('input[aria-label="Background color"]')
+    expect(color).not.toBeNull()
+    const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    valueSetter?.call(color, '#2468AC')
+    await act(async () => color?.dispatchEvent(new Event('input', { bubbles: true })))
+    await act(async () => color?.dispatchEvent(new Event('change', { bubbles: true })))
+
+    expect(host.querySelector('.cover-profile-shell')?.getAttribute('style')).toContain('--profile-bg: #2468AC')
+    expect(JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '').design.background.color).toBe('#2468AC')
+  })
+
+  it('provides collapsible design sections and keeps unsupported links disabled for Minimal', async () => {
+    expect(host.querySelectorAll('.digital-profile-design details').length).toBeGreaterThanOrEqual(6)
+    await act(async () => button(host, /01 Minimal/i).click())
+
+    expect(button(host, /^Links Cards$/i).disabled).toBe(true)
+    expect(JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '').design.links.style).toBe(DEFAULT_PROFILE_DESIGN.links.style)
+  })
+
+  it('updates photo, link, button and footer treatments in the live preview', async () => {
+    await act(async () => button(host, /Photo shape Square/i).click())
+    await act(async () => button(host, /Links Cards/i).click())
+    const showLogos = [...host.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')].find((input) => input.closest('label')?.textContent?.includes('Show logos'))
+    const showMadeWithIq = [...host.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')].find((input) => input.closest('label')?.textContent?.includes('Made with iq'))
+    expect(showLogos).not.toBeNull()
+    expect(showMadeWithIq).not.toBeNull()
+    await act(async () => showLogos?.click())
+    await act(async () => showMadeWithIq?.click())
+    await act(async () => button(host, /Button style Outline/i).click())
+
+    const preview = host.querySelector('.digital-profile-phone-screen')
+    expect(preview?.querySelector('.cover-profile-shell')?.getAttribute('data-photo-shape')).toBe('square')
+    expect(preview?.querySelector('.cover-profile-links')?.getAttribute('data-link-style')).toBe('cards')
+    expect(preview?.querySelector('[data-link-icon="linkedin"]')).not.toBeNull()
+    expect(preview?.querySelector('.cover-profile-shell')?.getAttribute('data-button-style')).toBe('outline')
+    expect(preview?.querySelector('.cover-profile-footer strong')).toBeNull()
+  })
+
+  it('resets one design section and the full design independently', async () => {
+    await act(async () => button(host, /^Editorial$/i).click())
+    await act(async () => button(host, /Reset Typography/i).click())
+    let design = JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '').design
+    expect(design.typography).toEqual(DEFAULT_PROFILE_DESIGN.typography)
+    expect(design.background.color).toBe('#F5F2EA')
+
+    await act(async () => button(host, /Reset design/i).click())
+    design = JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '').design
+    expect(design).toEqual(DEFAULT_PROFILE_DESIGN)
+  })
+
+  it('keeps unsupported card layout in saved shared settings while rendering a safe Minimal fallback', async () => {
+    await act(async () => button(host, /Links Cards/i).click())
+    await act(async () => button(host, /01 Minimal/i).click())
+
+    const serialized = JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '')
+    expect(serialized.design.links.style).toBe('cards')
+    expect(button(host, /Links Cards/i).disabled).toBe(true)
+    expect(host.querySelector('.digital-profile-phone-screen .public-profile-links')?.getAttribute('data-link-style')).toBe('rows')
+  })
+
+  it('saves the same customized draft before publishing it', async () => {
+    await act(async () => button(host, /Photo shape Circle/i).click())
+    await act(async () => button(host, /Publish/i).click())
+
+    const saved = actions.saveDraftAction.mock.calls.at(-1)?.[0]
+    expect(JSON.parse(String(saved?.get('presentation'))).design.profile.photoShape).toBe('circle')
+    expect(actions.saveDraftAction.mock.invocationCallOrder.at(-1)).toBeLessThan(actions.publishAction.mock.invocationCallOrder.at(-1) ?? Infinity)
   })
 
   it('loads existing links in their saved order and quick-adds an empty labeled row', async () => {
