@@ -13,7 +13,7 @@ function storageClient(result: { data: Blob | null; error: Error | null }) {
 describe('profile cover delivery route', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('delivers a published cover through the cookie-scoped RLS client without caching it', async () => {
+  it('delivers a published cover through the cookie-scoped RLS client and caches public image bytes briefly', async () => {
     const client = storageClient({ data: new Blob(['cover-bytes'], { type: 'image/webp' }), error: null })
     vi.mocked(createServerClient).mockResolvedValue(client as never)
 
@@ -23,7 +23,8 @@ describe('profile cover delivery route', () => {
     expect(client.download).toHaveBeenCalledWith('owner-1/cover.webp')
     expect(response.status).toBe(200)
     expect(response.headers.get('content-type')).toBe('image/webp')
-    expect(response.headers.get('cache-control')).toContain('no-store')
+    expect(response.headers.get('cache-control')).toContain('public')
+    expect(response.headers.get('cache-control')).toContain('max-age=300')
     expect(await response.text()).toBe('cover-bytes')
   })
 
