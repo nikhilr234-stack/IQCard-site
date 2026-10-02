@@ -1,9 +1,10 @@
 import { deleteProfileCover, uploadProfileCover } from '@/app/actions/profile-cover'
 import { deleteProfilePhoto, uploadProfilePhoto } from '@/app/actions/profile-photo'
-import { publishPresentation, savePresentationDraft } from '@/app/actions/presentation'
-import { saveProfileLinks } from '@/app/actions/profile-links'
+import { publishPresentation } from '@/app/actions/presentation'
+import { saveDigitalProfile } from '@/app/actions/digital-profile'
 import { requireAuthenticatedAccount } from '@/lib/auth/account'
 import { getOwnProfile, getOwnProfilePresentation } from '@/lib/profile/repository'
+import './digital-profile-editor.css'
 import { DigitalProfileEditor } from './digital-profile-editor'
 
 export const dynamic = 'force-dynamic'
@@ -18,12 +19,11 @@ export default async function DigitalProfilePage() {
   return <DigitalProfileEditor
     profile={profile}
     presentation={presentation}
-    saveDraftAction={savePresentationDraft}
+    saveDigitalProfileAction={saveDigitalProfile}
     publishAction={publishPresentation}
     uploadCoverAction={uploadProfileCover}
     deleteCoverAction={deleteProfileCover}
     uploadPhotoAction={uploadProfilePhoto}
     deletePhotoAction={deleteProfilePhoto}
-    saveLinksAction={saveProfileLinks}
   />
 }
