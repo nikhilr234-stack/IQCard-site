@@ -491,10 +491,10 @@ body:has(.digital-profile-shell) { background: #f5f5f3; color: #111113; }
 .digital-profile-publish-actions form { display:inline-flex; }
 .digital-profile-publish .digital-profile-button--light { border-color:rgba(255,255,255,.2); background:transparent; color:#fff; }
 .digital-profile-publish .digital-profile-button--dark { border-color:#fff; background:#fff; color:var(--digital-ink); }
-.digital-profile-preview-sticky { position:sticky; top:106px; }
+.digital-profile-preview-sticky { width:min(390px,100%); margin-inline:auto; position:sticky; top:106px; }
 .digital-profile-preview-head { margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
 .digital-profile-preview-head strong { font-size:10px; }
-.digital-profile-phone { width:min(390px,100%); aspect-ratio:390/790; margin-left:auto; padding:9px; overflow:hidden; border:1px solid rgba(17,17,19,.2); border-radius:48px; background:#111; box-shadow:0 34px 80px rgba(17,17,19,.18); }
+.digital-profile-phone { width:min(320px,100%); aspect-ratio:390/790; margin:0 auto; padding:9px; overflow:hidden; border:1px solid rgba(17,17,19,.2); border-radius:48px; background:#111; box-shadow:0 34px 80px rgba(17,17,19,.18); }
 .digital-profile-phone-screen { width:100%; height:100%; overflow:auto; border-radius:39px; background:#fff; scrollbar-width:none; }
 .digital-profile-phone-screen::-webkit-scrollbar { display:none; }
 .digital-profile-phone-screen .public-profile-page,.digital-profile-phone-screen .cover-profile-page { padding:18px 22px 22px; }
@@ -520,7 +520,7 @@ body:has(.digital-profile-shell) { background: #f5f5f3; color: #111113; }
 .digital-profile-phone-screen .cover-profile-links { display:grid; grid-template-columns:1fr; }
 .digital-profile-phone-screen .cover-profile--center .cover-profile-identity { align-items:center; flex-direction:column; }
 .digital-profile-phone-screen .cover-preview-badge,.digital-profile-phone-screen .public-preview-badge { position:absolute; top:15px; }
-.digital-profile-preview-sticky>p { width:min(390px,100%); margin:17px 0 0 auto; color:var(--digital-muted); font-size:9px; line-height:1.55; }
+.digital-profile-preview-sticky>p { width:100%; margin:17px 0 0; color:var(--digital-muted); font-size:9px; line-height:1.55; }
 .owner-center-actions>a { min-height:42px; padding:0 16px; display:inline-flex; align-items:center; border:1px solid var(--owner-line); border-radius:999px; background:rgba(255,255,255,.92); font-size:12px; font-weight:650; }
 .owner-profile-public-link { display:inline-block; margin-top:14px; color:#77787c!important; font-size:10px; font-weight:650; }
 .owner-profile-cover,.owner-profile-cover-overlay { position:absolute; inset:0; pointer-events:none; }
