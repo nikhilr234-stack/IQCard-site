@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { PublicProfile } from './public-profile'
 import { DEFAULT_PROFILE_DESIGN } from '@/lib/profile/design'
+import { getTemplateVariants, normalizeTemplateSettings } from '@/lib/profile/template-variants'
 import type { CoverPresentation, Profile, ProfileTemplate } from '@/lib/profile/types'
 
 const profile: Profile = {
@@ -45,6 +46,41 @@ function presentation(template: ProfileTemplate): CoverPresentation {
 }
 
 describe('additional public profile templates', () => {
+  it.each((['minimal', 'cover', 'studio', 'executive', 'signal', 'index'] as const).flatMap((template) =>
+    getTemplateVariants(template).map((variant) => [template, variant.id] as const),
+  ))('renders %s layout variant %s without changing the template identity', (template, variant) => {
+    const html = renderToStaticMarkup(<PublicProfile
+      profile={profile}
+      presentation={{ ...presentation(template), templateSettings: normalizeTemplateSettings({ [template]: { variant } }) }}
+    />)
+
+    expect(html).toContain(`data-template="${template}"`)
+    expect(html).toContain(`data-layout-variant="${variant}"`)
+    if (['studio', 'executive', 'signal', 'index'].includes(template) &&
+      ['portfolio-grid', 'authority', 'poster', 'directory'].includes(variant)) {
+      expect(html).toContain('data-composition="desktop"')
+      expect(html).toContain('data-composition="mobile"')
+    }
+  })
+
+  it('keeps the existing composition hooks for each canonical default', () => {
+    const defaults = [
+      ['minimal', 'classic', 'public-profile-hero'],
+      ['cover', 'editorial-left', 'cover-profile-lower-third'],
+      ['studio', 'portfolio-grid', 'data-composition="desktop"'],
+      ['executive', 'authority', 'data-composition="desktop"'],
+      ['signal', 'poster', 'data-composition="desktop"'],
+      ['index', 'directory', 'data-composition="desktop"'],
+    ] as const
+    for (const [template, variant, composition] of defaults) {
+      const html = renderToStaticMarkup(<PublicProfile
+        profile={profile}
+        presentation={{ ...presentation(template), templateSettings: normalizeTemplateSettings({ [template]: { variant } }) }}
+      />)
+      expect(html).toContain(composition)
+    }
+  })
+
   it.each([
     ['studio', 'studio-profile'],
     ['executive', 'executive-profile'],

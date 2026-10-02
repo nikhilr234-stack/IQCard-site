@@ -305,6 +305,19 @@ body:has(.public-profile-shell) { background: #fff; color: #111113; }
   .public-profile-contact-actions a:last-child { border-bottom: 0; }
   .public-profile-footer { padding-top: 24px; align-items: center; }
   .public-menu-panel { left: 10px; right: 10px; top: auto; bottom: 10px; width: auto; padding: 23px 22px 26px; border-radius: 28px; }
+  .cover-profile-shell[data-photo-size="large"] .cover-profile-nameplate h1 { font-size:calc(clamp(40px,12vw,58px) * var(--profile-type-scale,1)); }
+  .cover-profile-shell[data-photo-size="large"] .cover-profile-photo { transform-origin:right center; }
+  .cover-profile-shell[data-layout-variant="bottom-sheet"] .cover-profile-identity { align-items:flex-start; flex-direction:column; }
+  .cover-profile-shell[data-photo-size="large"][data-layout-variant="bottom-sheet"] .cover-profile-nameplate h1 { font-size:calc(clamp(38px,11vw,54px) * var(--profile-type-scale,1)); }
+  .public-profile-shell[data-photo-size="large"] .public-profile-portrait { transform-origin:left center; }
+  .profile-design-root .profile-link-list[data-link-style="cards"] { grid-template-columns:minmax(0,1fr)!important; }
+}
+
+@media (min-width:761px) and (max-width:1000px) {
+  .cover-profile-shell[data-photo-size="large"] .cover-profile-nameplate h1 { font-size:calc(clamp(42px,6vw,60px) * var(--profile-type-scale,1)); }
+  .public-profile-shell .public-profile-hero { grid-template-columns:minmax(0,1.3fr) minmax(190px,.45fr); gap:32px; }
+  .public-profile-shell .public-profile-identity h1 { font-size:calc(clamp(56px,7vw,78px) * var(--profile-type-scale,1)); }
+  .public-profile-shell .public-profile-portrait-wrap { width:min(100%,190px); }
 }
 
 /* Cover public profile: page-level wallpaper with an editorial lower third. */
@@ -693,4 +706,21 @@ body:has(.digital-profile-shell) { background: #f5f5f3; color: #111113; }
   .owner-profile-copy.has-photo { min-height:96px; padding-left:114px; }
   .owner-profile-photo { width:96px; height:96px; border-radius:25px; }
 }
- .gift-page{max-width:720px;margin:48px auto;padding:24px;color:#171816}.gift-page>h1{margin:28px 0 8px;font-size:32px}.gift-page>p{color:#666}.gift-form{display:grid;gap:18px;margin-top:28px}.gift-form label{display:grid;gap:7px;font-weight:600}.gift-form input:not([type=file]){width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font:inherit}.gift-form details{border:1px solid #ddd;border-radius:10px;padding:14px}.gift-form summary{cursor:pointer;font-weight:600}.gift-personalize{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding-top:16px}.gift-form>button,.gift-actions>*{border:0;border-radius:8px;background:#171816;color:white;padding:13px 18px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center}.gift-form>button:disabled{opacity:.55}.gift-success{margin:56px auto;max-width:680px;padding:32px;border:1px solid #ddd;border-radius:16px}.gift-success h1{font-size:32px}.gift-success>a{display:block;margin:22px 0}.gift-eyebrow{letter-spacing:.12em;font-size:12px}.gift-actions{display:flex;flex-wrap:wrap;gap:10px}.admin-gift-shortcut{position:fixed;right:24px;top:20px;z-index:20;border-radius:999px;background:#171816;color:white;padding:12px 18px;text-decoration:none;font-weight:700}@media(max-width:600px){.gift-page{margin:16px auto}.gift-personalize{grid-template-columns:1fr}}
+/* Template variants alter structure only when explicitly selected; canonical defaults retain the production layout. */
+.public-profile-shell[data-layout-variant="oversized-name"] .public-profile-identity h1 { font-size:calc(clamp(82px,11vw,154px) * var(--profile-type-scale,1)); }
+.public-profile-shell[data-layout-variant="oversized-name"] .public-profile-portrait-wrap { width:min(100%,190px); }
+.public-profile-shell[data-layout-variant="swiss-grid"] .public-profile-hero { grid-template-columns:minmax(0,1fr) minmax(180px,.45fr); gap:clamp(28px,4vw,58px); }
+.public-profile-shell[data-layout-variant="swiss-grid"] .public-profile-actions { margin-top:30px; }
+.public-profile-shell[data-layout-variant="swiss-grid"] .public-profile-links { gap:8px; }
+.cover-profile-shell[data-layout-variant="centered-hero"] .cover-profile-lower-third { margin-inline:auto; text-align:center; }
+.cover-profile-shell[data-layout-variant="centered-hero"] .cover-profile-identity { justify-content:center; flex-direction:column; align-items:center; }
+.cover-profile-shell[data-layout-variant="centered-hero"] .cover-profile-content { margin-inline:auto; }
+.cover-profile-shell[data-layout-variant="bottom-sheet"] .cover-profile-lower-third { width:min(920px,100%); padding:clamp(28px,5vw,56px); border:1px solid rgba(255,255,255,.24); border-radius:26px; background:rgba(12,12,14,.68); backdrop-filter:blur(18px); }
+.cover-profile-shell[data-layout-variant="bottom-sheet"] .cover-profile-content { width:100%; }
+.cover-profile-shell[data-layout-variant="bottom-sheet"] .cover-profile-footer { padding-top:24px; }
+@media(max-width:680px) {
+  .public-profile-shell[data-layout-variant="oversized-name"] .public-profile-identity h1 { font-size:calc(clamp(62px,18vw,94px) * var(--profile-type-scale,1)); }
+  .public-profile-shell[data-layout-variant="swiss-grid"] .public-profile-hero { gap:20px; }
+  .cover-profile-shell[data-layout-variant="bottom-sheet"] .cover-profile-lower-third { padding:24px 18px; border-radius:20px; }
+}
+.gift-page{max-width:720px;margin:48px auto;padding:24px;color:#171816}.gift-page>h1{margin:28px 0 8px;font-size:32px}.gift-page>p{color:#666}.gift-form{display:grid;gap:18px;margin-top:28px}.gift-form label{display:grid;gap:7px;font-weight:600}.gift-form input:not([type=file]){width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font:inherit}.gift-form details{border:1px solid #ddd;border-radius:10px;padding:14px}.gift-form summary{cursor:pointer;font-weight:600}.gift-personalize{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding-top:16px}.gift-form>button,.gift-actions>*{border:0;border-radius:8px;background:#171816;color:white;padding:13px 18px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center}.gift-form>button:disabled{opacity:.55}.gift-success{margin:56px auto;max-width:680px;padding:32px;border:1px solid #ddd;border-radius:16px}.gift-success h1{font-size:32px}.gift-success>a{display:block;margin:22px 0}.gift-eyebrow{letter-spacing:.12em;font-size:12px}.gift-actions{display:flex;flex-wrap:wrap;gap:10px}.admin-gift-shortcut{position:fixed;right:24px;top:20px;z-index:20;border-radius:999px;background:#171816;color:white;padding:12px 18px;text-decoration:none;font-weight:700}@media(max-width:600px){.gift-page{margin:16px auto}.gift-personalize{grid-template-columns:1fr}}

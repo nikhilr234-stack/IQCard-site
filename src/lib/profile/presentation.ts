@@ -1,4 +1,5 @@
 import { DEFAULT_PROFILE_DESIGN, normalizeDesign } from './design'
+import { normalizeTemplateSettings } from './template-variants'
 import type { CoverPresentation, NormalizedCoverPresentation, ProfilePresentation, ProfileTemplate } from './types'
 
 export type { CoverPresentation, NormalizedCoverPresentation, ProfilePresentation, ProfileTemplate }
@@ -25,6 +26,7 @@ function createDefaultSettings(): NormalizedCoverPresentation {
       photoPathOverride: null,
     },
     design: normalizeDesign(DEFAULT_PROFILE_DESIGN),
+    templateSettings: normalizeTemplateSettings(undefined),
   }
 }
 
@@ -62,6 +64,7 @@ function normalizeSettings(input: unknown): NormalizedCoverPresentation {
       photoPathOverride: optionalPath(cover.photoPathOverride),
     },
     design: normalizeDesign(source.design),
+    templateSettings: normalizeTemplateSettings(source.templateSettings),
   }
 }
 

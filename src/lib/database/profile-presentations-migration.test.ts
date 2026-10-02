@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 const migrationPath = resolve(process.cwd(), 'supabase/migrations/202609140001_add_profile_presentations.sql')
 const publicLookupMigrationPath = resolve(process.cwd(), 'supabase/migrations/202609160001_add_slug_to_published_profile_presentations.sql')
 const designPersistenceMigrationPath = resolve(process.cwd(), 'supabase/migrations/20260927120000_preserve_design_in_profile_presentation_rpc.sql')
+const templateSettingsMigrationPath = resolve(process.cwd(), 'supabase/migrations/20260927130000_preserve_template_settings_in_profile_presentation_rpc.sql')
 
 function sql(): string {
   return readFileSync(migrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
@@ -16,6 +17,10 @@ function publicLookupSql(): string {
 
 function designPersistenceSql(): string {
   return readFileSync(designPersistenceMigrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+function templateSettingsPersistenceSql(): string {
+  return readFileSync(templateSettingsMigrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
 }
 
 function functionBody(migration: string, name: string): string {
@@ -171,6 +176,36 @@ describe('additive presentation design persistence migration', () => {
     expect(migration).not.toMatch(/\b(create|alter|drop)\s+table\b/)
     expect(migration).not.toMatch(/\b(create|alter|drop)\s+policy\b/)
     expect(migration).not.toMatch(/\bowner\s+to\b/)
+    expect(migration.match(/create or replace function/g)).toEqual(['create or replace function'])
+  })
+})
+
+describe('additive template settings persistence migration', () => {
+  it('preserves optional templateSettings while legacy payloads remain valid', () => {
+    const save = functionBody(templateSettingsPersistenceSql(), 'save_own_profile_presentation')
+    expect(save).toContain("if p_draft ? 'templatesettings' then")
+    expect(save).toContain("'templatesettings', p_draft -> 'templatesettings'")
+    expect(save).not.toMatch(/jsonb_build_object\(\s*'templatesettings',\s*'\{\}'/)
+  })
+
+  it('rejects non-object and oversized templateSettings in the save RPC', () => {
+    const save = functionBody(templateSettingsPersistenceSql(), 'save_own_profile_presentation')
+    expect(save).toContain("p_draft ? 'templatesettings'")
+    expect(save).toContain("pg_catalog.jsonb_typeof(p_draft -> 'templatesettings') is distinct from 'object'")
+    expect(save).toContain("pg_catalog.octet_length((p_draft -> 'templatesettings')::text) > 16384")
+    expect(save).toContain("raise sqlstate '22023' using message = 'invalid presentation settings'")
+  })
+
+  it('retains existing auth, media, and ownership checks and leaves publish RPC untouched', () => {
+    const migration = templateSettingsPersistenceSql()
+    const save = functionBody(migration, 'save_own_profile_presentation')
+    expect(save).toContain('v_owner_id uuid := auth.uid()')
+    expect(save).toContain("v_owner_id::text || '/%'")
+    expect(save).toContain('profiles.owner_id = v_owner_id')
+    expect(save).toContain('for update')
+    expect(migration).not.toContain('publish_own_profile_presentation')
+    expect(migration).not.toMatch(/\b(create|alter|drop)\s+table\b/)
+    expect(migration).not.toMatch(/\b(create|alter|drop)\s+policy\b/)
     expect(migration.match(/create or replace function/g)).toEqual(['create or replace function'])
   })
 })

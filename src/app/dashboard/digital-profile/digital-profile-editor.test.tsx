@@ -49,6 +49,7 @@ const coverPresentation: CoverPresentation = {
 
 const actions = {
   saveDraftAction: vi.fn(async (_formData: FormData) => undefined),
+  saveDigitalProfileAction: vi.fn(async (_formData: FormData) => ({ success: true as const, live: true })),
   publishAction: vi.fn(async (): Promise<{ success: true } | { success: false; error: string }> => ({ success: true })),
   uploadCoverAction: vi.fn(async (_formData: FormData) => ({ coverPath: 'owner-1/new-cover.webp' as string | null })),
   deleteCoverAction: vi.fn(async () => ({ coverPath: null as string | null })),
@@ -99,6 +100,64 @@ describe('DigitalProfileEditor', () => {
     expect(button(host, /Lower left/i).getAttribute('aria-pressed')).toBe('true')
   })
 
+  it('keeps one selected layout per template and updates only the live draft preview', async () => {
+    const initial = JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '')
+
+    await act(async () => button(host, /Centered Hero/i).click())
+    expect(host.querySelector('.digital-profile-phone-screen [data-template="cover"]')?.getAttribute('data-layout-variant')).toBe('centered-hero')
+
+    await act(async () => button(host, /01 Minimal/i).click())
+    await act(async () => button(host, /Swiss Grid/i).click())
+    await act(async () => button(host, /03 Studio/i).click())
+    await act(async () => button(host, /Hero Project/i).click())
+    await act(async () => button(host, /04 Executive/i).click())
+    await act(async () => button(host, /Compact Board/i).click())
+    await act(async () => button(host, /05 Signal/i).click())
+    await act(async () => button(host, /Type First/i).click())
+    await act(async () => button(host, /06 Index/i).click())
+    await act(async () => button(host, /Grid Index/i).click())
+    await act(async () => button(host, /02 Cover/i).click())
+
+    const serialized = JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '')
+    expect(serialized.templateSettings).toEqual({
+      cover: { variant: 'centered-hero' },
+      minimal: { variant: 'swiss-grid' },
+      studio: { variant: 'hero-project' },
+      executive: { variant: 'compact-board' },
+      signal: { variant: 'type-first' },
+      index: { variant: 'grid-index' },
+    })
+    expect(serialized.design).toEqual(initial.design)
+    expect(host.querySelector('.digital-profile-phone-screen [data-template="cover"]')?.getAttribute('data-layout-variant')).toBe('centered-hero')
+  })
+
+  it('edits identity and links on this page and publishes them with one Save action', async () => {
+    const name = host.querySelector<HTMLInputElement>('input[name="full_name"]')
+    expect(name).not.toBeNull()
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    setter?.call(name, 'Ada Byron Lovelace')
+    await act(async () => name?.dispatchEvent(new Event('input', { bubbles: true })))
+    const tagline = host.querySelector<HTMLInputElement>('input[name="tagline"]')
+    setter?.call(tagline, 'Analytical engine pioneer')
+    await act(async () => tagline?.dispatchEvent(new Event('input', { bubbles: true })))
+
+    await act(async () => button(host, /^Instagram$/i).click())
+    const instagram = [...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="url"]')].at(-1)
+    setter?.call(instagram, 'https://instagram.com/ada')
+    await act(async () => instagram?.dispatchEvent(new Event('input', { bubbles: true })))
+    await act(async () => button(host, /Centered Hero/i).click())
+    await act(async () => button(host, /Save Changes/i).click())
+
+    const saved = actions.saveDigitalProfileAction.mock.calls.at(-1)?.[0]
+    expect(JSON.parse(String(saved?.get('profile'))).full_name).toBe('Ada Byron Lovelace')
+    expect(JSON.parse(String(saved?.get('profile'))).tagline).toBe('Analytical engine pioneer')
+    expect(JSON.parse(String(saved?.get('links')))).toContainEqual({ label: 'Instagram', url: 'https://instagram.com/ada' })
+    expect(JSON.parse(String(saved?.get('presentation'))).templateSettings.cover.variant).toBe('centered-hero')
+    expect(actions.publishAction).not.toHaveBeenCalled()
+    expect(host.querySelector('a[href="/dashboard#identity"]')).toBeNull()
+    expect(host.querySelector('.digital-profile-action-feedback')?.textContent).toContain('live')
+  })
+
   it('keeps the shared profile photo controls available in Minimal', async () => {
     await act(async () => button(host, /01 Minimal/i).click())
 
@@ -112,7 +171,9 @@ describe('DigitalProfileEditor', () => {
     const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
     valueSetter?.call(focal, '22')
     await act(async () => focal.dispatchEvent(new Event('input', { bubbles: true })))
-    await act(async () => button(host, /Centered/i).click())
+    const centeredAlignment = host.querySelector<HTMLButtonElement>('.digital-profile-alignment button:nth-of-type(2)')
+    expect(centeredAlignment).not.toBeNull()
+    await act(async () => centeredAlignment?.click())
 
     const serialized = host.querySelector<HTMLInputElement>('input[name="presentation"]')
     expect(JSON.parse(serialized?.value ?? '')).toEqual({
@@ -125,6 +186,14 @@ describe('DigitalProfileEditor', () => {
         photoPathOverride: null,
       },
       design: DEFAULT_PROFILE_DESIGN,
+      templateSettings: {
+        cover: { variant: 'editorial-left' },
+        minimal: { variant: 'classic' },
+        studio: { variant: 'portfolio-grid' },
+        executive: { variant: 'authority' },
+        signal: { variant: 'poster' },
+        index: { variant: 'directory' },
+      },
     })
     expect(host.querySelector('[aria-label="Profile phone preview"] .cover-profile--center')).not.toBeNull()
     expect(host.querySelector('[aria-label="Profile phone preview"] .cover-profile-shell')?.getAttribute('style')).toContain('--cover-focal-y: 22%')
@@ -203,15 +272,17 @@ describe('DigitalProfileEditor', () => {
   })
 
   it('saves the same customized draft before publishing it', async () => {
+    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} {...actions} />))
     await act(async () => button(host, /Photo shape Circle/i).click())
     await act(async () => button(host, /Publish/i).click())
 
-    const saved = actions.saveDraftAction.mock.calls.at(-1)?.[0]
+    const saved = actions.saveDigitalProfileAction.mock.calls.at(-1)?.[0]
     expect(JSON.parse(String(saved?.get('presentation'))).design.profile.photoShape).toBe('circle')
-    expect(actions.saveDraftAction.mock.invocationCallOrder.at(-1)).toBeLessThan(actions.publishAction.mock.invocationCallOrder.at(-1) ?? Infinity)
+    expect(actions.saveDigitalProfileAction.mock.invocationCallOrder.at(-1)).toBeLessThan(actions.publishAction.mock.invocationCallOrder.at(-1) ?? Infinity)
   })
 
   it('shows a server-action publish failure inline without replacing the editor', async () => {
+    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} {...actions} />))
     actions.publishAction.mockResolvedValueOnce({ success: false, error: 'Unable to publish profile.' })
 
     await act(async () => button(host, /Publish/i).click())
@@ -223,11 +294,22 @@ describe('DigitalProfileEditor', () => {
   })
 
   it('shows success feedback after a clean publish action result', async () => {
+    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} {...actions} />))
     await act(async () => button(host, /Publish/i).click())
 
     const feedback = host.querySelector('.digital-profile-action-feedback')
     expect(feedback?.getAttribute('role')).toBe('status')
     expect(feedback?.textContent).toBe('Digital profile published.')
+  })
+
+  it('saves an unpublished profile draft without publishing it', async () => {
+    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} {...actions} />))
+    await act(async () => button(host, /Save Draft/i).click())
+
+    const saved = actions.saveDigitalProfileAction.mock.calls.at(-1)?.[0]
+    expect(saved?.get('intent')).toBe('draft')
+    expect(actions.publishAction).not.toHaveBeenCalled()
+    expect(host.querySelector('.digital-profile-action-feedback')?.textContent).toContain('Publish once')
   })
 
   it('loads existing links in their saved order and quick-adds an empty labeled row', async () => {
@@ -249,8 +331,8 @@ describe('DigitalProfileEditor', () => {
 
     await act(async () => button(host, /Move Website up/i).click())
     expect([...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="label"]')].slice(0, 2).map((input) => input.value)).toEqual(['Website', 'LinkedIn'])
-    await act(async () => button(host, /Save Links/i).click())
-    expect(JSON.parse(String(vi.mocked(actions.saveLinksAction).mock.calls[0]?.[0].get('links'))).map((link: { label: string }) => link.label)).toEqual(['Website', 'LinkedIn', ''])
+    await act(async () => button(host, /Save Changes/i).click())
+    expect(JSON.parse(String(vi.mocked(actions.saveDigitalProfileAction).mock.calls[0]?.[0].get('links'))).map((link: { label: string }) => link.label)).toEqual(['Website', 'LinkedIn', ''])
 
     await act(async () => button(host, /Remove Website/i).click())
     expect([...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="label"]')].map((input) => input.value)).toEqual(['LinkedIn', ''])
@@ -267,9 +349,9 @@ describe('DigitalProfileEditor', () => {
     await act(async () => label.dispatchEvent(new Event('input', { bubbles: true })))
     setter?.call(url, 'https://portfolio.example.com')
     await act(async () => url.dispatchEvent(new Event('input', { bubbles: true })))
-    await act(async () => button(host, /Save Links/i).click())
+    await act(async () => button(host, /Save Changes/i).click())
 
-    expect(JSON.parse(String(vi.mocked(actions.saveLinksAction).mock.calls[0]?.[0].get('links')))).toContainEqual({ label: 'My Portfolio', url: 'https://portfolio.example.com' })
+    expect(JSON.parse(String(vi.mocked(actions.saveDigitalProfileAction).mock.calls[0]?.[0].get('links')))).toContainEqual({ label: 'My Portfolio', url: 'https://portfolio.example.com' })
   })
 
   it('enforces the twelve-link limit and validates a bad URL beside its row', async () => {
@@ -280,26 +362,25 @@ describe('DigitalProfileEditor', () => {
     expect(button(host, /GitHub/i).disabled).toBe(true)
   })
 
-  it('saves all links through the supplied secure action and shows inline success', async () => {
+  it('validates links beside their row and includes valid links in the single save', async () => {
     const urlInput = host.querySelector<HTMLInputElement>('[data-link-row] input[name="url"]')
     if (!urlInput) throw new Error('Missing URL input')
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
     setter?.call(urlInput, 'not a url')
     await act(async () => urlInput.dispatchEvent(new Event('input', { bubbles: true })))
-    await act(async () => button(host, /Save Links/i).click())
     expect(host.querySelector('[data-link-row] [role="alert"]')?.textContent).toMatch(/HTTP\(S\)|contact link/i)
-    expect(actions.saveLinksAction).not.toHaveBeenCalled()
+    expect(actions.saveDigitalProfileAction).not.toHaveBeenCalled()
 
     setter?.call(urlInput, 'https://linkedin.com/in/ada')
     await act(async () => urlInput.dispatchEvent(new Event('input', { bubbles: true })))
-    await act(async () => button(host, /Save Links/i).click())
+    await act(async () => button(host, /Save Changes/i).click())
 
-    const formData = vi.mocked(actions.saveLinksAction).mock.calls[0]?.[0]
+    const formData = vi.mocked(actions.saveDigitalProfileAction).mock.calls[0]?.[0]
     expect(JSON.parse(String(formData?.get('links')))).toEqual([
       { label: 'LinkedIn', url: 'https://linkedin.com/in/ada' },
       { label: 'Website', url: 'https://ada.example.com' },
     ])
-    expect(host.textContent).toContain('Links updated.')
+    expect(host.textContent).toContain('Your profile is live.')
   })
 
   it.each([

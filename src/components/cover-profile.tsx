@@ -36,7 +36,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
     '--cover-focal-y': `${cover.focalY}%`,
   }
 
-  return <main className={`cover-profile-shell cover-profile--${cover.alignment} profile-design-root`} data-template="cover" style={style} {...getProfileDesignDataAttributes(presentation.design)}>
+  return <main className={`cover-profile-shell cover-profile--${cover.alignment} profile-design-root`} data-template="cover" data-layout-variant={presentation.templateSettings.cover.variant} style={style} {...getProfileDesignDataAttributes(presentation.design)}>
     <div
       className={`cover-profile-wallpaper${coverUrl ? '' : ' is-fallback'}`}
       aria-hidden="true"
