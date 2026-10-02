@@ -76,7 +76,10 @@ describe('digital profile save action', () => {
     const form = formData()
     form.set('links', JSON.stringify([{ label: 'Bad link', url: 'javascript:alert(1)' }]))
 
-    await expect(saveDigitalProfile(form)).rejects.toThrow('Use an HTTP(S) link or a contact link.')
+    await expect(saveDigitalProfile(form)).resolves.toEqual({
+      success: false,
+      error: 'Use an HTTP(S) link or a contact link.',
+    })
     expect(rpc).not.toHaveBeenCalled()
   })
 })

@@ -7,39 +7,41 @@ import { normalizePresentation } from '@/lib/profile/presentation'
 import { validateEditableProfile, type EditableProfileInput } from '@/lib/profile/validation'
 import { createServerClient } from '@/lib/supabase/server'
 
+class ProfileInputError extends Error {}
+
 function readJson(formData: FormData, field: string): unknown {
   const serialized = formData.get(field)
-  if (typeof serialized !== 'string') throw new Error(`${field} could not be read.`)
+  if (typeof serialized !== 'string') throw new ProfileInputError(`${field} could not be read.`)
   try {
     return JSON.parse(serialized) as unknown
   } catch {
-    throw new Error(`${field} could not be read.`)
+    throw new ProfileInputError(`${field} could not be read.`)
   }
 }
 
 function readProfile(formData: FormData) {
   const value = readJson(formData, 'profile')
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new Error('Profile details could not be read.')
+    throw new ProfileInputError('Profile details could not be read.')
   }
   const validation = validateEditableProfile(value as EditableProfileInput)
-  if (!validation.ok) throw new Error(Object.values(validation.fieldErrors)[0] ?? 'Check the profile details and try again.')
+  if (!validation.ok) throw new ProfileInputError(Object.values(validation.fieldErrors)[0] ?? 'Check the profile details and try again.')
   const tagline = (value as { tagline?: unknown }).tagline
-  if (typeof tagline !== 'string' || tagline.length > 500) throw new Error('Check the profile details and try again.')
+  if (typeof tagline !== 'string' || tagline.length > 500) throw new ProfileInputError('Check the profile details and try again.')
   return { ...validation.value, tagline: tagline.trim() }
 }
 
 function readLinks(formData: FormData): LinkInput[] {
   const value = readJson(formData, 'links')
-  if (!Array.isArray(value)) throw new Error('Links could not be read.')
+  if (!Array.isArray(value)) throw new ProfileInputError('Links could not be read.')
   const links = value.map((link) => {
-    if (typeof link !== 'object' || link === null || Array.isArray(link)) throw new Error('Links could not be read.')
+    if (typeof link !== 'object' || link === null || Array.isArray(link)) throw new ProfileInputError('Links could not be read.')
     const input = link as { label?: unknown; url?: unknown }
-    if (typeof input.label !== 'string' || typeof input.url !== 'string') throw new Error('Links could not be read.')
+    if (typeof input.label !== 'string' || typeof input.url !== 'string') throw new ProfileInputError('Links could not be read.')
     return { label: input.label, url: input.url }
   })
   const validationError = validateLinks(links)
-  if (validationError) throw new Error(validationError)
+  if (validationError) throw new ProfileInputError(validationError)
   return normalizeLinks(links)
 }
 
@@ -57,9 +59,17 @@ export type SaveDigitalProfileResult =
 
 export async function saveDigitalProfile(formData: FormData): Promise<SaveDigitalProfileResult> {
   const account = await requireAuthenticatedAccount()
-  const profileDraft = readProfile(formData)
-  const links = readLinks(formData)
-  const draft = readPresentation(formData)
+  let profileDraft: ReturnType<typeof readProfile>
+  let links: LinkInput[]
+  let draft: ReturnType<typeof readPresentation>
+  try {
+    profileDraft = readProfile(formData)
+    links = readLinks(formData)
+    draft = readPresentation(formData)
+  } catch (error) {
+    if (error instanceof ProfileInputError) return { success: false, error: error.message }
+    throw error
+  }
   const supabase = await createServerClient()
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
