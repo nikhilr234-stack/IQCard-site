@@ -322,6 +322,15 @@ describe('DigitalProfileEditor', () => {
     expect([...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="url"]')].map((input) => input.value)).toEqual(['https://linkedin.com/in/ada', 'https://ada.example.com', ''])
   })
 
+  it('keeps an unfinished quick-add link from reaching Save and explains what to fix', async () => {
+    await act(async () => button(host, /^Email$/i).click())
+
+    await act(async () => button(host, /Save Changes/i).click())
+
+    expect(actions.saveDigitalProfileAction).not.toHaveBeenCalled()
+    expect(host.querySelector('.digital-profile-action-feedback')?.textContent).toMatch(/Email.*link/i)
+  })
+
   it('supports custom links, deletion, and reorder controls', async () => {
     await act(async () => button(host, /\+ Custom link/i).click())
     const labels = [...host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="label"]')]
