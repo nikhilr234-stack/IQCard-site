@@ -263,9 +263,18 @@ export function DigitalProfileEditor({
   }
   const updateDesign = (design: NonNullable<CoverPresentation['design']>) => setDraft((current) => ({ ...current, design }))
   const updateProfile = <Key extends keyof DigitalProfileDraft>(key: Key, value: DigitalProfileDraft[Key]) => setProfileDraft((current) => ({ ...current, [key]: value }))
+  const invalidLink = links.find((link) =>
+    Boolean(link.label.trim() || link.url.trim()) && validateLinkInput(link.label, link.url) !== null,
+  )
+  const validateLinksBeforeSave = () => {
+    if (!invalidLink) return true
+    setError(`Complete or remove the “${invalidLink.label.trim() || 'Untitled'}” link before saving.`)
+    return false
+  }
   const saveProfile = async (formData: FormData) => {
     setNotice('')
     setError('')
+    if (!validateLinksBeforeSave()) return
     try {
       const result = await saveDigitalProfileAction(formData)
       if (!result.success) {
@@ -280,6 +289,7 @@ export function DigitalProfileEditor({
   const publish = async (formData: FormData) => {
     setNotice('')
     setError('')
+    if (!validateLinksBeforeSave()) return
     try {
       const saved = await saveDigitalProfileAction(formData)
       if (!saved.success) {
