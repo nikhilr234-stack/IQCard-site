@@ -37,7 +37,7 @@ export type CanonicalCardConfiguration = {
 export type CanonicalCardPayload = {
   schemaVersion: typeof CARD_SCHEMA_VERSION
   configuration: CanonicalCardConfiguration
-  pricing: { currency: 'INR'; pricingVersion: 'flat-inr-v2'; provisional: true; components: { base: number; material: number; craft: number; customLogoSetup: number }; total: number }
+  pricing: { currency: 'INR'; pricingVersion: 'flat-inr-v2'; provisional: false; components: { base: number; material: number; craft: number; customLogoSetup: number }; total: number }
   manufacturing: {
     core: { color: CardCore }
     surfaces: { front: { material: CardAvailableMaterial; customColor: string | null }; back: { material: CardAvailableMaterial; customColor: string | null } }
@@ -92,5 +92,5 @@ export function canonicalizeCardPayload(value: unknown): CanonicalCardPayload | 
   const configuration = canonicalConfiguration(payload.configuration)
   if (!configuration) return null
   const material = MATERIAL_PRICES[configuration.material], craft = CRAFT_PRICES[configuration.craft], customLogoSetup = 0, customColor = configuration.customColor ? CUSTOM_COLOR_HEX[configuration.customColor] : null
-  return { schemaVersion: CARD_SCHEMA_VERSION, configuration, pricing: { currency: 'INR', pricingVersion: 'flat-inr-v2', provisional: true, components: { base: CARD_BASE_PRICE, material, craft, customLogoSetup }, total: CARD_BASE_PRICE }, manufacturing: { core: { color: configuration.core }, surfaces: { front: { material: configuration.material, customColor }, back: { material: configuration.material, customColor } }, identity: { name: configuration.identity.name, fineTune: configuration.identity.fineTune, logoMode: configuration.logo.mode, logoPlacement: { scale: configuration.logo.scale, x: configuration.logo.x, y: configuration.logo.y, align: configuration.logo.align }, craft: configuration.craft }, back: { layout: configuration.backLayout, backLayout: configuration.backLayout, tapToConnect: true } } }
+  return { schemaVersion: CARD_SCHEMA_VERSION, configuration, pricing: { currency: 'INR', pricingVersion: 'flat-inr-v2', provisional: false, components: { base: CARD_BASE_PRICE, material, craft, customLogoSetup }, total: CARD_BASE_PRICE }, manufacturing: { core: { color: configuration.core }, surfaces: { front: { material: configuration.material, customColor }, back: { material: configuration.material, customColor } }, identity: { name: configuration.identity.name, fineTune: configuration.identity.fineTune, logoMode: configuration.logo.mode, logoPlacement: { scale: configuration.logo.scale, x: configuration.logo.x, y: configuration.logo.y, align: configuration.logo.align }, craft: configuration.craft }, back: { layout: configuration.backLayout, backLayout: configuration.backLayout, tapToConnect: true } } }
 }

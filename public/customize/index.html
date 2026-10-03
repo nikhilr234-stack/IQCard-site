@@ -354,11 +354,11 @@
   };
 
 
-  // V8 commercial pricing is intentionally centralized and provisional.
+  // V8 commercial pricing is centralized; ₹799 is the approved flat card price.
   const PRICING_TABLE = {
     pricingVersion: 'flat-inr-v2',
     currency: 'INR',
-    provisional: true,
+    provisional: false,
     base: 799,
     materials: { White: 0, Black: 0, Graphite: 0, Terracotta: 0, Mustard: 0, Oxblood: 0, Walnut: 0, 'Natural Oak': 0, Travertine: 0, Concrete: 0, 'Ivory Marble': 0, 'Oxidised Steel': 0 },
     craft: { printed: 0, engrave: 0, emboss: 0, deboss: 0, foil: 0 },
@@ -376,7 +376,7 @@
     return {
       currency: 'INR',
       pricingVersion: PRICING_TABLE.pricingVersion,
-      provisional: true,
+      provisional: false,
       components: components,
       total: total
     };
