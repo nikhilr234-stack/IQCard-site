@@ -46,6 +46,7 @@ describe('presentation actions', () => {
         template: 'cover',
         cover: {
           coverPath: 'owner-1/new-cover.webp',
+          backgroundEnabled: true,
           overlay: 0.7,
           focalY: 0,
           alignment: 'center',
@@ -57,6 +58,7 @@ describe('presentation actions', () => {
           studio: { variant: 'portfolio-grid' }, executive: { variant: 'authority' },
           signal: { variant: 'poster' }, index: { variant: 'directory' },
         },
+        whatsNext: [],
       },
     })
     expect(rpc).not.toHaveBeenCalledWith('complete_own_onboarding_publish', expect.anything())
@@ -81,13 +83,14 @@ describe('presentation actions', () => {
 
     expect(rpc).toHaveBeenCalledWith('save_own_profile_presentation', { p_draft: {
       template: 'cover',
-      cover: { coverPath: 'gift/profile-1/cover-a.webp', photoPathOverride: 'gift/profile-1/portrait-b.png', overlay: 0.4, focalY: 40, alignment: 'center' },
+      cover: { coverPath: 'gift/profile-1/cover-a.webp', backgroundEnabled: true, photoPathOverride: 'gift/profile-1/portrait-b.png', overlay: 0.4, focalY: 40, alignment: 'center' },
       design: DEFAULT_PROFILE_DESIGN,
       templateSettings: {
         cover: { variant: 'editorial-left' }, minimal: { variant: 'classic' },
         studio: { variant: 'portfolio-grid' }, executive: { variant: 'authority' },
         signal: { variant: 'poster' }, index: { variant: 'directory' },
       },
+      whatsNext: [],
     } })
   })
 

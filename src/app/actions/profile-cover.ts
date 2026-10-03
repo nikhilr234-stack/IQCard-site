@@ -53,7 +53,7 @@ export async function uploadProfileCover(formData: FormData) {
 
   const draft = {
     ...presentation.draft,
-    cover: { ...presentation.draft.cover, coverPath },
+    cover: { ...presentation.draft.cover, coverPath, backgroundEnabled: true },
   }
   const { error: saveError } = await supabase.rpc('save_own_profile_presentation', { p_draft: draft })
   if (saveError) {

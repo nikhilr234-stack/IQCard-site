@@ -1,5 +1,6 @@
 import { DEFAULT_PROFILE_DESIGN, normalizeDesign } from './design'
 import { normalizeTemplateSettings } from './template-variants'
+import { normalizeWhatsNext } from './whats-next'
 import type { CoverPresentation, NormalizedCoverPresentation, ProfilePresentation, ProfileTemplate } from './types'
 
 export type { CoverPresentation, NormalizedCoverPresentation, ProfilePresentation, ProfileTemplate }
@@ -18,8 +19,10 @@ const PROFILE_TEMPLATE_IDS = new Set<ProfileTemplate>(PROFILE_TEMPLATE_OPTIONS.m
 function createDefaultSettings(): NormalizedCoverPresentation {
   return {
     template: 'cover',
+    whatsNext: [],
     cover: {
       coverPath: null,
+      backgroundEnabled: true,
       overlay: 0.38,
       focalY: 50,
       alignment: 'lower-left',
@@ -56,8 +59,10 @@ function normalizeSettings(input: unknown): NormalizedCoverPresentation {
 
   return {
     template,
+    whatsNext: normalizeWhatsNext(source.whatsNext),
     cover: {
       coverPath: optionalPath(cover.coverPath),
+      backgroundEnabled: typeof cover.backgroundEnabled === 'boolean' ? cover.backgroundEnabled : template === 'cover',
       overlay: clampNumber(cover.overlay, 0.38, 0.15, 0.7),
       focalY: clampNumber(cover.focalY, 50, 0, 100),
       alignment: cover.alignment === 'center' ? 'center' : 'lower-left',

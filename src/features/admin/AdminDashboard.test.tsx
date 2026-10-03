@@ -11,8 +11,10 @@ import type { Client } from './types'
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
+const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString()
+
 const clients: Client[] = [
-  { id: 'draft-1', name: 'Ada Lovelace', email: 'ada@example.com', status: 'Draft', profileUrl: '/ada', joinedAt: '2026-09-01T00:00:00Z', completion: 70, lastActiveAt: '2026-09-08T00:00:00Z', segment: 'Technology', inviteOpened: true, startedProfile: true, completedProfile: false },
+  { id: 'draft-1', name: 'Ada Lovelace', email: 'ada@example.com', status: 'Draft', profileUrl: '/ada', joinedAt: daysAgo(10), completion: 70, lastActiveAt: daysAgo(2), segment: 'Technology', inviteOpened: true, startedProfile: true, completedProfile: false },
 ]
 
 const actions: AdminDashboardActions = {
@@ -108,7 +110,7 @@ describe('AdminDashboard', () => {
       id: `client-${index}`,
       name: `Client ${index + 1}`,
       email: `client-${index + 1}@example.com`,
-      joinedAt: `2026-09-0${index + 1}T00:00:00Z`,
+      joinedAt: daysAgo(index + 1),
     }))
     await act(async () => root.render(<AdminDashboard clients={tableClients} actions={actions} />))
 

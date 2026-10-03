@@ -43,6 +43,16 @@ describe('IQ Card V1 customizer', () => {
   })
 
   it('shows the provisional quote before the customer confirms the build', () => {
+    expect(html).toMatch(/base:\s*799/)
+    expect(html).toContain("pricingVersion: 'flat-inr-v2'")
+    expect(html).toContain("set('priceMaterial', 'Included')")
+    expect(html).toContain("set('priceCraft', 'Included')")
+    expect(html).toContain("set('priceLogo', 'Included')")
+    expect(html).toContain('id="priceBase">₹799</strong>')
+    expect(html).toContain('id="priceMaterial">Included</strong>')
+    expect(html).toContain('id="priceCraft">Included</strong>')
+    expect(html).toContain('id="priceLogo">Included</strong>')
+    expect(html).toContain('id="commercialTotal">₹799</strong>')
     expect(html).toContain('id="commercialTotal"')
     expect(html).toContain('id="priceBase"')
     expect(html).toContain('id="priceMaterial"')
@@ -98,5 +108,18 @@ describe('IQ Card V1 customizer', () => {
     expect(rule?.style.position).toBe('sticky')
     expect(rule?.style.bottom).toBe('0')
     expect(rule?.style.getPropertyValue('padding-bottom')).toContain('env(safe-area-inset-bottom)')
+  })
+
+  it('keeps the final summary and email signup in the mobile page flow', () => {
+    const stageRule = mobileRule('.final-mode .stage-wrap')
+    const summaryRule = mobileRule('.final-mode .commercial-panel')
+    const reviewRule = mobileRule('.order-review-mode .order-review-panel')
+
+    expect(stageRule?.style.position).toBe('relative')
+    expect(stageRule?.style.overflow).toBe('visible')
+    expect(summaryRule?.style.position).toBe('relative')
+    expect(summaryRule?.style.getPropertyValue('max-height')).toBe('none')
+    expect(reviewRule?.style.position).toBe('relative')
+    expect(reviewRule?.style.getPropertyValue('max-height')).toBe('none')
   })
 })

@@ -161,6 +161,20 @@ describe('profile presentation readers', () => {
     expect(JSON.stringify(presentation)).not.toContain('gift/profile-1')
   })
 
+  it('preserves ordinary published cover paths for the public-only cover delivery route', async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({
+      data: { published: { template: 'cover', cover: { coverPath: 'owner-1/cover.webp', photoPathOverride: null } } },
+      error: null,
+    })
+    vi.mocked(createPublicClient).mockReturnValue({
+      from: vi.fn(() => ({ select: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle })) })) })),
+    } as never)
+
+    const presentation = await getPublishedProfilePresentationBySlug('owner')
+
+    expect(presentation.cover.coverPath).toBe('owner-1/cover.webp')
+  })
+
   it('uses stable gift-media URLs for claimed owners without exposing the private object key', async () => {
     const giftProfile = { ...storedProfile, owner_id: 'owner-1', photo_path: 'gift/profile-1/portrait.webp' }
     const maybeSingle = vi.fn().mockResolvedValue({ data: giftProfile, error: null })
@@ -226,6 +240,7 @@ describe('profile presentation readers', () => {
       template: 'cover',
       cover: {
         coverPath: 'owner-1/cover.jpg',
+        backgroundEnabled: true,
         overlay: 0.7,
         focalY: 0,
         alignment: 'center',
@@ -237,6 +252,7 @@ describe('profile presentation readers', () => {
         studio: { variant: 'portfolio-grid' }, executive: { variant: 'authority' },
         signal: { variant: 'poster' }, index: { variant: 'directory' },
       },
+      whatsNext: [],
     })
   })
 

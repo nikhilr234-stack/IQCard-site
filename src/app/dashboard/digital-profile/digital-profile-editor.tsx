@@ -12,7 +12,8 @@ import { PROFILE_TEMPLATE_OPTIONS } from '@/lib/profile/presentation'
 import { normalizeTemplateSettings } from '@/lib/profile/template-variants'
 import { validateLinkInput } from '@/lib/profile/validation'
 import type { EditableProfile } from '@/lib/profile/validation'
-import type { CoverPresentation, Profile, ProfileTemplate } from '@/lib/profile/types'
+import { validateWhatsNext } from '@/lib/profile/whats-next'
+import type { CoverPresentation, Profile, ProfileTemplate, WhatsNextItem } from '@/lib/profile/types'
 import { DesignStudioControls } from './design-studio-controls'
 import { LayoutVariantSelector } from './layout-variant-selector'
 
@@ -220,6 +221,42 @@ function ProfileLinksEditor({ links, onChange }: { links: EditableLink[]; onChan
   </section>
 }
 
+function WhatsNextEditor({ items, onChange }: { items: WhatsNextItem[]; onChange: (items: WhatsNextItem[]) => void }) {
+  const updateItem = (index: number, field: keyof WhatsNextItem, value: string) => {
+    onChange(items.map((item, itemIndex) => itemIndex === index ? { ...item, [field]: value } : item))
+  }
+  const removeItem = (index: number) => onChange(items.filter((_, itemIndex) => itemIndex !== index))
+  const errorFor = (item: WhatsNextItem) => validateWhatsNext([item])
+
+  return <section className="digital-profile-whats-next" aria-labelledby="digital-profile-whats-next-title">
+    <div className="digital-profile-links-heading">
+      <div><span>WHAT’S NEXT</span><h3 id="digital-profile-whats-next-title">Share what’s coming up.</h3></div>
+      <small>{items.length}/3</small>
+    </div>
+    <p className="digital-profile-whats-next-intro">Add an event, launch, or project so visitors know what to look forward to.</p>
+    <div className="digital-profile-whats-next-rows">
+      {items.map((item, index) => {
+        const itemError = errorFor(item)
+        return <div className="digital-profile-whats-next-row" data-whats-next-row key={index}>
+          <label>Title<input name="whats_next_title" aria-label={`What’s next item ${index + 1} title`} value={item.title} maxLength={80} onChange={(event) => updateItem(index, 'title', event.currentTarget.value)} /></label>
+          <label>Description<textarea name="whats_next_description" aria-label={`What’s next item ${index + 1} description`} value={item.description} maxLength={240} rows={3} onChange={(event) => updateItem(index, 'description', event.currentTarget.value)} /></label>
+          <div className="digital-profile-whats-next-fields">
+            <label>Date or timing<input name="whats_next_date" aria-label={`What’s next item ${index + 1} date or timing`} placeholder="October 24" value={item.date} maxLength={80} onChange={(event) => updateItem(index, 'date', event.currentTarget.value)} /></label>
+            <label>Link URL<input name="whats_next_url" aria-label={`What’s next item ${index + 1} link URL`} placeholder="https://" value={item.url} maxLength={2048} onChange={(event) => updateItem(index, 'url', event.currentTarget.value)} /></label>
+          </div>
+          <div className="digital-profile-whats-next-row-footer">
+            {itemError ? <p role="alert" className="digital-profile-link-error">{itemError}</p> : null}
+            <button type="button" aria-label={`Remove What’s next item ${index + 1}`} onClick={() => removeItem(index)}>Remove</button>
+          </div>
+        </div>
+      })}
+    </div>
+    <div className="digital-profile-links-actions">
+      <button type="button" className="digital-profile-button digital-profile-button--light" disabled={items.length >= 3} onClick={() => onChange([...items, { title: '', description: '', date: '', url: '' }])}>+ Add an update</button>
+    </div>
+  </section>
+}
+
 export function DigitalProfileEditor({
   profile,
   presentation,
@@ -271,10 +308,17 @@ export function DigitalProfileEditor({
     setError(`Complete or remove the “${invalidLink.label.trim() || 'Untitled'}” link before saving.`)
     return false
   }
+  const validateBeforeSave = () => {
+    if (!validateLinksBeforeSave()) return false
+    const nextError = validateWhatsNext(draft.whatsNext)
+    if (!nextError) return true
+    setError(nextError)
+    return false
+  }
   const saveProfile = async (formData: FormData) => {
     setNotice('')
     setError('')
-    if (!validateLinksBeforeSave()) return
+    if (!validateBeforeSave()) return
     try {
       const result = await saveDigitalProfileAction(formData)
       if (!result.success) {
@@ -289,7 +333,7 @@ export function DigitalProfileEditor({
   const publish = async (formData: FormData) => {
     setNotice('')
     setError('')
-    if (!validateLinksBeforeSave()) return
+    if (!validateBeforeSave()) return
     try {
       const saved = await saveDigitalProfileAction(formData)
       if (!saved.success) {
@@ -313,6 +357,7 @@ export function DigitalProfileEditor({
   const uploadCover = async (formData: FormData) => {
     const result = await uploadCoverAction(formData)
     updateCover('coverPath', result.coverPath)
+    if (result.coverPath) updateCover('backgroundEnabled', true)
     return result
   }
   const deleteCover = async () => {
@@ -338,13 +383,13 @@ export function DigitalProfileEditor({
     <main className="digital-profile-page">
       <section className="digital-profile-intro">
         <div><span>YOUR DIGITAL PROFILE</span><h1>Choose how<br />people meet you.</h1></div>
-        <p>Edit your details, links, and design together. {profile.status === 'published' ? 'Save once to update your live profile.' : 'Save a private draft, then publish when it is ready.'}</p>
+        <p>Edit your details, links, upcoming updates, and design together. {profile.status === 'published' ? 'Save once to update your live profile.' : 'Save a private draft, then publish when it is ready.'}</p>
       </section>
 
       <div className="digital-profile-workspace">
         <div className="digital-profile-controls">
           <section className="digital-profile-panel" aria-labelledby="digital-profile-template-title">
-            <div className="digital-profile-panel-head"><span>01 · TEMPLATE</span><h2 id="digital-profile-template-title">Your presentation.</h2><p>Switch any time without losing your shared details or Cover settings.</p></div>
+            <div className="digital-profile-panel-head"><span>01 · TEMPLATE</span><h2 id="digital-profile-template-title">Your presentation.</h2><p>Switch any time without losing your shared details or background settings.</p></div>
             <div className="digital-profile-templates">
               {PROFILE_TEMPLATE_OPTIONS.map((option) => <button key={option.id} type="button" aria-label={`${option.number} ${option.name}`} className={draft.template === option.id ? 'active' : ''} aria-pressed={draft.template === option.id} onClick={() => selectTemplate(option.id)}><span>{option.number}</span><strong>{option.name}</strong><small>{option.description}</small><i aria-hidden="true" /></button>)}
             </div>
@@ -363,9 +408,16 @@ export function DigitalProfileEditor({
             <ProfilePhotoControls profile={profile} uploadPhotoAction={uploadPhotoAction} deletePhotoAction={deletePhotoAction} />
           </section>
 
-          {draft.template === 'cover' ? <section className="digital-profile-panel" aria-labelledby="digital-profile-appearance-title">
-            <div className="digital-profile-panel-head"><span>05 · APPEARANCE</span><h2 id="digital-profile-appearance-title">Set the scene.</h2><p>Shape the image behind your identity.</p></div>
+          <section className="digital-profile-panel" aria-labelledby="digital-profile-appearance-title">
+            <div className="digital-profile-panel-head"><span>05 · APPEARANCE</span><h2 id="digital-profile-appearance-title">Set the scene.</h2><p>Choose an image, then switch it on behind any template. The layout stays the same.</p></div>
             <CoverMedia coverPath={draft.cover.coverPath} onUpload={uploadCover} onDelete={deleteCover} />
+            <label className="digital-profile-toggle" htmlFor="digital-profile-background-enabled"><span>Use Cover image as background</span><input
+              id="digital-profile-background-enabled"
+              type="checkbox"
+              checked={draft.cover.backgroundEnabled}
+              disabled={!draft.cover.coverPath}
+              onChange={(event) => updateCover('backgroundEnabled', event.currentTarget.checked)}
+            /></label>
             <div className="digital-profile-range">
               <label htmlFor="digital-profile-overlay"><span>Darken background</span><output>{Math.round(draft.cover.overlay * 100)}%</output></label>
               <input id="digital-profile-overlay" type="range" min="0.15" max="0.7" step="0.01" value={draft.cover.overlay} onChange={(event) => updateCover('overlay', Number(event.target.value))} />
@@ -374,17 +426,17 @@ export function DigitalProfileEditor({
               <label htmlFor="digital-profile-focal"><span>Vertical image position</span><output>{draft.cover.focalY}%</output></label>
               <input id="digital-profile-focal" type="range" min="0" max="100" step="1" value={draft.cover.focalY} onChange={(event) => updateCover('focalY', Number(event.target.value))} />
             </div>
-            <fieldset className="digital-profile-alignment">
+            {draft.template === 'cover' ? <fieldset className="digital-profile-alignment">
               <legend>Identity alignment</legend>
               <div>
                 <button type="button" aria-pressed={draft.cover.alignment === 'lower-left'} onClick={() => updateCover('alignment', 'lower-left')}>Lower left</button>
                 <button type="button" aria-pressed={draft.cover.alignment === 'center'} onClick={() => updateCover('alignment', 'center')}>Centered</button>
               </div>
-            </fieldset>
-          </section> : null}
+            </fieldset> : null}
+          </section>
 
           <section className="digital-profile-panel digital-profile-content-panel" aria-labelledby="digital-profile-content-title">
-            <div className="digital-profile-panel-head"><span>{draft.template === 'cover' ? '06' : '05'} · CONTENT</span><h2 id="digital-profile-content-title">Your profile details.</h2><p>Edit identity, contact details, and links here. Every template uses them.</p></div>
+            <div className="digital-profile-panel-head"><span>06 · CONTENT</span><h2 id="digital-profile-content-title">Your profile details.</h2><p>Edit identity, contact details, links, and upcoming updates here. Every template uses them.</p></div>
             <div className="digital-profile-identity-fields" id="identity">
               <label>Full name<input name="full_name" value={profileDraft.full_name} maxLength={161} onChange={(event) => updateProfile('full_name', event.currentTarget.value)} /></label>
               <label>Role or headline<input name="headline" value={profileDraft.headline} maxLength={120} onChange={(event) => updateProfile('headline', event.currentTarget.value)} /></label>
@@ -400,6 +452,7 @@ export function DigitalProfileEditor({
               <p className="digital-profile-public-url">Your public address: <strong>iqcard.in/{profile.slug}</strong></p>
             </div>
             <ProfileLinksEditor links={links} onChange={setLinks} />
+            <WhatsNextEditor items={draft.whatsNext} onChange={(whatsNext) => setDraft((current) => ({ ...current, whatsNext }))} />
           </section>
 
           <section className="digital-profile-publish" aria-labelledby="digital-profile-publish-title">

@@ -80,10 +80,10 @@ describe('canonical card payload', () => {
       },
       pricing: {
         currency: 'INR',
-        pricingVersion: 'demo-inr-v1',
+        pricingVersion: 'flat-inr-v2',
         provisional: true,
-        components: { base: 799, material: 500, craft: 350, customLogoSetup: 0 },
-        total: 1649,
+        components: { base: 799, material: 0, craft: 0, customLogoSetup: 0 },
+        total: 799,
       },
       manufacturing: {
         core: { color: 'black' },
@@ -102,41 +102,27 @@ describe('canonical card payload', () => {
       },
     })
     expect(result?.pricing.components.base).toBe(799)
-    expect(result?.pricing.total).toBe(1649)
+    expect(result?.pricing.total).toBe(799)
     expect(result?.manufacturing.surfaces.front.material).toBe(result?.configuration.material)
   })
 
   it.each([
-    ['White', 1149],
-    ['Black', 1149],
-    ['Graphite', 1149],
-    ['Terracotta', 1149],
-    ['Mustard', 1149],
-    ['Oxblood', 1149],
-    ['Walnut', 1649],
-    ['Natural Oak', 1649],
-    ['Travertine', 1799],
-    ['Concrete', 1699],
-    ['Ivory Marble', 1799],
-    ['Oxidised Steel', 1849],
-  ])('accepts material %s and applies its server price', (material, total) => {
+    'White', 'Black', 'Graphite', 'Terracotta', 'Mustard', 'Oxblood', 'Walnut',
+    'Natural Oak', 'Travertine', 'Concrete', 'Ivory Marble', 'Oxidised Steel',
+  ])('accepts material %s and keeps the flat server price', (material) => {
     const result = canonicalizeCardPayload(payloadWith({ material }))
 
     expect(result?.configuration.material).toBe(material)
-    expect(result?.pricing.total).toBe(total)
+    expect(result?.pricing).toMatchObject({ components: { base: 799, material: 0, craft: 0, customLogoSetup: 0 }, total: 799 })
   })
 
   it.each([
-    ['printed', 1299],
-    ['engrave', 1649],
-    ['emboss', 1749],
-    ['deboss', 1749],
-    ['foil', 1949],
-  ])('accepts craft %s and applies its server price', (craft, total) => {
+    'printed', 'engrave', 'emboss', 'deboss', 'foil',
+  ])('accepts craft %s and keeps the flat server price', (craft) => {
     const result = canonicalizeCardPayload(payloadWith({ craft }))
 
     expect(result?.configuration.craft).toBe(craft)
-    expect(result?.pricing.total).toBe(total)
+    expect(result?.pricing).toMatchObject({ components: { base: 799, material: 0, craft: 0, customLogoSetup: 0 }, total: 799 })
   })
 
   it.each(['black', 'white'])('accepts the %s core', (core) => {
@@ -261,8 +247,8 @@ describe('canonical card payload', () => {
       filename: 'mark.png',
       mimeType: 'image/png',
     })
-    expect(result?.pricing.components.customLogoSetup).toBe(250)
-    expect(result?.pricing.total).toBe(1899)
+    expect(result?.pricing.components.customLogoSetup).toBe(0)
+    expect(result?.pricing.total).toBe(799)
   })
 
   it.each([

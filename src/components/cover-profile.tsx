@@ -4,7 +4,9 @@ import type { CSSProperties } from 'react'
 
 import { buildPublicProfileView } from '@/lib/profile/public-profile'
 import { ProfileLinkList } from '@/components/profile-link-list'
+import { ProfileWhatsNext } from '@/components/profile-whats-next'
 import { getProfileDesignDataAttributes, getProfileDesignStyle } from '@/lib/profile/design'
+import { profileCoverImageUrl } from '@/lib/profile/media-urls'
 import type { NormalizedCoverPresentation, Profile } from '@/lib/profile/types'
 
 type CoverProfileProps = {
@@ -28,7 +30,9 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
   const view = buildPublicProfileView(profile)
   const displayName = profile.full_name || 'Your name'
   const { cover } = presentation
-  const coverUrl = cover.coverPath ? cover.coverPath.startsWith('/api/gift-media?') ? cover.coverPath : `/api/profile-cover?path=${encodeURIComponent(cover.coverPath)}` : null
+  const coverUrl = cover.backgroundEnabled
+    ? profileCoverImageUrl(cover.coverPath, preview ? 'private' : 'published')
+    : null
   const photoUrl = profilePhotoUrl(profile, cover.photoPathOverride)
   const style: CoverStyle = {
     ...getProfileDesignStyle(presentation.design),
@@ -36,12 +40,18 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
     '--cover-focal-y': `${cover.focalY}%`,
   }
 
-  return <main className={`cover-profile-shell cover-profile--${cover.alignment} profile-design-root`} data-template="cover" data-layout-variant={presentation.templateSettings.cover.variant} style={style} {...getProfileDesignDataAttributes(presentation.design)}>
-    <div
-      className={`cover-profile-wallpaper${coverUrl ? '' : ' is-fallback'}`}
-      aria-hidden="true"
-      style={coverUrl ? { backgroundImage: `url("${coverUrl}")` } : undefined}
-    />
+  return <main className={`cover-profile-shell cover-profile--${cover.alignment} profile-design-root`} data-template="cover" data-cover-background={String(Boolean(coverUrl))} data-layout-variant={presentation.templateSettings.cover.variant} style={style} {...getProfileDesignDataAttributes(presentation.design)}>
+    <div className={`cover-profile-wallpaper${coverUrl ? '' : ' is-fallback'}`} aria-hidden="true" data-profile-cover-background={coverUrl ? '' : undefined}>
+      {coverUrl ? <Image
+        src={coverUrl}
+        alt=""
+        fill
+        sizes="100vw"
+        preload={!preview}
+        unoptimized={preview}
+        style={{ objectFit: 'cover', objectPosition: `center ${cover.focalY}%` }}
+      /> : null}
+    </div>
     <div className="cover-profile-overlay" aria-hidden="true" />
 
     <div className="cover-profile-page">
@@ -76,6 +86,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
             {view.emailHref ? <a href={view.emailHref}>Email</a> : null}
             {view.whatsappHref ? <a href={view.whatsappHref} target="_blank" rel="noopener noreferrer">WhatsApp</a> : null}
           </nav> : null}
+          <ProfileWhatsNext items={presentation.whatsNext} />
         </div>
       </section>
 

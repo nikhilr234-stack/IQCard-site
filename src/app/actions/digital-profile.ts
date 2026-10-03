@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { requireAuthenticatedAccount } from '@/lib/auth/account'
 import { normalizeLinks, validateLinks, type LinkInput } from '@/lib/profile/links'
 import { normalizePresentation } from '@/lib/profile/presentation'
+import { validateWhatsNextInput } from '@/lib/profile/whats-next'
 import { validateEditableProfile, type EditableProfileInput } from '@/lib/profile/validation'
 import { createServerClient } from '@/lib/supabase/server'
 
@@ -50,6 +51,13 @@ function readPresentation(formData: FormData) {
   const presentation = typeof value === 'object' && value !== null && !Array.isArray(value) && 'draft' in value
     ? value
     : { draft: value }
+  const draft = typeof presentation === 'object' && presentation !== null && !Array.isArray(presentation) && 'draft' in presentation
+    ? presentation.draft
+    : undefined
+  const nextError = validateWhatsNextInput(
+    typeof draft === 'object' && draft !== null && !Array.isArray(draft) ? (draft as Record<string, unknown>).whatsNext : undefined,
+  )
+  if (nextError) throw new ProfileInputError(nextError)
   return normalizePresentation(presentation).draft
 }
 

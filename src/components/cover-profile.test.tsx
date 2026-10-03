@@ -52,10 +52,11 @@ describe('PublicProfile', () => {
     expect(html).not.toContain('javascript:alert')
   })
 
-  it('uses Cover media controls when the presentation has a wallpaper', () => {
+  it('preloads the published wallpaper from its public-only media URL', () => {
     const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={cover} />)
 
-    expect(html).toContain('/api/profile-cover?path=owner-1%2Fada-cover.webp')
+    expect(html).toContain('imageSrcSet="/_next/image?url=%2Fapi%2Fprofile-cover%3Fpath%3Downer-1%252Fada-cover.webp%26published%3D1')
+    expect(html).toContain('rel="preload" as="image"')
     expect(html).toContain('--cover-overlay:0.56')
     expect(html).toContain('--cover-focal-y:68%')
     expect(html).toContain('aria-label="Profile links"')
@@ -64,6 +65,14 @@ describe('PublicProfile', () => {
     expect(html).not.toContain('Open profile menu')
     expect(html).not.toContain('cover-profile-eyebrow')
     expect(html).toContain('>Professional</span>')
+  })
+
+  it('keeps a draft wallpaper on the private preview route without preloading it publicly', () => {
+    const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={cover} preview />)
+
+    expect(html).toContain('/api/profile-cover?path=owner-1%2Fada-cover.webp')
+    expect(html).not.toContain('published=1')
+    expect(html).not.toContain('rel="preload" as="image"')
   })
 
   it('uses the Cover fallback when no cover image is saved', () => {

@@ -20,10 +20,10 @@ const payload = {
   },
   pricing: {
     currency: 'INR',
-    pricingVersion: 'demo-inr-v1',
+    pricingVersion: 'flat-inr-v2',
     provisional: true,
-    components: { base: 799, material: 500, craft: 350, customLogoSetup: 0 },
-    total: 1649,
+    components: { base: 799, material: 0, craft: 0, customLogoSetup: 0 },
+    total: 799,
   },
   manufacturing: {
     core: { color: 'black' },

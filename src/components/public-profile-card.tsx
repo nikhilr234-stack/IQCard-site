@@ -2,8 +2,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 import { PublicProfileMenu } from '@/components/public-profile-menu'
+import { ProfileCoverBackground } from '@/components/profile-cover-background'
 import { buildPublicProfileView } from '@/lib/profile/public-profile'
 import { ProfileLinkList } from '@/components/profile-link-list'
+import { ProfileWhatsNext } from '@/components/profile-whats-next'
 import { getProfileDesignDataAttributes, getProfileDesignStyle } from '@/lib/profile/design'
 import type { NormalizedCoverPresentation, Profile } from '@/lib/profile/types'
 
@@ -11,7 +13,10 @@ export function PublicProfileCard({ profile, presentation, preview = false }: { 
   const view = buildPublicProfileView(profile)
   const displayName = profile.full_name || 'Your name'
 
-  return <main className="public-profile-shell profile-design-root" data-template="minimal" data-layout-variant={presentation.templateSettings.minimal.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}>
+  const hasCoverBackground = presentation.cover.backgroundEnabled && Boolean(presentation.cover.coverPath)
+
+  return <main className="public-profile-shell profile-design-root" data-template="minimal" data-cover-background={String(hasCoverBackground)} data-layout-variant={presentation.templateSettings.minimal.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}>
+    <ProfileCoverBackground presentation={presentation} preview={preview} />
     <div className="public-profile-page">
       {preview ? <div className="public-preview-badge">Private preview</div> : null}
       <header className="public-profile-topbar">
@@ -39,6 +44,7 @@ export function PublicProfileCard({ profile, presentation, preview = false }: { 
             {view.emailHref ? <a href={view.emailHref}>Email</a> : null}
             {view.whatsappHref ? <a href={view.whatsappHref} target="_blank" rel="noopener noreferrer">WhatsApp</a> : null}
           </nav> : null}
+          <ProfileWhatsNext items={presentation.whatsNext} />
         </div>
 
         <div className="public-profile-portrait-wrap">

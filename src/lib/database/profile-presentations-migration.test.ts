@@ -6,6 +6,7 @@ const migrationPath = resolve(process.cwd(), 'supabase/migrations/202609140001_a
 const publicLookupMigrationPath = resolve(process.cwd(), 'supabase/migrations/202609160001_add_slug_to_published_profile_presentations.sql')
 const designPersistenceMigrationPath = resolve(process.cwd(), 'supabase/migrations/20260927120000_preserve_design_in_profile_presentation_rpc.sql')
 const templateSettingsMigrationPath = resolve(process.cwd(), 'supabase/migrations/20260927130000_preserve_template_settings_in_profile_presentation_rpc.sql')
+const coverBackgroundMigrationPath = resolve(process.cwd(), 'supabase/migrations/20261002190000_enable_cover_backgrounds_for_all_templates.sql')
 
 function sql(): string {
   return readFileSync(migrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
@@ -21,6 +22,10 @@ function designPersistenceSql(): string {
 
 function templateSettingsPersistenceSql(): string {
   return readFileSync(templateSettingsMigrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+function coverBackgroundPersistenceSql(): string {
+  return readFileSync(coverBackgroundMigrationPath, 'utf8').toLowerCase().replace(/\s+/g, ' ').trim()
 }
 
 function functionBody(migration: string, name: string): string {
@@ -207,5 +212,32 @@ describe('additive template settings persistence migration', () => {
     expect(migration).not.toMatch(/\b(create|alter|drop)\s+table\b/)
     expect(migration).not.toMatch(/\b(create|alter|drop)\s+policy\b/)
     expect(migration.match(/create or replace function/g)).toEqual(['create or replace function'])
+  })
+})
+
+describe('shared Cover background persistence migration', () => {
+  it('stores a validated background choice while defaulting legacy Cover profiles on', () => {
+    const migration = coverBackgroundPersistenceSql()
+    const save = functionBody(migration, 'save_own_profile_presentation')
+
+    expect(save).toContain("p_draft #> '{cover,backgroundenabled}'")
+    expect(save).toContain("pg_catalog.jsonb_typeof(p_draft #> '{cover,backgroundenabled}')")
+    expect(save).toContain("'backgroundenabled'")
+    expect(save).toContain("(p_draft ->> 'template') = 'cover'")
+    expect(save).toContain('v_owner_id::text || \'/%\'')
+    expect(migration).toContain('grant execute on function public.save_own_profile_presentation(jsonb) to authenticated')
+  })
+
+  it('lets the exact published cover image load for opted-in templates and legacy Cover profiles', () => {
+    const migration = coverBackgroundPersistenceSql()
+    const media = functionBody(migration, 'is_published_profile_cover')
+
+    expect(media).toContain("profiles.status = 'published'")
+    expect(media).toContain("profile_presentations.published #>> '{cover,coverpath}' = p_path")
+    expect(media).toContain("profile_presentations.published #>> '{cover,backgroundenabled}' = 'true'")
+    expect(media).toContain("profile_presentations.published #> '{cover,backgroundenabled}' is null")
+    expect(media).toContain("profile_presentations.published ->> 'template' = 'cover'")
+    expect(migration).toContain('revoke all on function public.is_published_profile_cover(text) from public, anon, authenticated, service_role')
+    expect(migration).toContain('grant execute on function public.is_published_profile_cover(text) to anon, authenticated')
   })
 })

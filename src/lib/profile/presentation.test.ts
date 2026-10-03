@@ -20,6 +20,39 @@ describe('profile presentation normalization', () => {
     expect(DEFAULT_PRESENTATION.published.template).toBe('cover')
   })
 
+  it('keeps legacy Cover backgrounds enabled and makes other legacy templates opt in', () => {
+    expect(normalizePresentation({ draft: { template: 'cover', cover: { coverPath: 'cover.webp' } } }).draft.cover.backgroundEnabled).toBe(true)
+    expect(normalizePresentation({ draft: { template: 'studio', cover: { coverPath: 'cover.webp' } } }).draft.cover.backgroundEnabled).toBe(false)
+  })
+
+  it('preserves an explicit background choice when changing templates', () => {
+    const value = normalizePresentation({
+      draft: { template: 'minimal', cover: { coverPath: 'cover.webp', backgroundEnabled: true } },
+      published: { template: 'cover', cover: { coverPath: 'cover.webp', backgroundEnabled: false } },
+    })
+
+    expect(value.draft.cover.backgroundEnabled).toBe(true)
+    expect(value.published.cover.backgroundEnabled).toBe(false)
+  })
+
+  it('normalizes What’s next items, drops empty rows, and caps the profile at three', () => {
+    const value = normalizePresentation({ draft: { whatsNext: [
+      { title: ' Launch ', description: ' Coming soon ', date: ' October ', url: ' https://example.com/launch ' },
+      { title: 'Event', description: 'Meet me there', date: '', url: '' },
+      { title: 'New project', description: 'A new collaboration', date: '', url: '' },
+      { title: 'Fourth item', description: 'This should not be kept', date: '', url: '' },
+      { title: '', description: '', date: '', url: '' },
+      null,
+    ] } })
+
+    expect(value.draft.whatsNext).toEqual([
+      { title: 'Launch', description: 'Coming soon', date: 'October', url: 'https://example.com/launch' },
+      { title: 'Event', description: 'Meet me there', date: '', url: '' },
+      { title: 'New project', description: 'A new collaboration', date: '', url: '' },
+    ])
+    expect(value.published.whatsNext).toEqual([])
+  })
+
   it('normalizes legacy rows to each template current-layout default without rewriting input', () => {
     const legacy = { draft: { template: 'cover', cover: { coverPath: 'legacy.webp' } } }
     const original = JSON.stringify(legacy)

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { PublicProfile } from './public-profile'
 import { DEFAULT_PROFILE_DESIGN } from '@/lib/profile/design'
+import { normalizePresentation } from '@/lib/profile/presentation'
 import { getTemplateVariants, normalizeTemplateSettings } from '@/lib/profile/template-variants'
 import type { CoverPresentation, Profile, ProfileTemplate } from '@/lib/profile/types'
 
@@ -46,6 +47,22 @@ function presentation(template: ProfileTemplate): CoverPresentation {
 }
 
 describe('additional public profile templates', () => {
+  it.each(['minimal', 'cover', 'studio', 'executive', 'signal', 'index'] as const)(
+    'renders the shared Cover image as a page background on %s',
+    (template) => {
+      const base = presentation(template)
+      const value = normalizePresentation({ draft: {
+        ...base,
+        cover: { ...base.cover, backgroundEnabled: true },
+      } }).draft
+      const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={value} />)
+
+      expect(html).toContain('data-cover-background="true"')
+      expect(html).toContain('data-profile-cover-background')
+      expect(html).toContain('owner-1%252Freal-cover.webp')
+    },
+  )
+
   it.each((['minimal', 'cover', 'studio', 'executive', 'signal', 'index'] as const).flatMap((template) =>
     getTemplateVariants(template).map((variant) => [template, variant.id] as const),
   ))('renders %s layout variant %s without changing the template identity', (template, variant) => {
@@ -79,6 +96,34 @@ describe('additional public profile templates', () => {
       />)
       expect(html).toContain(composition)
     }
+  })
+
+  it('uses the published-only cover URL in the Studio feature image', () => {
+    const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={presentation('studio')} />)
+
+    expect(html).toContain('url=%2Fapi%2Fprofile-cover%3Fpath%3Downer-1%252Freal-cover.webp%26published%3D1')
+  })
+
+  it.each(['minimal', 'cover', 'studio', 'executive', 'signal', 'index'] as const)(
+    'renders saved What’s next items on the %s public profile',
+    (template) => {
+      const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={{
+        ...presentation(template),
+        whatsNext: [{ title: 'Studio opening', description: 'A new space for collaborators.', date: 'October 24', url: 'https://example.com/opening' }],
+      }} />)
+
+      expect(html).toContain('What’s next')
+      expect(html).toContain('Studio opening')
+      expect(html).toContain('A new space for collaborators.')
+      expect(html).toContain('October 24')
+      expect(html).toContain('href="https://example.com/opening"')
+    },
+  )
+
+  it('hides the What’s next section when no items have been added', () => {
+    const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={presentation('cover')} />)
+
+    expect(html).not.toContain('data-whats-next')
   })
 
   it.each([
