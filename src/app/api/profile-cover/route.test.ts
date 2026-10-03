@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createServerClient } from '@/lib/supabase/server'
+import { createPublicClient, createServerClient } from '@/lib/supabase/server'
 import { GET } from './route'
 
-vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn() }))
+vi.mock('@/lib/supabase/server', () => ({ createPublicClient: vi.fn(), createServerClient: vi.fn() }))
 
 function storageClient(result: { data: Blob | null; error: Error | null }) {
   const download = vi.fn().mockResolvedValue(result)
@@ -25,6 +25,30 @@ describe('profile cover delivery route', () => {
     expect(response.headers.get('content-type')).toBe('image/webp')
     expect(response.headers.get('cache-control')).toContain('no-store')
     expect(await response.text()).toBe('cover-bytes')
+  })
+
+  it('delivers a published-only cover through the anonymous RLS client and briefly caches successful image bytes', async () => {
+    const client = storageClient({ data: new Blob(['cover-bytes'], { type: 'image/webp' }), error: null })
+    vi.mocked(createPublicClient).mockReturnValue(client as never)
+
+    const response = await GET(new Request('https://iqcard.in/api/profile-cover?path=owner-1%2Fcover.webp&published=1'))
+
+    expect(createPublicClient).toHaveBeenCalledOnce()
+    expect(createServerClient).not.toHaveBeenCalled()
+    expect(client.from).toHaveBeenCalledWith('profile-covers')
+    expect(client.download).toHaveBeenCalledWith('owner-1/cover.webp')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('public, max-age=300, s-maxage=300')
+    expect(await response.text()).toBe('cover-bytes')
+  })
+
+  it('keeps a denied published-only cover private and uncached', async () => {
+    vi.mocked(createPublicClient).mockReturnValue(storageClient({ data: null, error: new Error('row-level security') }) as never)
+
+    const response = await GET(new Request('https://iqcard.in/api/profile-cover?path=owner-1%2Fdraft.webp&published=1'))
+
+    expect(response.status).toBe(404)
+    expect(response.headers.get('cache-control')).toContain('no-store')
   })
 
   it('forces an unexpected object type to download with a locked-down response', async () => {

@@ -10,7 +10,7 @@ vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn() }))
 
 const currentPresentation = {
   draft: {
-    template: 'cover',
+    template: 'minimal',
     cover: {
       coverPath: 'owner-1/old-cover.jpg',
       overlay: 0.38,
@@ -111,7 +111,8 @@ describe('profile cover actions', () => {
     expect(events).toEqual(['storage-upload', 'rpc:save_own_profile_presentation'])
     expect(client.rpc).toHaveBeenCalledWith('save_own_profile_presentation', {
       p_draft: expect.objectContaining({
-        cover: expect.objectContaining({ coverPath: expect.stringMatching(/^owner-1\/.+\.png$/) }),
+        template: 'minimal',
+        cover: expect.objectContaining({ coverPath: expect.stringMatching(/^owner-1\/.+\.png$/), backgroundEnabled: true }),
       }),
     })
     expect(client.remove).not.toHaveBeenCalled()

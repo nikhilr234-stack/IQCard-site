@@ -49,11 +49,12 @@ function withPhotoUrl<T extends { photo_path?: string | null }>(profile: T) {
 
 function publicPresentation(presentation: CoverPresentation, slug: string): CoverPresentation {
   const cover = presentation.cover
+  const coverAsset = giftAsset(cover.coverPath)
   return {
     ...presentation,
     cover: {
       ...cover,
-      coverPath: mediaUrl(cover.coverPath, slug),
+      coverPath: coverAsset ? giftAssetUrl(slug, coverAsset) : cover.coverPath,
       photoPathOverride: mediaUrl(cover.photoPathOverride, slug),
     },
   }

@@ -4,8 +4,10 @@ import { legacyRouteRedirects } from './src/lib/site-routing'
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
+    minimumCacheTTL: 300,
     localPatterns: [
       { pathname: '/api/profile-photo' },
+      { pathname: '/api/profile-cover' },
     ],
   },
   experimental: {

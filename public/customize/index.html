@@ -122,7 +122,7 @@
   .sticky-stage.webgl-fallback .webgl-card-stage{display:none}
   .renderer-badge{position:absolute;right:28px;bottom:26px;z-index:5;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#96969c;opacity:0;transition:opacity .3s ease}
   .sticky-stage.webgl-ready .renderer-badge{opacity:.65}
-  @media(max-width:620px){.final-mode .commercial-panel,.order-review-mode .order-review-panel{left:18px;right:18px;top:18px;width:auto;max-height:510px;overflow:auto}.commercial-actions{grid-template-columns:1fr}.final-mode .final-caption{display:none}}
+  @media(max-width:620px){.final-mode .stage-wrap{position:relative;height:auto;min-height:280px;overflow:visible}.final-mode .exit-final{position:relative;right:auto;bottom:auto;display:block;width:max-content;margin:12px 18px 0 auto}.final-mode .commercial-panel{position:relative;left:auto;right:auto;top:auto;width:auto;max-height:none;overflow:visible;margin:16px 18px 20px}.order-review-mode .order-review-panel{position:relative;left:auto;right:auto;top:auto;width:auto;max-height:none;overflow:visible;margin:16px 18px 20px}.commercial-actions{grid-template-columns:1fr}.final-mode .final-caption{display:none}}
   @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.card-rig,.iq-card{will-change:auto}}
 </style>
 </head>
@@ -198,13 +198,13 @@
           <i>Material</i><b id="commercialMaterial">Walnut</b>
           <i>Craft</i><b id="commercialCraft">Engraved</b>
         </div>
-        <div class="commercial-total"><span>Provisional total</span><strong id="commercialTotal">₹2,349</strong></div>
+        <div class="commercial-total"><span>Provisional total</span><strong id="commercialTotal">₹799</strong></div>
         <div class="order-summary" aria-label="Provisional price breakdown">
-          <div class="order-summary-row"><span>Base card</span><strong id="priceBase">₹1,499</strong></div>
-          <div class="order-summary-row"><span>Material</span><strong id="priceMaterial">₹500</strong></div>
-          <div class="order-summary-row"><span>Craft</span><strong id="priceCraft">₹350</strong></div>
+          <div class="order-summary-row"><span>Base card</span><strong id="priceBase">₹799</strong></div>
+          <div class="order-summary-row"><span>Material</span><strong id="priceMaterial">Included</strong></div>
+          <div class="order-summary-row"><span>Craft</span><strong id="priceCraft">Included</strong></div>
           <div class="order-summary-row"><span>Logo</span><strong id="priceLogo">Included</strong></div>
-          <div class="order-summary-row"><span>Total</span><strong id="priceTotalBreakdown">₹2,349</strong></div>
+          <div class="order-summary-row"><span>Total</span><strong id="priceTotalBreakdown">₹799</strong></div>
         </div>
         <div class="save-status" id="saveStatus" aria-live="polite"></div>
         <button type="button" class="restore-last" id="restoreLastBtn">Restore last saved</button>
@@ -218,7 +218,7 @@
           <div class="order-summary-row"><span>Product</span><strong>Classic IQ Card</strong></div>
           <div class="order-summary-row"><span>Configuration</span><strong id="orderConfigurationSummary">Black NFC · Walnut</strong></div>
           <div class="order-summary-row"><span>Manufacturing</span><strong id="orderManufacturing">Engraved · Pure back</strong></div>
-          <div class="order-summary-row"><span>Total</span><strong id="orderReviewTotal">₹2,349</strong></div>
+          <div class="order-summary-row"><span>Total</span><strong id="orderReviewTotal">₹799</strong></div>
         </div>
         <div class="order-validation" id="orderValidation" aria-live="polite"></div>
         <label class="handoff-field" for="handoffEmail"><span class="handoff-field-label"><span>Email address</span><span class="required-mark">Required</span></span><input id="handoffEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" aria-describedby="handoffEmailError" required /></label>
@@ -297,7 +297,7 @@
       </section>
       <section class="panel" data-step="final"><div class="construction-note"><strong>Final object.</strong><span>The controls disappear and your configured card becomes the hero. Return at any time without losing a choice.</span></div></section>
 
-      <div class="control-foot guided-nav"><div class="mobile-running-total"><span>Total</span><strong id="mobileRunningTotal" aria-live="polite">₹2,349</strong></div><button type="button" class="secondary" id="stepBack">Back</button><button type="button" class="primary" id="stepNext">Continue</button></div>
+      <div class="control-foot guided-nav"><div class="mobile-running-total"><span>Total</span><strong id="mobileRunningTotal" aria-live="polite">₹799</strong></div><button type="button" class="secondary" id="stepBack">Back</button><button type="button" class="primary" id="stepNext">Continue</button></div>
     </aside>
   </section>
 
@@ -356,13 +356,13 @@
 
   // V8 commercial pricing is intentionally centralized and provisional.
   const PRICING_TABLE = {
-    pricingVersion: 'demo-inr-v1',
+    pricingVersion: 'flat-inr-v2',
     currency: 'INR',
     provisional: true,
-    base: 1499,
-    materials: { White: 0, Black: 0, Graphite: 0, Terracotta: 0, Mustard: 0, Oxblood: 0, Walnut: 500, 'Natural Oak': 500, Travertine: 650, Concrete: 550, 'Ivory Marble': 650, 'Oxidised Steel': 700 },
-    craft: { printed: 0, engrave: 350, emboss: 450, deboss: 450, foil: 650 },
-    logo: { iq: 0, custom: 250 }
+    base: 799,
+    materials: { White: 0, Black: 0, Graphite: 0, Terracotta: 0, Mustard: 0, Oxblood: 0, Walnut: 0, 'Natural Oak': 0, Travertine: 0, Concrete: 0, 'Ivory Marble': 0, 'Oxidised Steel': 0 },
+    craft: { printed: 0, engrave: 0, emboss: 0, deboss: 0, foil: 0 },
+    logo: { iq: 0, custom: 0 }
   };
 
   function quoteConfiguration(config){
@@ -1109,9 +1109,9 @@
     set('commercialTotal', formatINR(quote.total));
     set('mobileRunningTotal', formatINR(quote.total));
     set('priceBase', formatINR(quote.components.base));
-    set('priceMaterial', formatINR(quote.components.material));
-    set('priceCraft', formatINR(quote.components.craft));
-    set('priceLogo', formatINR(quote.components.customLogoSetup));
+    set('priceMaterial', 'Included');
+    set('priceCraft', 'Included');
+    set('priceLogo', 'Included');
     set('priceTotalBreakdown', formatINR(quote.total));
     return quote;
   }

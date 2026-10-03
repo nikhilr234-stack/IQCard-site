@@ -4,6 +4,13 @@ export type ProfileStatus = 'draft' | 'published'
 
 export type ProfileTemplate = 'minimal' | 'cover' | 'studio' | 'executive' | 'signal' | 'index'
 
+export type WhatsNextItem = {
+  title: string
+  description: string
+  date: string
+  url: string
+}
+
 export type ProfileDesign = {
   version: 1
   /** Rendering-only marker; normalizeDesign never persists this field. */
@@ -33,8 +40,10 @@ export type ProfileDesign = {
 
 export type NormalizedCoverPresentation = {
   template: ProfileTemplate
+  whatsNext: WhatsNextItem[]
   cover: {
     coverPath: string | null
+    backgroundEnabled: boolean
     overlay: number
     focalY: number
     alignment: 'lower-left' | 'center'
@@ -46,8 +55,10 @@ export type NormalizedCoverPresentation = {
 
 export type CoverPresentation = {
   template: ProfileTemplate
+  whatsNext?: WhatsNextItem[]
   cover: {
     coverPath: string | null
+    backgroundEnabled?: boolean
     overlay: number
     focalY: number
     alignment: 'lower-left' | 'center'

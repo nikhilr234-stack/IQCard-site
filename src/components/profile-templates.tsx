@@ -2,8 +2,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { PublicProfileMenu } from '@/components/public-profile-menu'
+import { ProfileCoverBackground } from '@/components/profile-cover-background'
 import { ProfileLinkList } from '@/components/profile-link-list'
+import { ProfileWhatsNext } from '@/components/profile-whats-next'
 import { DEFAULT_PROFILE_DESIGN, getProfileDesignDataAttributes, getProfileDesignStyle } from '@/lib/profile/design'
+import { profileCoverImageUrl } from '@/lib/profile/media-urls'
 import { buildPublicProfileView } from '@/lib/profile/public-profile'
 import { getLinkIcon } from '@/lib/profile/link-icons'
 import type { NormalizedCoverPresentation, Profile, ProfileDesign } from '@/lib/profile/types'
@@ -82,15 +85,15 @@ function TextLinks({ links, design, card = false, light = false }: { links: View
   return <ProfileLinkList links={links.map((link) => ({ ...link, detail: linkDetail(link.url) }))} design={design} className={cx(styles.textLinks, card && styles.textLinksCards, light && styles.textLinksLight)} />
 }
 
-function StudioProject({ link, design, featured = false, coverPath }: { link?: ViewLink; design: ProfileDesign; featured?: boolean; coverPath?: string | null }) {
+function StudioProject({ link, design, featured = false, coverPath, preview = false }: { link?: ViewLink; design: ProfileDesign; featured?: boolean; coverPath?: string | null; preview?: boolean }) {
   const icon = link ? getLinkIcon(link.label, link.url) : null
   const Icon = icon?.Icon
   const linksCustomized = design.effectiveLinkStyleFallback === true || JSON.stringify(design.links) !== JSON.stringify(DEFAULT_PROFILE_DESIGN.links)
   const className = cx(styles.project, featured && styles.projectFeatured, !link && styles.projectEmpty)
-  const coverUrl = coverPath?.startsWith('/api/gift-media?') ? coverPath : coverPath ? `/api/profile-cover?path=${encodeURIComponent(coverPath)}` : null
+  const coverUrl = profileCoverImageUrl(coverPath ?? null, preview ? 'private' : 'published')
   const content = <>
     <div className={styles.projectVisual}>
-      {featured && coverUrl ? <Image src={coverUrl} alt="" fill sizes="(max-width: 760px) 100vw, 55vw" /> : <span aria-hidden="true">{link ? link.label.slice(0, 2).toUpperCase() : 'IQ'}</span>}
+      {featured && coverUrl ? <Image src={coverUrl} alt="" fill sizes="(max-width: 760px) 100vw, 55vw" unoptimized={preview} /> : <span aria-hidden="true">{link ? link.label.slice(0, 2).toUpperCase() : 'IQ'}</span>}
     </div>
     <div className={styles.projectCopy}>{link && design.links.showIcons && Icon ? <Icon data-link-icon={icon.key} aria-hidden="true" style={{ color: design.links.iconStyle === 'brand' ? icon.brandColor : undefined }} /> : null}<strong>{link?.label || 'Your selected work'}</strong><small>{link ? linkDetail(link.url) : 'Add links to feature your work here.'}</small></div>
     {link ? <span className={styles.projectArrow} aria-hidden="true">↗</span> : null}
@@ -115,8 +118,9 @@ function StudioDesktop({ profile, presentation, preview }: Required<TemplateProp
     </aside>
     <div className={styles.studioWork} data-profile-surface="secondary">
       <div className={cx(styles.sectionHeading, styles.reveal)}><span>Portfolio / links</span><strong>Selected work</strong></div>
-      <StudioProject link={view.links[0]} design={presentation.design} featured coverPath={presentation.cover.coverPath} />
+      <StudioProject link={view.links[0]} design={presentation.design} featured coverPath={presentation.cover.coverPath} preview={preview} />
       <div className={styles.projectGrid}>{(view.links.length ? view.links.slice(1) : []).map((link) => <StudioProject key={`${link.label}-${link.url}`} link={link} design={presentation.design} />)}</div>
+      <ProfileWhatsNext items={presentation.whatsNext} />
       <TemplateFooter design={presentation.design} />
     </div>
   </section>
@@ -131,15 +135,17 @@ function StudioMobile({ profile, presentation, preview }: Required<TemplateProps
     <SaveContact profile={profile} preview={preview} />
     <ContactActions profile={profile} />
     <div className={styles.mobileSectionLabel}>Selected work</div>
-    <StudioProject link={view.links[0]} design={presentation.design} featured coverPath={presentation.cover.coverPath} />
+    <StudioProject link={view.links[0]} design={presentation.design} featured coverPath={presentation.cover.coverPath} preview={preview} />
     <div className={styles.projectGrid}>{view.links.slice(1).map((link) => <StudioProject key={`${link.label}-${link.url}`} link={link} design={presentation.design} />)}</div>
+    <ProfileWhatsNext items={presentation.whatsNext} />
     <TemplateFooter design={presentation.design} />
   </section>
 }
 
 export function StudioProfile({ profile, presentation, preview = false }: TemplateProps) {
   const props = { profile, presentation, preview }
-  return <main className={cx(styles.shell, styles.studioShell, 'studio-profile', 'profile-design-root')} data-template="studio" data-layout-variant={presentation.templateSettings.studio.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><StudioDesktop {...props} /><StudioMobile {...props} /></main>
+  const hasCoverBackground = presentation.cover.backgroundEnabled && Boolean(presentation.cover.coverPath)
+  return <main className={cx(styles.shell, styles.studioShell, 'studio-profile', 'profile-design-root')} data-template="studio" data-cover-background={String(hasCoverBackground)} data-layout-variant={presentation.templateSettings.studio.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><ProfileCoverBackground presentation={presentation} preview={preview} /><PreviewBadge preview={preview} /><StudioDesktop {...props} /><StudioMobile {...props} /></main>
 }
 
 function ExecutiveDesktop({ profile, presentation, preview }: Required<TemplateProps>) {
@@ -154,6 +160,7 @@ function ExecutiveDesktop({ profile, presentation, preview }: Required<TemplateP
       {view.location ? <p className={styles.location}>{view.location}</p> : null}
       <div className={styles.executiveActions}><SaveContact profile={profile} preview={preview} /><ContactActions profile={profile} /></div>
       <TextLinks links={view.links} design={presentation.design} />
+      <ProfileWhatsNext items={presentation.whatsNext} />
       <TemplateFooter design={presentation.design} />
     </div>
   </section>
@@ -164,13 +171,14 @@ function ExecutiveMobile({ profile, presentation, preview }: Required<TemplatePr
   return <section className={styles.mobile} data-composition="mobile"><TemplateHeader profile={profile} />
     <ProfilePhoto profile={profile} className={cx(styles.executivePhoto, styles.reveal)} sizes="100vw" />
     <div className={styles.executiveMobileCopy} data-profile-identity><p className={styles.kicker}>Professional identity</p><h1>{displayName(profile)}</h1>{profile.headline ? <h2>{profile.headline}</h2> : null}{profile.tagline ? <p className={styles.tagline}>{profile.tagline}</p> : null}{profile.bio ? <p className={styles.executiveBio}>{profile.bio}</p> : null}{view.location ? <p className={styles.location}>{view.location}</p> : null}</div>
-    <SaveContact profile={profile} preview={preview} /><ContactActions profile={profile} /><TextLinks links={view.links} design={presentation.design} /><TemplateFooter design={presentation.design} />
+    <SaveContact profile={profile} preview={preview} /><ContactActions profile={profile} /><TextLinks links={view.links} design={presentation.design} /><ProfileWhatsNext items={presentation.whatsNext} /><TemplateFooter design={presentation.design} />
   </section>
 }
 
 export function ExecutiveProfile({ profile, presentation, preview = false }: TemplateProps) {
   const props = { profile, presentation, preview }
-  return <main className={cx(styles.shell, styles.executiveShell, 'executive-profile', 'profile-design-root')} data-template="executive" data-layout-variant={presentation.templateSettings.executive.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><ExecutiveDesktop {...props} /><ExecutiveMobile {...props} /></main>
+  const hasCoverBackground = presentation.cover.backgroundEnabled && Boolean(presentation.cover.coverPath)
+  return <main className={cx(styles.shell, styles.executiveShell, 'executive-profile', 'profile-design-root')} data-template="executive" data-cover-background={String(hasCoverBackground)} data-layout-variant={presentation.templateSettings.executive.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><ProfileCoverBackground presentation={presentation} preview={preview} /><PreviewBadge preview={preview} /><ExecutiveDesktop {...props} /><ExecutiveMobile {...props} /></main>
 }
 
 function SignalDesktop({ profile, presentation, preview }: Required<TemplateProps>) {
@@ -182,6 +190,7 @@ function SignalDesktop({ profile, presentation, preview }: Required<TemplateProp
       <div className={styles.signalPortrait}><i aria-hidden="true" /><ProfilePhoto profile={profile} className={styles.signalPhoto} sizes="45vw" /></div>
     </div>
     <TextLinks links={view.links} design={presentation.design} card />
+    <ProfileWhatsNext items={presentation.whatsNext} />
     <TemplateFooter design={presentation.design} />
   </div></section>
 }
@@ -192,13 +201,14 @@ function SignalMobile({ profile, presentation, preview }: Required<TemplateProps
   return <section className={styles.mobile} data-composition="mobile"><TemplateHeader profile={profile} />
     <div className={cx(styles.signalMobileHero, styles.reveal)}><span>IDEAS<br />SPACES<br />PEOPLE</span><i aria-hidden="true" /><ProfilePhoto profile={profile} className={styles.signalPhoto} sizes="75vw" /></div>
     <h1 className={styles.signalMobileName}>{firstName}</h1>{profile.headline ? <h2 className={styles.signalMobileTitle}>{profile.headline}</h2> : null}
-    <SaveContact profile={profile} preview={preview} pink /><ContactActions profile={profile} /><TextLinks links={view.links} design={presentation.design} card /><TemplateFooter design={presentation.design} />
+    <SaveContact profile={profile} preview={preview} pink /><ContactActions profile={profile} /><TextLinks links={view.links} design={presentation.design} card /><ProfileWhatsNext items={presentation.whatsNext} /><TemplateFooter design={presentation.design} />
   </section>
 }
 
 export function SignalProfile({ profile, presentation, preview = false }: TemplateProps) {
   const props = { profile, presentation, preview }
-  return <main className={cx(styles.shell, styles.signalShell, 'signal-profile', 'profile-design-root')} data-template="signal" data-layout-variant={presentation.templateSettings.signal.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><SignalDesktop {...props} /><SignalMobile {...props} /></main>
+  const hasCoverBackground = presentation.cover.backgroundEnabled && Boolean(presentation.cover.coverPath)
+  return <main className={cx(styles.shell, styles.signalShell, 'signal-profile', 'profile-design-root')} data-template="signal" data-cover-background={String(hasCoverBackground)} data-layout-variant={presentation.templateSettings.signal.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><ProfileCoverBackground presentation={presentation} preview={preview} /><PreviewBadge preview={preview} /><SignalDesktop {...props} /><SignalMobile {...props} /></main>
 }
 
 function directoryGroups(profile: Profile) {
@@ -225,14 +235,15 @@ function IndexIdentity({ profile }: { profile: Profile }) {
 }
 
 function IndexDesktop({ profile, presentation, preview }: Required<TemplateProps>) {
-  return <section className={styles.desktop} data-composition="desktop"><aside className={styles.indexRail} data-profile-surface="primary"><TemplateHeader profile={profile} dark /><p>Everything,<br />in one place.</p><small>IQ DIRECTORY / 06</small></aside><div className={cx(styles.indexMain, styles.reveal)} data-profile-surface="secondary"><IndexIdentity profile={profile} /><div><SaveContact profile={profile} preview={preview} /><ContactActions profile={profile} /></div><Directory profile={profile} design={presentation.design} /><TemplateFooter design={presentation.design} /></div></section>
+  return <section className={styles.desktop} data-composition="desktop"><aside className={styles.indexRail} data-profile-surface="primary"><TemplateHeader profile={profile} dark /><p>Everything,<br />in one place.</p><small>IQ DIRECTORY / 06</small></aside><div className={cx(styles.indexMain, styles.reveal)} data-profile-surface="secondary"><IndexIdentity profile={profile} /><div><SaveContact profile={profile} preview={preview} /><ContactActions profile={profile} /></div><Directory profile={profile} design={presentation.design} /><ProfileWhatsNext items={presentation.whatsNext} /><TemplateFooter design={presentation.design} /></div></section>
 }
 
 function IndexMobile({ profile, presentation, preview }: Required<TemplateProps>) {
-  return <section className={styles.mobile} data-composition="mobile"><TemplateHeader profile={profile} /><div className={styles.reveal}><IndexIdentity profile={profile} /></div><SaveContact profile={profile} preview={preview} /><ContactActions profile={profile} /><Directory profile={profile} design={presentation.design} /><TemplateFooter design={presentation.design} /></section>
+  return <section className={styles.mobile} data-composition="mobile"><TemplateHeader profile={profile} /><div className={styles.reveal}><IndexIdentity profile={profile} /></div><SaveContact profile={profile} preview={preview} /><ContactActions profile={profile} /><Directory profile={profile} design={presentation.design} /><ProfileWhatsNext items={presentation.whatsNext} /><TemplateFooter design={presentation.design} /></section>
 }
 
 export function IndexProfile({ profile, presentation, preview = false }: TemplateProps) {
   const props = { profile, presentation, preview }
-  return <main className={cx(styles.shell, styles.indexShell, 'index-profile', 'profile-design-root')} data-template="index" data-layout-variant={presentation.templateSettings.index.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><PreviewBadge preview={preview} /><IndexDesktop {...props} /><IndexMobile {...props} /></main>
+  const hasCoverBackground = presentation.cover.backgroundEnabled && Boolean(presentation.cover.coverPath)
+  return <main className={cx(styles.shell, styles.indexShell, 'index-profile', 'profile-design-root')} data-template="index" data-cover-background={String(hasCoverBackground)} data-layout-variant={presentation.templateSettings.index.variant} style={getProfileDesignStyle(presentation.design)} {...getProfileDesignDataAttributes(presentation.design)}><ProfileCoverBackground presentation={presentation} preview={preview} /><PreviewBadge preview={preview} /><IndexDesktop {...props} /><IndexMobile {...props} /></main>
 }

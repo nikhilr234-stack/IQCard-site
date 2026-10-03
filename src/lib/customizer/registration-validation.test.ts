@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest'
 import { handoffEmailError, identityNameError } from '../../../public/customize/registration-validation.mjs'
 
 describe('customizer registration validation', () => {
-  it('allows an optional identity with either one name or a full name', () => {
-    expect(identityNameError('')).toBeNull()
-    expect(identityNameError('YOUR NAME')).toBeNull()
-    expect(identityNameError('Nikhil')).toBeNull()
+  it('requires a real first and last name before the customer leaves identity setup', () => {
+    expect(identityNameError('')).toBe('Enter your first and last name.')
+    expect(identityNameError('YOUR NAME')).toBe('Enter your first and last name.')
+    expect(identityNameError('Nikhil')).toBe('Enter your first and last name.')
     expect(identityNameError('Nikhil Rakesh')).toBeNull()
   })
 

@@ -40,6 +40,7 @@ describe('digital profile save action', () => {
     form.set('presentation', JSON.stringify({
       template: 'cover',
       cover: { coverPath: 'owner-1/cover.webp', overlay: 0.38, focalY: 50, alignment: 'lower-left', photoPathOverride: null },
+      whatsNext: [{ title: 'Studio launch', description: 'A new space is opening soon.', date: 'October 24', url: 'https://ada.example.com/studio' }],
     }))
     return form
   }
@@ -55,7 +56,10 @@ describe('digital profile save action', () => {
     expect(rpc).toHaveBeenCalledWith('save_own_digital_profile', expect.objectContaining({
       p_profile: expect.objectContaining({ full_name: 'Ada Lovelace', headline: 'Mathematician', tagline: 'Poetical science' }),
       p_links: [{ label: 'Website', url: 'https://ada.example.com' }],
-      p_draft: expect.objectContaining({ template: 'cover' }),
+      p_draft: expect.objectContaining({
+        template: 'cover',
+        whatsNext: [{ title: 'Studio launch', description: 'A new space is opening soon.', date: 'October 24', url: 'https://ada.example.com/studio' }],
+      }),
     }))
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard')
     expect(revalidatePath).toHaveBeenCalledWith('/dashboard/digital-profile')
@@ -80,6 +84,19 @@ describe('digital profile save action', () => {
       success: false,
       error: 'Use an HTTP(S) link or a contact link.',
     })
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('rejects an unsafe What’s next URL before writing any profile data', async () => {
+    const rpc = vi.fn()
+    vi.mocked(createServerClient).mockResolvedValue(client(rpc) as never)
+    const form = formData()
+    form.set('presentation', JSON.stringify({
+      template: 'cover',
+      whatsNext: [{ title: 'Launch', description: 'Coming soon', date: '', url: 'javascript:alert(1)' }],
+    }))
+
+    await expect(saveDigitalProfile(form)).resolves.toMatchObject({ success: false })
     expect(rpc).not.toHaveBeenCalled()
   })
 })

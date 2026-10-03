@@ -1,8 +1,10 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export function identityNameError(value) {
-  const name = String(value || '').trim()
-  if (!name || name.toUpperCase() === 'YOUR NAME') return null
+  const name = String(value || '').trim().replace(/\s+/g, ' ')
+  if (!name || name.toUpperCase() === 'YOUR NAME' || name.split(' ').length < 2) {
+    return 'Enter your first and last name.'
+  }
   return null
 }
 

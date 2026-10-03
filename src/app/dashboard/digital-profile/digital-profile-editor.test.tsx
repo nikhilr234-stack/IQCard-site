@@ -90,14 +90,30 @@ describe('DigitalProfileEditor', () => {
     vi.clearAllMocks()
   })
 
-  it('restores Cover controls after switching through Minimal', async () => {
+  it('keeps shared Cover controls available after switching through Minimal', async () => {
     await act(async () => button(host, /01 Minimal/i).click())
-    expect(() => labelledInput(host, /Darken background/i)).toThrow()
+    expect(labelledInput(host, /Darken background/i).value).toBe('0.38')
 
     await act(async () => button(host, /02 Cover/i).click())
 
     expect(labelledInput(host, /Darken background/i).value).toBe('0.38')
     expect(button(host, /Lower left/i).getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('toggles the shared Cover image on in every template and saves the live preview choice', async () => {
+    await act(async () => button(host, /01 Minimal/i).click())
+
+    const background = labelledInput(host, /Use Cover image as background/i)
+    expect(background.type).toBe('checkbox')
+    expect(background.checked).toBe(true)
+    expect(host.querySelector('.digital-profile-phone-screen [data-template="minimal"]')?.getAttribute('data-cover-background')).toBe('true')
+    expect(host.querySelector('.digital-profile-phone-screen [data-profile-cover-background]')).not.toBeNull()
+
+    await act(async () => background.click())
+
+    expect(host.querySelector('.digital-profile-phone-screen [data-template="minimal"]')?.getAttribute('data-cover-background')).toBe('false')
+    expect(host.querySelector('.digital-profile-phone-screen [data-profile-cover-background]')).toBeNull()
+    expect(JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')?.value ?? '').cover.backgroundEnabled).toBe(false)
   })
 
   it('keeps one selected layout per template and updates only the live draft preview', async () => {
@@ -158,12 +174,67 @@ describe('DigitalProfileEditor', () => {
     expect(host.querySelector('.digital-profile-action-feedback')?.textContent).toContain('live')
   })
 
-  it('keeps the shared profile photo controls available in Minimal', async () => {
+  it('adds What’s next items to the live preview and saves them with the presentation', async () => {
+    await act(async () => button(host, /Add an update/i).click())
+
+    const row = host.querySelector<HTMLElement>('[data-whats-next-row]')
+    const title = row?.querySelector<HTMLInputElement>('input[name="whats_next_title"]')
+    const description = row?.querySelector<HTMLTextAreaElement>('textarea[name="whats_next_description"]')
+    const date = row?.querySelector<HTMLInputElement>('input[name="whats_next_date"]')
+    const url = row?.querySelector<HTMLInputElement>('input[name="whats_next_url"]')
+    if (!title || !description || !date || !url) throw new Error('Missing What’s next editor fields')
+    const inputSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    const textareaSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set
+    inputSetter?.call(title, 'Studio opening')
+    await act(async () => title.dispatchEvent(new Event('input', { bubbles: true })))
+    textareaSetter?.call(description, 'A new space for collaborators.')
+    await act(async () => description.dispatchEvent(new Event('input', { bubbles: true })))
+    inputSetter?.call(date, 'October 24')
+    await act(async () => date.dispatchEvent(new Event('input', { bubbles: true })))
+    inputSetter?.call(url, 'https://example.com/opening')
+    await act(async () => url.dispatchEvent(new Event('input', { bubbles: true })))
+
+    const preview = host.querySelector('.digital-profile-phone-screen')
+    expect(preview?.querySelector('.profile-whats-next')?.textContent).toContain('Studio opening')
+    expect(preview?.querySelector('.profile-whats-next')?.textContent).toContain('A new space for collaborators.')
+    expect(preview?.querySelector('.profile-whats-next a')?.getAttribute('href')).toBe('https://example.com/opening')
+
+    await act(async () => button(host, /Save Changes/i).click())
+    const saved = actions.saveDigitalProfileAction.mock.calls.at(-1)?.[0]
+    expect(JSON.parse(String(saved?.get('presentation'))).whatsNext).toEqual([
+      { title: 'Studio opening', description: 'A new space for collaborators.', date: 'October 24', url: 'https://example.com/opening' },
+    ])
+  })
+
+  it('limits What’s next to three items and does not save an unsafe URL', async () => {
+    for (let index = 0; index < 3; index += 1) {
+      await act(async () => button(host, /Add an update/i).click())
+    }
+    expect(button(host, /Add an update/i).disabled).toBe(true)
+    const row = host.querySelectorAll<HTMLElement>('[data-whats-next-row]').item(2)
+    const title = row.querySelector<HTMLInputElement>('input[name="whats_next_title"]')
+    const description = row.querySelector<HTMLTextAreaElement>('textarea[name="whats_next_description"]')
+    const url = row.querySelector<HTMLInputElement>('input[name="whats_next_url"]')
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    const textareaSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set
+    setter?.call(title, 'Launch')
+    await act(async () => title?.dispatchEvent(new Event('input', { bubbles: true })))
+    textareaSetter?.call(description, 'Coming soon')
+    await act(async () => description?.dispatchEvent(new Event('input', { bubbles: true })))
+    setter?.call(url, 'javascript:alert(1)')
+    await act(async () => url?.dispatchEvent(new Event('input', { bubbles: true })))
+    await act(async () => button(host, /Save Changes/i).click())
+
+    expect(actions.saveDigitalProfileAction).not.toHaveBeenCalled()
+    expect(host.querySelector('.digital-profile-action-feedback')?.textContent).toMatch(/HTTP\(S\)|contact link/i)
+  })
+
+  it('keeps both profile photo and Cover image controls available in Minimal', async () => {
     await act(async () => button(host, /01 Minimal/i).click())
 
     expect(labelledInput(host, /Change photo/i).name).toBe('photo')
     expect(button(host, /Remove photo/i)).not.toBeNull()
-    expect(() => labelledInput(host, /Change Cover/i)).toThrow()
+    expect(labelledInput(host, /Change Cover/i).name).toBe('cover')
   })
 
   it('keeps the submitted draft and shared phone preview in sync', async () => {
@@ -178,12 +249,14 @@ describe('DigitalProfileEditor', () => {
     const serialized = host.querySelector<HTMLInputElement>('input[name="presentation"]')
     expect(JSON.parse(serialized?.value ?? '')).toEqual({
       template: 'cover',
+      whatsNext: [],
       cover: {
         coverPath: 'owner-1/cover.webp',
         overlay: 0.38,
         focalY: 22,
         alignment: 'center',
         photoPathOverride: null,
+        backgroundEnabled: true,
       },
       design: DEFAULT_PROFILE_DESIGN,
       templateSettings: {
