@@ -64,3 +64,7 @@ Do not apply the migration to production, enable production checkout, or promise
 ## Sandbox activation — 4 October 2026
 
 The owner reports saving sandbox Auth redirect settings and the Razorpay test webhook URL with a Vercel automation bypass. Enabled commerce only for the launch-branch Preview environment to begin deployed testing. Live mode and Vercel production remain rejected by application code. A successful saved configuration is not proof of payment/webhook delivery; the full sandbox purchase remains to be verified. Transactional order emails remain disabled pending sender setup.
+
+## Deployed end-to-end verification — 4 October 2026
+
+Integrated production card-recovery fixes into the isolated checkout preview. All 125 test files / 840 tests, lint, TypeScript, and production build pass. Controlled sandbox Auth password sign-in and authenticated dashboard loading succeed. Privacy and Terms routes currently return 404. Initial saved-card test identified Preview missing IQCARD_ONBOARDING_V2; set it true for this branch so verification uses the current registration flow. Email receipt, signed Razorpay webhook delivery, and fulfillment remain unverified at this checkpoint.
