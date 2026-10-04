@@ -50,3 +50,13 @@ Do not apply the migration to production, enable production checkout, or promise
 - This commit triggers a fresh preview build so the configuration can take effect. Verify the actual checkout route redirects to sign-in without HTTP 500, and verify the public customizer and policy routes after the deployment is Ready.
 - The checkout sandbox still requires a dedicated test Supabase project, the reviewed order migration, Razorpay test credentials and webhook setup, explicit shipping/tax amounts, and an approved transactional-email test sender. Replace the preview public Supabase configuration with that test project's values before enabling commerce.
 - Production launch remains blocked on a successful deployed sandbox purchase-to-fulfillment run and the business decisions listed above. The production database and production environment have not been changed by this follow-up.
+
+## Isolated database setup — 4 October 2026
+
+- Created healthy free-tier project `iqcard-checkout-sandbox` (`zlmiiyuhuqmmrfcpzsxe`) in Mumbai.
+- Applied all 26 repository migrations in order to the sandbox only. A fresh replay required dropping `complete_own_onboarding_publish(boolean)` before the 8 September migration changes its return type from void to text. Production was not changed.
+- Verified RLS is enabled on all five paid-order tables and that anonymous callers cannot execute the payment-event RPC while service_role can.
+- The admin-helper revoke in the paid-order migration left inherited PUBLIC execution available. Applied a sandbox-only corrective grant change revoking PUBLIC/anon while retaining authenticated/service_role execution. Verified anonymous execution is now false. These fresh-install and grant corrections need repository migration coverage before live release.
+- Changed launch-branch Preview public Supabase URL/key to the sandbox. Razorpay and the sandbox service-role variable have been supplied by the owner; values remain secret. This document does not attest that the supplied secret values are correct.
+- Configured test mode, shipping=0 and tax=0 as sandbox fixtures only. Commerce remains disabled pending authentication redirect and webhook reachability setup.
+- Remaining setup: sandbox Auth Site URL and callback allowlist, Vercel-protected webhook access, deployed service-role/payment credential checks, then full sandbox purchase and fulfillment verification. Transactional email setup and approved policy content remain outstanding.
