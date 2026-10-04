@@ -83,6 +83,14 @@ observations. Preserve unresolved limitations when another chat resumes.
 
 | Flow | Status | Evidence | Remaining blocker | Owner action |
 |---|---|---|---|---|
-| 1 recovery navigation | Implemented; checks/deployment verification pending | Live failure above; behavioral regression tests added | Preview and production browser verification | None for this local-navigation repair |
+| 1 recovery navigation | Implemented; checks passed; preview deployed | PR #9; code SHA `245eeccb83015de637592240e1d9d05ad888b52d`; 108 test files / 779 tests, lint, TypeScript and production build passed; independent review cleared; Ready preview `dpl_DNB3VcSBfr9m8q4vngQZfUgAuJfx` | Deployed browser verification blocked by automatic approval review of temporary preview access; production unchanged | Authorize use of the protected preview's temporary Vercel access link |
 | 1 delivered-link journey | Blocked | Previous authentication/API fixtures only | Dedicated real mailbox and delivered link run | Provide a test mailbox to use and verify delivery locally |
 | 5–6 payment | Blocked | Handoff records `checkout-disabled` / `sandbox-only` gate | Valid Test Mode provider configuration | Enter secrets directly in provider interface |
+
+The preview browser action was rejected specifically because the temporary
+Vercel share link bypasses preview authentication and that access method had
+not been expressly authorized. Do not work around this rejection. Obtain explicit
+approval for that method, or use an authorized normal preview sign-in path.
+
+Production has not been changed by this repair. The real-email journey,
+signed-in dashboard and mobile visual acceptance are still open.
