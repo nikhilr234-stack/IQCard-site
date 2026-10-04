@@ -40,3 +40,13 @@ Status as of 3 October 2026: implementation is on a feature branch for review. T
 6. Repeat with an invalid address, failed payment, closed payment window, delayed webhook, email provider failure, and retry.
 
 Do not apply the migration to production, enable production checkout, or promise delivery dates until the open decisions above are approved.
+
+## Preview configuration follow-up — 4 October 2026
+
+- Reproduced HTTP 500 on the launch preview's actual checkout route, `/dashboard/orders/checkout`, before authentication could complete.
+- Confirmed that all existing project application environment variables targeted production only. The preview therefore lacked the public site URL and Supabase client configuration.
+- Added branch-specific Preview values for `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. The site URL uses the stable launch-branch alias. Only public Supabase client configuration is reused for route/authentication checks; no production service-role key is copied.
+- Explicitly set branch-specific `IQCARD_COMMERCE_ENABLED=false`. No payment or fulfillment writes are enabled by this configuration update.
+- This commit triggers a fresh preview build so the configuration can take effect. Verify the actual checkout route redirects to sign-in without HTTP 500, and verify the public customizer and policy routes after the deployment is Ready.
+- The checkout sandbox still requires a dedicated test Supabase project, the reviewed order migration, Razorpay test credentials and webhook setup, explicit shipping/tax amounts, and an approved transactional-email test sender. Replace the preview public Supabase configuration with that test project's values before enabling commerce.
+- Production launch remains blocked on a successful deployed sandbox purchase-to-fulfillment run and the business decisions listed above. The production database and production environment have not been changed by this follow-up.
