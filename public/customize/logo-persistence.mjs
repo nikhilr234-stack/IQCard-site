@@ -139,7 +139,7 @@ export function normalizeStoredConfiguration(value) {
     material,
     customColor,
     finish,
-    identity: { name, tone: core === 'white' ? 'light' : 'dark', composition, fineTune },
+    identity: { name, tone, composition, fineTune },
     logo: { ...logo, objectUrl: undefined },
     side,
     backLayout,
