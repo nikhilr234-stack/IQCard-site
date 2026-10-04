@@ -13,5 +13,5 @@ export function ResendCountdown() {
 
   return seconds > 0
     ? <p className="check-email-resend" aria-live="polite">You can request another link in {seconds} seconds.</p>
-    : <Link className="check-email-action secondary" href="/customize">Request another link</Link>
+    : <Link className="check-email-action secondary" href="/customize?restore=1">Request another link</Link>
 }

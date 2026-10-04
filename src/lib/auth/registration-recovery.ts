@@ -10,9 +10,9 @@ type RecoveryContent = { title: string; message: string; actionLabel: string; ac
 const recoveryContent: Record<RegistrationRecoveryReason, RecoveryContent> = {
   'registration-expired': {
     title: 'Your registration link expired.',
-    message: 'Your card design is still saved in this browser. Return to it and request a fresh secure link.',
+    message: 'Return to your saved card in the browser where you designed it and request a fresh secure link. If you already claimed the card, sign in to open your dashboard.',
     actionLabel: 'Return to your saved card',
-    actionHref: '/customize',
+    actionHref: '/customize?restore=1',
   },
   'registration-used': {
     title: 'That registration link has already been used.',
@@ -24,19 +24,19 @@ const recoveryContent: Record<RegistrationRecoveryReason, RecoveryContent> = {
     title: 'This link belongs to a different sign-in email.',
     message: 'Open the link while signed in with the address that requested it, or return to your card and send a fresh link.',
     actionLabel: 'Return to your saved card',
-    actionHref: '/customize',
+    actionHref: '/customize?restore=1',
   },
   'registration-missing': {
     title: 'We could not find that saved registration.',
-    message: 'Your local card design has not been removed. Return to it to start a fresh registration.',
+    message: 'Return to the browser where you designed your card to recover its local copy and request a fresh link.',
     actionLabel: 'Return to your saved card',
-    actionHref: '/customize',
+    actionHref: '/customize?restore=1',
   },
   'registration-unavailable': {
     title: 'We could not finish registration right now.',
     message: 'Nothing was published. Please return to your saved card and try again in a moment.',
     actionLabel: 'Return to your saved card',
-    actionHref: '/customize',
+    actionHref: '/customize?restore=1',
   },
 }
 

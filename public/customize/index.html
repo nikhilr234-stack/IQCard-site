@@ -317,8 +317,9 @@
   const entryParams = new URLSearchParams(location.search);
   const previewMode = entryParams.get('preview') === '1';
   const resumeMode = entryParams.get('resume') === '1';
+  const restoreMode = entryParams.get('restore') === '1';
   if(previewMode) document.documentElement.classList.add('saved-preview');
-  if(previewMode || resumeMode) document.documentElement.classList.add('saved-loading');
+  if(previewMode || resumeMode || restoreMode) document.documentElement.classList.add('saved-loading');
   import { handoffEmailError, identityNameError } from '/customize/registration-validation.mjs';
   import { normalizeStoredConfiguration, persistCheckoutHandoffMarker, persistSavedDesignHistory, restoreStoredLogo, savedDesignTarget, selectRestorableDesign, serializeLogoForStorage, validateLogoForCheckout } from '/customize/logo-persistence.mjs';
   import { inspectionPoseForView, mobileInspectionPose, mobileStepScrollTop, nearestMobileInspectionView, snapMobilePose } from '/customize/mobile-inspection.mjs';
@@ -1313,6 +1314,16 @@
      showHandoffEmailError('');
      activeDesignId = payload.designId;
      window.__iqCheckoutPayload = payload;
+     if(autosaveTimer){ window.clearTimeout(autosaveTimer); autosaveTimer = null; }
+     const checkpoint = persistSavedDesignHistory({
+       storage: localStorage, key: SAVED_DESIGNS_KEY,
+       newestRecord: { id: payload.designId, schemaVersion: '1.0', saveMode: 'manual', configuration: { ...payload.configuration, step: 'final' }, savedAt: new Date().toISOString() },
+       existingRecords: getSavedDesigns(), maxRecords: 20
+     });
+     if(!checkpoint.ok){
+       if(message){ message.textContent = checkpoint.error || 'We could not save this card for recovery. Please try again.'; message.classList.add('is-visible','is-error'); }
+       return null;
+     }
      const markerResult = persistCheckoutHandoffMarker({ storage: localStorage, key: CHECKOUT_HANDOFF_KEY, payload });
      if(!markerResult.ok){
        if(message){ message.textContent = markerResult.error; message.classList.add('is-visible','is-error'); }
@@ -1561,7 +1572,7 @@
     if(record) restoreSavedDesign(record);
   });
    refreshSavedDesignUI();
-   autosaveReady = !previewMode;
+   autosaveReady = false;
 
    initPBRRenderer();
   if(previewMode || resumeMode){
@@ -1584,9 +1595,34 @@
       link.href='/dashboard';link.target='_top';link.textContent=' Return to dashboard →';
       message.append(link);document.getElementById('iq-atelier').append(message);
     }
+  } else if(restoreMode){
+    try {
+      const marker = JSON.parse(localStorage.getItem(CHECKOUT_HANDOFF_KEY) || 'null');
+      const records = getSavedDesigns();
+      const record = typeof marker?.designId === 'string' && marker.designId
+        ? selectRestorableDesign(records.filter(item => item.id === marker.designId && item.configuration && typeof item.configuration === 'object'))
+        : null;
+      if(!record || !restoreSavedDesign(record)) throw new Error('This browser does not have your saved card. Return to the browser where you designed it to request a fresh link. If you already signed in and claimed the card, open your dashboard.');
+      configuration.step = 'final';
+      setFinalMode(true);
+      openOrderReview();
+      document.documentElement.classList.remove('saved-loading');
+    } catch(error){
+      document.documentElement.classList.remove('saved-loading');
+      const message = document.createElement('p');
+      message.setAttribute('role','alert');
+      message.style.cssText='padding:24px;font:14px Helvetica,Arial,sans-serif;line-height:1.5';
+      message.textContent = error instanceof SyntaxError ? 'This browser cannot read your saved-card reference. Return to the browser where you designed the card, or open your dashboard if you already claimed it.' : error.message;
+      const dashboard = document.createElement('a');
+      dashboard.href='/dashboard';dashboard.textContent=' Open dashboard →';message.append(dashboard);
+      const restart = document.createElement('a');
+      restart.href='/customize';restart.textContent=' Start a new card →';message.append(restart);
+      document.getElementById('iq-atelier').replaceChildren(message);
+    }
   } else {
     setMaterial(materials.find(m=>m.name==='Walnut'));setStep('core',{scroll:false});updateScene();
   }
+  autosaveReady = !previewMode && document.getElementById('iqCard') !== null;
 </script>
 </body>
 </html>

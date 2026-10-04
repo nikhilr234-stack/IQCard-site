@@ -5,7 +5,7 @@ describe('registration recovery content', () => {
   it('gives expired registrations a clear restart path', () => {
     expect(registrationRecoveryContent('registration-expired')).toMatchObject({
       title: 'Your registration link expired.',
-      actionHref: '/customize',
+      actionHref: '/customize?restore=1',
       actionLabel: 'Return to your saved card',
     })
   })
