@@ -75,6 +75,7 @@ export async function POST(request: Request) {
 
   const availability = getOrderCheckoutConfig()
   if (!availability.ready) {
+    console.warn('[orders] checkout configuration gate', { reason: availability.reason })
     const disabled = availability.reason === 'disabled' || availability.reason === 'sandbox-only' || availability.reason === 'preview-only'
     return jsonError(
       503,
