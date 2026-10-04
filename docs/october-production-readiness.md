@@ -10,8 +10,9 @@ configuration has a **₹799 card subtotal**; shipping and tax remain business d
 
 - Repository: `nikhilr234-stack/IQCard-site`, production branch `main`.
 - Production project: **iqcard-app** (`prj_PNfMNtSsskNXGwkSe2G2QkuR2swn`).
-- Production baseline: `724dca41aad5f70ce0f2caa4314fd4a370ebe234`, Ready deployment
-  `dpl_45uwa4N5sypqVLpu3f9gYm72YqcF`; `iqcard.in` is a verified project domain.
+- Production baseline at start: `724dca41aad5f70ce0f2caa4314fd4a370ebe234`; after Flow 1 repair:
+  `ed1dd0b299c66f622d60532e087089522440172e`, Ready deployment
+  `dpl_DC7oi5da3vGeZr8YpyHByrRbdqoE`; `iqcard.in` is a verified project domain.
 - Paid-order preview remains separate: branch `codex/iqcard-paid-card-launch-20261003`,
   SHA `92412ee0247469cea7700c4a33781fab6663982e`, Ready deployment
   `dpl_CpYmDM956F5HdYEWSw3HYJALDp8W`. Do not merge commerce to fix registration.
@@ -50,7 +51,7 @@ Live reproduction on 4 October:
 The reproduction did **not** submit a registration or send an email. It verifies
 the broken return navigation independently of email delivery.
 
-Repair on `codex/october-registration-recovery-20261004`:
+Repair merged through PR #9 (merge commit `ed1dd0b299c66f622d60532e087089522440172e`):
 
 - Registration recovery and request-another-link navigation use `/customize?restore=1`.
 - Submission checkpoints the exact configuration and its design reference before
@@ -83,14 +84,9 @@ observations. Preserve unresolved limitations when another chat resumes.
 
 | Flow | Status | Evidence | Remaining blocker | Owner action |
 |---|---|---|---|---|
-| 1 recovery navigation | Implemented; checks passed; preview deployed | PR #9; code SHA `245eeccb83015de637592240e1d9d05ad888b52d`; 108 test files / 779 tests, lint, TypeScript and production build passed; independent review cleared; Ready preview `dpl_DNB3VcSBfr9m8q4vngQZfUgAuJfx` | Deployed browser verification blocked by automatic approval review of temporary preview access; production unchanged | Authorize use of the protected preview's temporary Vercel access link |
+| 1 recovery navigation | Implemented; checks passed; deployed; error path verified | PR #9; merge commit `ed1dd0b299c66f622d60532e087089522440172e`; 108 test files / 779 tests, lint, TypeScript and production build passed; independent review cleared; production Ready deployment `dpl_DC7oi5da3vGeZr8YpyHByrRbdqoE`; live `/customize?restore=1` shows explicit missing-card guidance with dashboard/new-card links | Exact same-browser card restoration still awaits a real email-link run; cross-device correctly reports missing local copy | Supply a controlled mailbox for complete email journey verification |
 | 1 delivered-link journey | Blocked | Previous authentication/API fixtures only | Dedicated real mailbox and delivered link run | Provide a test mailbox to use and verify delivery locally |
 | 5–6 payment | Blocked | Handoff records `checkout-disabled` / `sandbox-only` gate | Valid Test Mode provider configuration | Enter secrets directly in provider interface |
 
-The preview browser action was rejected specifically because the temporary
-Vercel share link bypasses preview authentication and that access method had
-not been expressly authorized. Do not work around this rejection. Obtain explicit
-approval for that method, or use an authorized normal preview sign-in path.
-
-Production has not been changed by this repair. The real-email journey,
-signed-in dashboard and mobile visual acceptance are still open.
+Production recovery error-path check is verified; the full real-email journey,
+signed-in dashboard and mobile visual acceptance remain open.
