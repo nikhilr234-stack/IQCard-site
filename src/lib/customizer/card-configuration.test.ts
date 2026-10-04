@@ -132,9 +132,9 @@ describe('canonical card payload', () => {
   it.each([
     ['black', 'dark'],
     ['white', 'light'],
-  ])('derives %s core lettering as %s regardless of client tone', (core, tone) => {
+  ])('preserves an explicit saved tone for %s core', (core, tone) => {
     const identity = { ...basePayload.configuration.identity, tone: tone === 'dark' ? 'light' : 'dark' }
-    expect(canonicalizeCardPayload(payloadWith({ core, identity }))?.configuration.identity.tone).toBe(tone)
+    expect(canonicalizeCardPayload(payloadWith({ core, identity }))?.configuration.identity.tone).toBe(identity.tone)
   })
 
   it.each(['pure', 'branded', 'identity', 'custom'])('accepts the %s back layout', (backLayout) => {

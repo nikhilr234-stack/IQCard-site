@@ -23,7 +23,7 @@ describe('authenticated checkout handoff claim', () => {
 
   it('claims the handoff after the fallback code exchange succeeds too', () => {
     const source = readFileSync(callbackRoutePath, 'utf8')
-    expect(source).toContain("searchParams.get('handoff')")
+    expect(source).toContain("requestedParameter(request, 'handoff')")
     expect(source).toContain('claimHandoffAfterAuth(handoff, account.id)')
     expect(source).toContain('exchangeCodeForSession(code)')
   })
