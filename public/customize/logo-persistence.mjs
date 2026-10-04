@@ -116,7 +116,7 @@ export function normalizeStoredConfiguration(value) {
   const tone = allowed(identityInput.tone, ['dark', 'light'], core === 'white' ? 'light' : 'dark')
   const composition = allowed(identityInput.composition, COMPOSITIONS, 'signature')
   const fineTune = normalizedFineTune(identityInput.fineTune)
-  const name = typeof identityInput.name === 'string' && identityInput.name.trim()
+  const name = typeof identityInput.name === 'string'
     ? identityInput.name.trim().slice(0, 26)
     : 'YOUR NAME'
   const logoInput = input.logo === undefined ? {} : record(input.logo)

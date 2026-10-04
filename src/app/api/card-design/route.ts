@@ -3,6 +3,7 @@ import { getCurrentAccount } from '@/lib/auth/account'
 import { getLatestClaimedRegistrationIntent } from '@/lib/registration/repository'
 import { getLatestCheckoutHandoff } from '@/lib/checkout/repository'
 import { selectExactSavedCardDesign } from '@/lib/dashboard/saved-card'
+import { isOnboardingV2Enabled } from '@/lib/features'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { canonicalizeCardPayload } from '@/lib/customizer/card-configuration'
 
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     const account = await getCurrentAccount()
     if (!account) return NextResponse.json({ error: 'Sign in to view your saved card.' }, { status: 401, headers })
     const [registration, handoff] = await Promise.all([
-      getLatestClaimedRegistrationIntent(account.id), getLatestCheckoutHandoff(account.id),
+      isOnboardingV2Enabled() ? getLatestClaimedRegistrationIntent(account.id) : Promise.resolve(null), getLatestCheckoutHandoff(account.id),
     ])
     const saved = selectExactSavedCardDesign(registration ? { design_id: registration.design_id, payload: registration.design_payload } : null, handoff)
     const requested = request.nextUrl.searchParams.get('design')
@@ -37,7 +38,7 @@ export async function PUT(request: NextRequest) {
     try { body = await request.json() } catch { return NextResponse.json({ error: 'Invalid card design.' }, { status: 400, headers }) }
     const card = canonicalizeCardPayload(body?.payload)
     if (typeof body?.id !== 'string' || !card) return NextResponse.json({ error: 'Invalid card design.' }, { status: 400, headers })
-    const [registration, handoff] = await Promise.all([getLatestClaimedRegistrationIntent(account.id), getLatestCheckoutHandoff(account.id)])
+    const [registration, handoff] = await Promise.all([isOnboardingV2Enabled() ? getLatestClaimedRegistrationIntent(account.id) : Promise.resolve(null), getLatestCheckoutHandoff(account.id)])
     const isRegistration = registration?.design_id === body.id
     if (!isRegistration && handoff?.design_id !== body.id) return NextResponse.json({ error: 'Your saved card could not be found.' }, { status: 404, headers })
     let update = createAdminClient().from(isRegistration ? 'registration_intents' : 'checkout_handoffs')

@@ -1,15 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
-const deps = vi.hoisted(() => ({ account: vi.fn(), registration: vi.fn(), handoff: vi.fn(), admin: vi.fn() }))
+const deps = vi.hoisted(() => ({ account: vi.fn(), registration: vi.fn(), handoff: vi.fn(), admin: vi.fn(), v2: true }))
 vi.mock('@/lib/auth/account', () => ({ getCurrentAccount: deps.account }))
 vi.mock('@/lib/registration/repository', () => ({ getLatestClaimedRegistrationIntent: deps.registration }))
 vi.mock('@/lib/checkout/repository', () => ({ getLatestCheckoutHandoff: deps.handoff }))
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: deps.admin }))
+vi.mock('@/lib/features', () => ({ isOnboardingV2Enabled: () => deps.v2 }))
 import { GET, PUT } from './route'
 const configuration = { core: 'black', material: 'Ivory Marble', craft: 'engrave', customColor: null, backLayout: 'pure', identity: { name: 'Rohan Biligi', tone: 'light', composition: 'signature', fineTune: { align: 'left', nameScale: 1, x: 0, y: 0 } }, logo: { mode: 'iq', dataUrl: null, filename: null, mimeType: null, align: 'right', scale: 1, x: 0, y: 0 } }
 describe('authenticated saved card', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    deps.v2 = true
     deps.account.mockResolvedValue({ id: 'owner-1' })
     deps.registration.mockResolvedValue({ design_id: 'IQD-REAL', design_payload: { schemaVersion: '1.0', configuration } })
     deps.handoff.mockResolvedValue(null)
@@ -43,6 +45,14 @@ describe('authenticated saved card', () => {
     expect(response.status).toBe(200)
     const reloaded = await GET(new NextRequest('https://iqcard.in/api/card-design?design=IQD-REAL'))
     expect((await reloaded.json()).configuration).toEqual(refined)
+  })
+
+  it('uses the same legacy design as the dashboard when onboarding v2 is disabled', async () => {
+    deps.v2 = false
+    deps.handoff.mockResolvedValue({ design_id: 'IQD-LEGACY', payload: { schemaVersion: '1.0', configuration } })
+    const response = await GET(new NextRequest('https://iqcard.in/api/card-design?design=IQD-LEGACY'))
+    expect(response.status).toBe(200)
+    expect((await response.json()).id).toBe('IQD-LEGACY')
   })
 
 })

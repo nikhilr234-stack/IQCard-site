@@ -132,7 +132,7 @@
   .saved-preview .stage-wrap{position:relative;height:100%;min-height:0;overflow:hidden}
   .saved-preview .scroll-track{height:100%;overflow:hidden}
   .saved-preview .scroll-space{height:200%}
-  .saved-preview .sticky-stage{position:sticky;height:50vh;min-height:100vh;padding:16px}
+  .saved-preview .sticky-stage{position:sticky;top:0;height:50vh;min-height:100vh;padding:16px}
   .saved-preview .card-rig{width:min(78vw,560px)}
 </style>
 </head>
@@ -747,14 +747,14 @@
       const layout=config.identity.composition,scale=config.identity.fineTune.nameScale,xOffset=config.identity.fineTune.x*2.5,yOffset=config.identity.fineTune.y*2.5;
       const specs={signature:{x:105,y:910,font:104,logoX:105,logoY:86,logoSize:108,logoAlign:'left'},editorial:{x:105,y:910,font:148,logoX:1495,logoY:86,logoSize:70,logoAlign:'right'},minimal:{x:105,y:910,font:56,logoX:105,logoY:86,logoSize:62,logoAlign:'left'},centered:{x:800,y:555,font:98,logoX:800,logoY:86,logoSize:62,logoAlign:'center'},statement:{x:70,y:930,font:170,logoX:1490,logoY:82,logoSize:62,logoAlign:'right'}};
       const s=specs[layout]||specs.signature;let x=s.x+xOffset,y=s.y+yOffset,align=config.identity.fineTune.align||'left';if(layout==='centered')align='center';else if(align==='center')x=800+xOffset;else if(align==='right')x=1490+xOffset;
-      ctx.save();this.applyCraftTextStyle(ctx,config);ctx.textBaseline='alphabetic';ctx.textAlign=align;ctx.font=`700 ${Math.round(s.font*scale)}px Helvetica,Arial,sans-serif`;ctx.fillText(config.identity.name||'YOUR NAME',x,y);ctx.restore();
+      ctx.save();this.applyCraftTextStyle(ctx,config);ctx.textBaseline='alphabetic';ctx.textAlign=align;ctx.font=`700 ${Math.round(s.font*scale)}px Helvetica,Arial,sans-serif`;ctx.fillText(config.identity.name||'',x,y);ctx.restore();
       let lx=s.logoX+config.logo.x*2.5,ly=s.logoY+config.logo.y*2.5,lalign=config.logo.align||s.logoAlign;if(config.logo.align==='center')lx=800+config.logo.x*2.5;else if(config.logo.align==='right')lx=1490+config.logo.x*2.5;this.drawLogo(ctx,config,lx,ly,s.logoSize,lalign);
       ctx.save();ctx.globalAlpha=.58;ctx.fillStyle=config.identity.tone==='light'?'#f5f0e6':'#171615';ctx.font='600 20px Helvetica,Arial,sans-serif';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('NFC / IQ 01',1490,92);ctx.restore();
     }
     drawBackDecal(config){
       const c=this.backDecalCanvas,ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.globalAlpha=1;const light=config.identity.tone==='light';
       ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 34px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('TAP TO CONNECT',105,910);ctx.restore();
-      if(config.backLayout==='identity'||config.backLayout==='custom'){ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 72px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(config.identity.name||'YOUR NAME',105,100);ctx.restore();}
+      if(config.backLayout==='identity'||config.backLayout==='custom'){ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 72px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(config.identity.name||'',105,100);ctx.restore();}
       if(config.backLayout==='branded'||config.backLayout==='custom')this.drawLogo(ctx,config,1490,86,74,'right');
       ctx.save();ctx.globalAlpha=.44;ctx.fillStyle=light?'#f5f0e6':'#171615';ctx.font='600 18px Helvetica,Arial,sans-serif';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('IQ / NFC',1490,920);ctx.restore();
     }
@@ -958,7 +958,7 @@
     }
     const stepIndex = STEPS.indexOf(config.step);
     card.classList.toggle('pre-identity-preview', stepIndex >= 0 && stepIndex < STEPS.indexOf('identity'));
-    frontName.textContent = config.identity.name || 'YOUR NAME';
+    frontName.textContent = config.identity.name;
     root.style.setProperty('--name-color', config.identity.tone === 'light' ? '#ffffff' : '#000000');
     root.style.setProperty('--name-user-scale', config.identity.fineTune.nameScale);
     root.style.setProperty('--name-user-x', `${config.identity.fineTune.x}px`);
@@ -1235,7 +1235,7 @@
     configuration.customColor = customColors.some(item => item.id === saved.customColor) ? saved.customColor : null;
     configuration.finish = saved.finish || 'matte';
     configuration.identity = {
-      name: saved.identity?.name || 'YOUR NAME',
+      name: saved.identity?.name ?? 'YOUR NAME',
       tone: saved.identity?.tone || 'dark',
       composition: saved.identity?.composition || 'signature',
       fineTune: { nameScale:1, x:0, y:0, align:'left', ...(saved.identity?.fineTune || {}) }
