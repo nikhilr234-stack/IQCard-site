@@ -60,3 +60,7 @@ Do not apply the migration to production, enable production checkout, or promise
 - Changed launch-branch Preview public Supabase URL/key to the sandbox. Razorpay and the sandbox service-role variable have been supplied by the owner; values remain secret. This document does not attest that the supplied secret values are correct.
 - Configured test mode, shipping=0 and tax=0 as sandbox fixtures only. Commerce remains disabled pending authentication redirect and webhook reachability setup.
 - Remaining setup: sandbox Auth Site URL and callback allowlist, Vercel-protected webhook access, deployed service-role/payment credential checks, then full sandbox purchase and fulfillment verification. Transactional email setup and approved policy content remain outstanding.
+
+## Sandbox activation — 4 October 2026
+
+The owner reports saving sandbox Auth redirect settings and the Razorpay test webhook URL with a Vercel automation bypass. Enabled commerce only for the launch-branch Preview environment to begin deployed testing. Live mode and Vercel production remain rejected by application code. A successful saved configuration is not proof of payment/webhook delivery; the full sandbox purchase remains to be verified. Transactional order emails remain disabled pending sender setup.
