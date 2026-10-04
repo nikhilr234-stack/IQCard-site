@@ -83,7 +83,7 @@ function canonicalConfiguration(value: unknown): CanonicalCardConfiguration | nu
   const customColor = configuration.customColor === undefined || configuration.customColor === null ? null : allowed(configuration.customColor, CARD_CUSTOM_COLORS)
   const name = normalizedName(identity.name), fineTune = canonicalFineTune(identity.fineTune), logo = canonicalLogo(configuration.logo)
   if (!material || !core || !suppliedTone || !composition || !backLayout || !craft || (customColor === null && configuration.customColor != null) || name === null || !fineTune || !logo) return null
-  return { material, core, customColor, identity: { name, tone: core === 'black' ? 'dark' : 'light', composition, fineTune }, logo, backLayout, craft }
+  return { material, core, customColor, identity: { name, tone: suppliedTone, composition, fineTune }, logo, backLayout, craft }
 }
 
 export function canonicalizeCardPayload(value: unknown): CanonicalCardPayload | null {

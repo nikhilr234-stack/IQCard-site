@@ -124,6 +124,16 @@
   .sticky-stage.webgl-ready .renderer-badge{opacity:.65}
   @media(max-width:620px){.final-mode .stage-wrap{position:relative;height:auto;min-height:280px;overflow:visible}.final-mode .exit-final{position:relative;right:auto;bottom:auto;display:block;width:max-content;margin:12px 18px 0 auto}.final-mode .commercial-panel{position:relative;left:auto;right:auto;top:auto;width:auto;max-height:none;overflow:visible;margin:16px 18px 20px}.order-review-mode .order-review-panel{position:relative;left:auto;right:auto;top:auto;width:auto;max-height:none;overflow:visible;margin:16px 18px 20px}.commercial-actions{grid-template-columns:1fr}.final-mode .final-caption{display:none}}
   @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.card-rig,.iq-card{will-change:auto}}
+  .saved-loading .card-rig,.saved-loading .webgl-card-stage{visibility:hidden}
+  html.saved-preview, .saved-preview body{height:100%;overflow:hidden;background:#f2f2f5}
+  .saved-preview #iq-atelier{height:100%;min-height:0}
+  .saved-preview .topbar,.saved-preview .hero,.saved-preview .controls,.saved-preview .commercial-panel,.saved-preview .final-caption,.saved-preview .exit-final,.saved-preview .renderer-badge,.saved-preview .stage-kicker,.saved-preview .view-notes,.saved-preview .scroll-labels,.saved-preview .inspection-nav,.saved-preview .mobile-inspection-hint{display:none!important}
+  .saved-preview .atelier-shell{display:block;height:100%;min-height:0;border:0}
+  .saved-preview .stage-wrap{position:relative;height:100%;min-height:0;overflow:hidden}
+  .saved-preview .scroll-track{height:100%;overflow:hidden}
+  .saved-preview .scroll-space{height:200%}
+  .saved-preview .sticky-stage{position:sticky;top:0;height:50vh;min-height:100vh;padding:16px}
+  .saved-preview .card-rig{width:min(78vw,560px)}
 </style>
 </head>
 <body>
@@ -303,6 +313,12 @@
 
 </main>
 <script type="module">
+  import { loadOwnedAtelierDesign, saveOwnedAtelierDesign } from '/customize/saved-design.mjs';
+  const entryParams = new URLSearchParams(location.search);
+  const previewMode = entryParams.get('preview') === '1';
+  const resumeMode = entryParams.get('resume') === '1';
+  if(previewMode) document.documentElement.classList.add('saved-preview');
+  if(previewMode || resumeMode) document.documentElement.classList.add('saved-loading');
   import { handoffEmailError, identityNameError } from '/customize/registration-validation.mjs';
   import { normalizeStoredConfiguration, persistCheckoutHandoffMarker, persistSavedDesignHistory, restoreStoredLogo, savedDesignTarget, selectRestorableDesign, serializeLogoForStorage, validateLogoForCheckout } from '/customize/logo-persistence.mjs';
   import { inspectionPoseForView, mobileInspectionPose, mobileStepScrollTop, nearestMobileInspectionView, snapMobilePose } from '/customize/mobile-inspection.mjs';
@@ -731,14 +747,14 @@
       const layout=config.identity.composition,scale=config.identity.fineTune.nameScale,xOffset=config.identity.fineTune.x*2.5,yOffset=config.identity.fineTune.y*2.5;
       const specs={signature:{x:105,y:910,font:104,logoX:105,logoY:86,logoSize:108,logoAlign:'left'},editorial:{x:105,y:910,font:148,logoX:1495,logoY:86,logoSize:70,logoAlign:'right'},minimal:{x:105,y:910,font:56,logoX:105,logoY:86,logoSize:62,logoAlign:'left'},centered:{x:800,y:555,font:98,logoX:800,logoY:86,logoSize:62,logoAlign:'center'},statement:{x:70,y:930,font:170,logoX:1490,logoY:82,logoSize:62,logoAlign:'right'}};
       const s=specs[layout]||specs.signature;let x=s.x+xOffset,y=s.y+yOffset,align=config.identity.fineTune.align||'left';if(layout==='centered')align='center';else if(align==='center')x=800+xOffset;else if(align==='right')x=1490+xOffset;
-      ctx.save();this.applyCraftTextStyle(ctx,config);ctx.textBaseline='alphabetic';ctx.textAlign=align;ctx.font=`700 ${Math.round(s.font*scale)}px Helvetica,Arial,sans-serif`;ctx.fillText(config.identity.name||'YOUR NAME',x,y);ctx.restore();
+      ctx.save();this.applyCraftTextStyle(ctx,config);ctx.textBaseline='alphabetic';ctx.textAlign=align;ctx.font=`700 ${Math.round(s.font*scale)}px Helvetica,Arial,sans-serif`;ctx.fillText(config.identity.name||'',x,y);ctx.restore();
       let lx=s.logoX+config.logo.x*2.5,ly=s.logoY+config.logo.y*2.5,lalign=config.logo.align||s.logoAlign;if(config.logo.align==='center')lx=800+config.logo.x*2.5;else if(config.logo.align==='right')lx=1490+config.logo.x*2.5;this.drawLogo(ctx,config,lx,ly,s.logoSize,lalign);
       ctx.save();ctx.globalAlpha=.58;ctx.fillStyle=config.identity.tone==='light'?'#f5f0e6':'#171615';ctx.font='600 20px Helvetica,Arial,sans-serif';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('NFC / IQ 01',1490,92);ctx.restore();
     }
     drawBackDecal(config){
       const c=this.backDecalCanvas,ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.globalAlpha=1;const light=config.identity.tone==='light';
       ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 34px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('TAP TO CONNECT',105,910);ctx.restore();
-      if(config.backLayout==='identity'||config.backLayout==='custom'){ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 72px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(config.identity.name||'YOUR NAME',105,100);ctx.restore();}
+      if(config.backLayout==='identity'||config.backLayout==='custom'){ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 72px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(config.identity.name||'',105,100);ctx.restore();}
       if(config.backLayout==='branded'||config.backLayout==='custom')this.drawLogo(ctx,config,1490,86,74,'right');
       ctx.save();ctx.globalAlpha=.44;ctx.fillStyle=light?'#f5f0e6':'#171615';ctx.font='600 18px Helvetica,Arial,sans-serif';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('IQ / NFC',1490,920);ctx.restore();
     }
@@ -942,7 +958,7 @@
     }
     const stepIndex = STEPS.indexOf(config.step);
     card.classList.toggle('pre-identity-preview', stepIndex >= 0 && stepIndex < STEPS.indexOf('identity'));
-    frontName.textContent = config.identity.name || 'YOUR NAME';
+    frontName.textContent = config.identity.name;
     root.style.setProperty('--name-color', config.identity.tone === 'light' ? '#ffffff' : '#000000');
     root.style.setProperty('--name-user-scale', config.identity.fineTune.nameScale);
     root.style.setProperty('--name-user-x', `${config.identity.fineTune.x}px`);
@@ -955,7 +971,16 @@
     root.style.setProperty('--logo-user-y', `${config.logo.y}px`);
     const iqLogo = card.querySelector('.card-front .card-logo');
     const customLogo = document.getElementById('customLogoPreview');
-    if(iqLogo) iqLogo.style.display = '';
+    if(iqLogo) {
+      iqLogo.style.display = config.logo.mode === 'custom' ? 'none' : '';
+      const align = config.logo.align;
+      iqLogo.style.left = align === 'right' ? 'auto' : align === 'center' ? '50%' : '34px';
+      iqLogo.style.right = align === 'right' ? '34px' : 'auto';
+      iqLogo.style.transform = align === 'center'
+        ? `translate(calc(-50% + ${config.logo.x}px),${config.logo.y}px) scale(${config.logo.scale})`
+        : `translate(${config.logo.x}px,${config.logo.y}px) scale(${config.logo.scale})`;
+      iqLogo.style.transformOrigin = `${align} top`;
+    }
     if(customLogo) {
       customLogo.style.display = config.logo.mode === 'custom' && config.logo.dataUrl ? 'block' : 'none';
       if(config.logo.dataUrl && customLogo.src !== config.logo.dataUrl) customLogo.src = config.logo.dataUrl;
@@ -1147,7 +1172,22 @@
     return records;
   }
 
-  function saveCurrentDesign({silent = false} = {}){
+  async function saveCurrentDesign({silent = false} = {}){
+    if(resumeMode && !silent){
+      const status = document.getElementById('saveStatus');
+      const button = document.getElementById('saveDesignBtn');
+      button.disabled = true;
+      if(status) status.textContent = 'Saving your dashboard card…';
+      try {
+        const saved = await saveOwnedAtelierDesign(entryParams.get('design') || activeDesignId, { schemaVersion: '1.0', configuration: commercialConfiguration(configuration) });
+        activeDesignId = saved.id;
+        if(status) status.textContent = `Saved ${saved.id} to your dashboard.`;
+        return saved;
+      } catch(error){
+        if(status) status.textContent = error.message;
+        return null;
+      } finally { button.disabled = false; }
+    }
     const activeRecord = getSavedDesigns().find(item => item.id === activeDesignId);
     const target = savedDesignTarget({ silent, activeRecord });
     const record = {
@@ -1195,7 +1235,7 @@
     configuration.customColor = customColors.some(item => item.id === saved.customColor) ? saved.customColor : null;
     configuration.finish = saved.finish || 'matte';
     configuration.identity = {
-      name: saved.identity?.name || 'YOUR NAME',
+      name: saved.identity?.name ?? 'YOUR NAME',
       tone: saved.identity?.tone || 'dark',
       composition: saved.identity?.composition || 'signature',
       fineTune: { nameScale:1, x:0, y:0, align:'left', ...(saved.identity?.fineTune || {}) }
@@ -1203,8 +1243,6 @@
     const restoredLogo = restoreStoredLogo(saved.logo);
     const customLogoRequiresReupload = saved.logo?.mode === 'custom' && restoredLogo.mode !== 'custom';
     configuration.logo = restoredLogo;
-    configuration.identity.tone = configuration.core === 'black' ? 'dark' : 'light';
-    if(configuration.logo.mode === 'iq') configuration.logo.align = 'left';
     configuration.side = saved.side || 'front';
     configuration.backLayout = saved.backLayout || 'pure';
     configuration.craft = saved.craft || 'engrave';
@@ -1436,7 +1474,7 @@
     const mobile = mobileInspectionQuery.matches;
     const max=scrollTrack.scrollHeight-scrollTrack.clientHeight;
     scrollP=mobile?Math.min(1,Math.max(0,(mobilePose.y+12)/192)):(max>0?Math.min(1,Math.max(0,scrollTrack.scrollTop/max)):0);
-    const a=mobile?{...mobilePose,z:0,zoom:1}:sceneAngles(scrollP);
+    const a=previewMode?sceneAngles(STEP_POSES.final):mobile?{...mobilePose,z:0,zoom:1}:sceneAngles(scrollP);
     const inspectX=mobile?0:pointerY*7, inspectY=mobile?0:pointerX*9;
     const currentY = a.y + inspectY;
     rig.style.transform=`scale(${a.zoom}) rotateX(${a.x+inspectX}deg) rotateY(${currentY}deg) rotateZ(${a.z}deg)`;
@@ -1523,10 +1561,32 @@
     if(record) restoreSavedDesign(record);
   });
    refreshSavedDesignUI();
-   autosaveReady = true;
+   autosaveReady = !previewMode;
 
    initPBRRenderer();
-  setMaterial(materials.find(m=>m.name==='Walnut'));setStep('core',{scroll:false});updateScene();
+  if(previewMode || resumeMode){
+    try {
+      const record = await loadOwnedAtelierDesign(entryParams.get('design'));
+      if(!restoreSavedDesign(record)) throw new Error('Your saved card configuration is unavailable.');
+      document.documentElement.classList.remove('saved-loading');
+      if(previewMode){
+        scrollTrack.scrollTop = (scrollTrack.scrollHeight-scrollTrack.clientHeight) * STEP_POSES.final;
+        updateScene();
+      }
+    } catch(error){
+      document.documentElement.classList.remove('saved-loading');
+      document.getElementById('iq-atelier').replaceChildren();
+      const message = document.createElement('p');
+      message.setAttribute('role','alert');
+      message.style.cssText='padding:24px;font:14px Helvetica,Arial,sans-serif';
+      message.textContent = error.message;
+      const link = document.createElement('a');
+      link.href='/dashboard';link.target='_top';link.textContent=' Return to dashboard →';
+      message.append(link);document.getElementById('iq-atelier').append(message);
+    }
+  } else {
+    setMaterial(materials.find(m=>m.name==='Walnut'));setStep('core',{scroll:false});updateScene();
+  }
 </script>
 </body>
 </html>
