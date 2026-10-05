@@ -22,11 +22,12 @@ describe('onboarding wizard route contract', () => {
     expect(wizard).toContain('state.fieldErrors')
   })
 
-  it('supports back, continue, private draft, and explicit publish actions', () => {
+  it('submits the completed profile for administrator review instead of publishing it directly', () => {
     expect(wizard).toContain('Back')
     expect(wizard).toContain('Continue')
-    expect(wizard).toContain('Save as private draft')
-    expect(wizard).toContain('Publish profile')
+    expect(wizard).toContain('Submit for review')
+    expect(wizard).toContain('Only IQ Card can publish')
+    expect(wizard).not.toContain('Publish profile')
   })
 
   it('uses action state, pending UI, and focuses the first invalid field', () => {

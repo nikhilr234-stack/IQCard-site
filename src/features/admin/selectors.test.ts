@@ -48,7 +48,7 @@ describe('admin dashboard selectors', () => {
 
   it('derives KPIs, status breakdown, and funnel from the supplied clients', () => {
     expect(getDashboardKpis(clients, new Date('2026-09-16T00:00:00Z'))).toEqual({ total: 4, live: 1, draft: 1, published: 1, pendingInvites: 1, activationRate: 50, completionRate: 37.5, inviteOpenRate: .5, weeklyActive: 0 })
-    expect(getStatusBreakdown(clients)).toEqual({ Live: 1, Draft: 1, Invited: 1, 'No profile': 1 })
+    expect(getStatusBreakdown(clients)).toEqual({ Live: 1, Review: 0, Draft: 1, Invited: 1, 'No profile': 1 })
     expect(getOnboardingFunnel(clients)).toEqual({ invited: 4, openedInvite: 2, startedProfile: 2, completedProfile: 1, live: 1 })
   })
 

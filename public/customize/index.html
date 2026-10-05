@@ -1344,7 +1344,10 @@
        const result = await response.json().catch(() => ({}));
        if(!response.ok || !result.ok) throw new Error(result.error || 'We could not send the sign-in link. Please try again.');
        if(validationBox){ validationBox.textContent=''; validationBox.classList.remove('is-visible'); }
-       if(result.next){ window.location.assign(result.next); return; }
+       if(result.next){
+         try { sessionStorage.setItem('iq-registration-resend', JSON.stringify({ email, designId: payload.designId })); } catch { /* Continue to the inbox page if session storage is unavailable. */ }
+         window.location.assign(result.next); return;
+       }
        if(message){ message.textContent = `Check your email. We sent a secure sign-in link to ${email}.`; message.classList.add('is-visible'); }
        if(confirm) confirm.textContent = 'Email sent ✓';
        return payload;

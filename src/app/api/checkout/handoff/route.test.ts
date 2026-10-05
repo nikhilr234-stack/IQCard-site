@@ -106,7 +106,7 @@ describe('checkout registration handoff route', () => {
     expect(mocks.signInWithOtp).toHaveBeenCalledWith({
       email: 'owner@example.com',
       options: {
-        emailRedirectTo: 'https://iqcard.in/auth/confirm?registration=registration-secret&next=%2Fdashboard',
+        emailRedirectTo: 'https://iqcard.in/auth/confirm?registration=registration-secret&next=%2Fonboarding%2Fidentity',
       },
     })
     expect(await response.json()).toEqual({ ok: true, sent: true, next: '/register/check-email' })
@@ -149,6 +149,12 @@ describe('checkout registration handoff route', () => {
       payload: canonicalPayload,
     })
     expect(mocks.createRegistrationIntent).not.toHaveBeenCalled()
+    expect(mocks.signInWithOtp).toHaveBeenCalledWith({
+      email: 'owner@example.com',
+      options: {
+        emailRedirectTo: 'https://iqcard.in/auth/confirm?handoff=legacy-secret&next=%2Fdashboard',
+      },
+    })
   })
 
   it('returns a retryable response without exposing provider details', async () => {

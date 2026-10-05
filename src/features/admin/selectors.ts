@@ -79,7 +79,7 @@ export function getDashboardKpis(clients: readonly Client[], now = new Date()) {
     total,
     live: clients.filter((client) => client.status === 'Live').length,
     draft: clients.filter((client) => client.status === 'Draft').length,
-    published: clients.filter((client) => client.completedProfile).length,
+    published: clients.filter((client) => client.status === 'Live').length,
     pendingInvites: clients.filter((client) => client.status === 'Invited').length,
     activationRate: total ? clients.filter((client) => client.startedProfile).length / total * 100 : 0,
     completionRate: total ? completion / total : 0,
@@ -92,7 +92,7 @@ export function getStatusBreakdown(clients: readonly Client[]): Record<ClientSta
   return clients.reduce<Record<ClientStatus, number>>((breakdown, client) => {
     breakdown[client.status] += 1
     return breakdown
-  }, { Live: 0, Draft: 0, Invited: 0, 'No profile': 0 })
+  }, { Live: 0, Review: 0, Draft: 0, Invited: 0, 'No profile': 0 })
 }
 
 export function getOnboardingFunnel(clients: readonly Client[]) {

@@ -1,4 +1,4 @@
-export const CLIENT_STATUSES = ['Live', 'Draft', 'Invited', 'No profile'] as const
+export const CLIENT_STATUSES = ['Live', 'Review', 'Draft', 'Invited', 'No profile'] as const
 
 export type ClientStatus = (typeof CLIENT_STATUSES)[number]
 

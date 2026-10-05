@@ -31,6 +31,9 @@ export function validateIdentityStep(input: {
   const bio = input.bio?.trim() ?? ''
   const fieldErrors: FieldErrors = { ...nameValidation.fieldErrors }
 
+  if (!firstName) fieldErrors.firstName = 'Enter your first name.'
+  if (!lastName) fieldErrors.lastName = 'Enter your last name.'
+
   if (headline.length > PROFILE_HEADLINE_MAX_LENGTH) fieldErrors.headline = `Role or title must be ${PROFILE_HEADLINE_MAX_LENGTH} characters or fewer.`
   if (bio.length > PROFILE_BIO_MAX_LENGTH) fieldErrors.bio = `Biography must be ${PROFILE_BIO_MAX_LENGTH} characters or fewer.`
 

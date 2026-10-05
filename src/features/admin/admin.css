@@ -105,6 +105,7 @@
 .iq-admin-dashboard .status-badge { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #e1e1dd; border-radius: 999px; padding: 3px 6px; color: #62645f; background: #f2f2ef; font-size: 7px; white-space: nowrap; }
 .iq-admin-dashboard .status-badge i { width: 5px; height: 5px; border-radius: 50%; background: #878984; }
 .iq-admin-dashboard .status-badge--live { color: var(--iq-success); background: #eff7f0; border-color: #dcebdc; }.iq-admin-dashboard .status-badge--live i { background: var(--iq-success); }
+.iq-admin-dashboard .status-badge--review { color: #835f08; background: #fff8df; border-color: #f0e3b6; }.iq-admin-dashboard .status-badge--review i { background: #d5a62c; }
 .iq-admin-dashboard .status-badge--invited { color: #5d719b; background: #f0f4fc; }.iq-admin-dashboard .status-badge--no-profile { background: #f4f2ed; }
 .iq-admin-dashboard .funnel-list { display: grid; gap: 8px; margin-top: 15px; }
 .iq-admin-dashboard .funnel-list li { display: grid; grid-template-columns: 50px minmax(30px, 1fr) 20px; align-items: center; gap: 6px; color: #666863; font-size: 8px; }

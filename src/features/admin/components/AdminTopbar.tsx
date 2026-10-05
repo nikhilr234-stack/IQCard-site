@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { ClientStatus, DashboardDateRange } from '../types'
 
-const statuses: Array<ClientStatus | 'All'> = ['All', 'Live', 'Draft', 'Invited', 'No profile']
+const statuses: Array<ClientStatus | 'All'> = ['All', 'Live', 'Review', 'Draft', 'Invited', 'No profile']
 const dateRanges: Array<{ label: string; days: DashboardDateRange }> = [{ label: 'Last 7 days', days: 7 }, { label: 'Last 14 days', days: 14 }, { label: 'Last 30 days', days: 30 }, { label: 'Last 90 days', days: 90 }]
 
 export function AdminTopbar({ query, status, dateRange, onQueryChange, onStatusChange, onDateRangeChange }: { query: string; status: ClientStatus | 'All'; dateRange: DashboardDateRange; onQueryChange: (value: string) => void; onStatusChange: (value: ClientStatus | 'All') => void; onDateRangeChange: (value: DashboardDateRange) => void }) {

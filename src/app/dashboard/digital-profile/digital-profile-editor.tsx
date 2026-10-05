@@ -30,6 +30,7 @@ type DigitalProfileDraft = EditableProfile & { tagline: string }
 type DigitalProfileEditorProps = {
   profile: Profile
   presentation: CoverPresentation
+  canPublish: boolean
   saveDigitalProfileAction: DigitalProfileSaveAction
   publishAction: ButtonAction
   uploadCoverAction: CoverFormAction
@@ -260,6 +261,7 @@ function WhatsNextEditor({ items, onChange }: { items: WhatsNextItem[]; onChange
 export function DigitalProfileEditor({
   profile,
   presentation,
+  canPublish,
   saveDigitalProfileAction,
   publishAction,
   uploadCoverAction,
@@ -383,7 +385,7 @@ export function DigitalProfileEditor({
     <main className="digital-profile-page">
       <section className="digital-profile-intro">
         <div><span>YOUR DIGITAL PROFILE</span><h1>Choose how<br />people meet you.</h1></div>
-        <p>Edit your details, links, upcoming updates, and design together. {profile.status === 'published' ? 'Save once to update your live profile.' : 'Save a private draft, then publish when it is ready.'}</p>
+        <p>Edit your details, links, upcoming updates, and design together. {profile.status === 'published' ? 'Save once to update your live profile.' : canPublish ? 'Save a private draft, then publish when it is ready.' : 'Your profile stays private until IQ Card reviews and approves it.'}</p>
       </section>
 
       <div className="digital-profile-workspace">
@@ -456,13 +458,13 @@ export function DigitalProfileEditor({
           </section>
 
           <section className="digital-profile-publish" aria-labelledby="digital-profile-publish-title">
-            <div><span>READY WHEN YOU ARE</span><h2 id="digital-profile-publish-title">{profile.status === 'published' ? 'Save your profile.' : 'Keep it private, or make it live.'}</h2><p>{profile.status === 'published' ? `One save updates your details, links, and design at /${profile.slug}.` : `Your edits stay private until you publish at /${profile.slug}.`}</p></div>
+            <div><span>{profile.status === 'published' ? 'LIVE PROFILE' : canPublish ? 'READY WHEN YOU ARE' : 'WAITING FOR APPROVAL'}</span><h2 id="digital-profile-publish-title">{profile.status === 'published' ? 'Save your profile.' : canPublish ? 'Keep it private, or make it live.' : 'Your profile is with IQ Card.'}</h2><p>{profile.status === 'published' ? `One save updates your details, links, and design at /${profile.slug}.` : canPublish ? `Your edits stay private until you publish at /${profile.slug}.` : `Your profile at /${profile.slug} stays private until it is approved. Only IQ Card can publish.`}</p></div>
             <div className="digital-profile-publish-actions">
               <form action={profile.status === 'published' ? saveProfile : publish}>
                 <input type="hidden" name="profile" value={serializedProfile} readOnly />
                 <input type="hidden" name="links" value={serializedLinks} readOnly />
                 <input type="hidden" name="presentation" value={serializedDraft} readOnly />
-                {profile.status === 'published' ? <PendingButton className="digital-profile-button digital-profile-button--dark" idle="Save Changes" pending="Saving changes…" /> : <><PendingButton name="intent" value="draft" className="digital-profile-button digital-profile-button--light" idle="Save Draft" pending="Saving…" /><PendingButton name="intent" value="publish" className="digital-profile-button digital-profile-button--dark" idle="Publish" pending="Publishing…" /></>}
+                {profile.status === 'published' ? <PendingButton className="digital-profile-button digital-profile-button--dark" idle="Save Changes" pending="Saving changes…" /> : <><PendingButton name="intent" value="draft" className="digital-profile-button digital-profile-button--light" idle="Save Draft" pending="Saving…" />{canPublish ? <PendingButton name="intent" value="publish" className="digital-profile-button digital-profile-button--dark" idle="Publish" pending="Publishing…" /> : null}</>}
               </form>
             </div>
             <p className="digital-profile-action-feedback" role={error ? 'alert' : 'status'} aria-live="polite">{error || notice}</p>

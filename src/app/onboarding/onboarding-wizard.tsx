@@ -30,12 +30,12 @@ const actions: Record<OnboardingStep, StepAction> = {
 }
 
 const stepCopy: Record<OnboardingStep, { eyebrow: string; title: string; lead: string }> = {
-  identity: { eyebrow: '01 · IDENTITY', title: 'Start with you.', lead: 'Your card has a name. Now give the profile behind it a clear identity.' },
+  identity: { eyebrow: '01 · IDENTITY', title: 'Start with you.', lead: 'Add your name and the details you want people to see on your profile.' },
   contact: { eyebrow: '02 · CONTACT', title: 'Choose how people reach you.', lead: 'Everything here is optional and private unless you explicitly make it visible.' },
   content: { eyebrow: '03 · CONTENT', title: 'Give people somewhere useful to go.', lead: 'Add complete links now, or leave this step empty and return later.' },
   address: { eyebrow: '04 · ADDRESS', title: 'Choose your public address.', lead: 'This is the short IQ Card URL you can share everywhere.' },
   preview: { eyebrow: '05 · PREVIEW', title: 'See it before anyone else does.', lead: 'This draft remains private until you choose Publish.' },
-  publish: { eyebrow: '06 · PUBLISH', title: 'Your IQ is ready.', lead: 'Keep it private for now, or make the profile available at your chosen address.' },
+  publish: { eyebrow: '06 · REVIEW', title: 'Send it for review.', lead: 'Your profile will stay private until IQ Card approves it.' },
 }
 
 function ErrorText({ id, message }: { id: string; message?: string }) {
@@ -79,8 +79,8 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId }: { s
     <form action={formAction} className="onboarding-form" noValidate>
       {step === 'identity' && <>
         <div className="onboarding-grid">
-          <label htmlFor="onboarding-first-name"><span>First name <small>Optional</small></span><input id="onboarding-first-name" name="firstName" defaultValue={firstName} aria-invalid={Boolean(state.fieldErrors.firstName)} aria-describedby="firstName-error" /><ErrorText id="firstName-error" message={state.fieldErrors.firstName} /></label>
-          <label htmlFor="onboarding-last-name"><span>Last name <small>Optional</small></span><input id="onboarding-last-name" name="lastName" defaultValue={lastName} aria-invalid={Boolean(state.fieldErrors.lastName)} aria-describedby="lastName-error" /><ErrorText id="lastName-error" message={state.fieldErrors.lastName} /></label>
+          <label htmlFor="onboarding-first-name"><span>First name <em>Required</em></span><input id="onboarding-first-name" name="firstName" defaultValue={firstName} required aria-invalid={Boolean(state.fieldErrors.firstName)} aria-describedby="firstName-error" /><ErrorText id="firstName-error" message={state.fieldErrors.firstName} /></label>
+          <label htmlFor="onboarding-last-name"><span>Last name <em>Required</em></span><input id="onboarding-last-name" name="lastName" defaultValue={lastName} required aria-invalid={Boolean(state.fieldErrors.lastName)} aria-describedby="lastName-error" /><ErrorText id="lastName-error" message={state.fieldErrors.lastName} /></label>
           <label className="wide" htmlFor="onboarding-headline"><span>Role or title <small>Optional</small></span><input id="onboarding-headline" name="headline" defaultValue={profile.headline} aria-invalid={Boolean(state.fieldErrors.headline)} aria-describedby="headline-error" /><ErrorText id="headline-error" message={state.fieldErrors.headline} /></label>
           <label className="wide" htmlFor="onboarding-bio"><span>Short biography <small>Optional</small></span><textarea id="onboarding-bio" name="bio" defaultValue={profile.bio} rows={5} aria-invalid={Boolean(state.fieldErrors.bio)} aria-describedby="bio-error" /><ErrorText id="bio-error" message={state.fieldErrors.bio} /></label>
         </div>
@@ -124,13 +124,13 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId }: { s
 
       {step === 'preview' && <div className="onboarding-preview"><span>PRIVATE PREVIEW</span><h2>{profile.full_name || 'Your name'}</h2><p>{profile.headline || 'Your role or title'}</p><small>{profile.bio || 'Your short biography will appear here.'}</small><div>{profile.profile_links.map((link) => <span key={link.id}>{link.label}</span>)}</div><strong>iqcard.in/{profile.slug}</strong></div>}
 
-      {step === 'publish' && <div className="onboarding-publish"><div><span>VISIBILITY</span><strong>Your profile is currently private.</strong><p>Publishing makes iqcard.in/{profile.slug} visible. You can unpublish from your dashboard at any time.</p></div><ErrorText id="publish-name-error" message={state.fieldErrors.fullName} /><ErrorText id="publish-email-error" message={state.fieldErrors.verifiedEmail} /><ErrorText id="publish-slug-error" message={state.fieldErrors.slug} /></div>}
+      {step === 'publish' && <div className="onboarding-publish"><div><span>PRIVATE UNTIL APPROVED</span><strong>Your profile is ready for Nikki to review.</strong><p>We’ll send it to the IQ Card admin queue. Your profile at iqcard.in/{profile.slug} will remain private until it is approved.</p><small>Only IQ Card can publish</small></div><ErrorText id="publish-name-error" message={state.fieldErrors.fullName} /><ErrorText id="publish-email-error" message={state.fieldErrors.verifiedEmail} /><ErrorText id="publish-slug-error" message={state.fieldErrors.slug} /></div>}
 
       {state.formError && <p className="onboarding-form-error" role="alert" aria-live="polite">{state.formError}</p>}
       <footer className="onboarding-actions">
         {previous ? <Link href={onboardingPath(previous)}>← Back</Link> : <Link href="/customize">← Back to card</Link>}
         <div>
-          {step === 'publish' ? <><button type="submit" name="mode" value="private" className="secondary" disabled={pending}>Save as private draft</button><button type="submit" name="mode" value="publish" disabled={pending}>{pending ? 'Publishing…' : 'Publish profile'}</button></> : <button type="submit" disabled={pending}>{pending ? 'Saving…' : step === 'preview' ? 'Looks good — Continue' : 'Save & Continue'}</button>}
+          {step === 'publish' ? <button type="submit" disabled={pending}>{pending ? 'Sending for review…' : 'Submit for review'}</button> : <button type="submit" disabled={pending}>{pending ? 'Saving…' : step === 'preview' ? 'Looks good — Continue' : 'Save & Continue'}</button>}
         </div>
       </footer>
     </form>

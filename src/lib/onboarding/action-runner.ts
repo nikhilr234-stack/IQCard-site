@@ -117,7 +117,7 @@ export async function runOnboardingStep(
         slug: profile.slug,
       })
       if (!validation.ok) return invalid(validation.fieldErrors)
-      await services.completePublish(account.id, field(formData, 'mode') !== 'private')
+      await services.completePublish(account.id, false)
     }
 
     if (step !== 'publish') await services.completeStep(account.id, step)

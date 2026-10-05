@@ -80,7 +80,7 @@ describe('DigitalProfileEditor', () => {
     document.body.append(host)
     root = createRoot(host)
     await act(async () => root.render(
-      <DigitalProfileEditor profile={profile} presentation={coverPresentation} {...actions} />,
+      <DigitalProfileEditor profile={profile} presentation={coverPresentation} canPublish {...actions} />,
     ))
   })
 
@@ -345,7 +345,7 @@ describe('DigitalProfileEditor', () => {
   })
 
   it('saves the same customized draft before publishing it', async () => {
-    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} {...actions} />))
+    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} canPublish {...actions} />))
     await act(async () => button(host, /Photo shape Circle/i).click())
     await act(async () => button(host, /Publish/i).click())
 
@@ -355,7 +355,7 @@ describe('DigitalProfileEditor', () => {
   })
 
   it('shows a server-action publish failure inline without replacing the editor', async () => {
-    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} {...actions} />))
+    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} canPublish {...actions} />))
     actions.publishAction.mockResolvedValueOnce({ success: false, error: 'Unable to publish profile.' })
 
     await act(async () => button(host, /Publish/i).click())
@@ -367,7 +367,7 @@ describe('DigitalProfileEditor', () => {
   })
 
   it('shows success feedback after a clean publish action result', async () => {
-    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} {...actions} />))
+    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} canPublish {...actions} />))
     await act(async () => button(host, /Publish/i).click())
 
     const feedback = host.querySelector('.digital-profile-action-feedback')
@@ -376,13 +376,21 @@ describe('DigitalProfileEditor', () => {
   })
 
   it('saves an unpublished profile draft without publishing it', async () => {
-    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} {...actions} />))
+    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} canPublish {...actions} />))
     await act(async () => button(host, /Save Draft/i).click())
 
     const saved = actions.saveDigitalProfileAction.mock.calls.at(-1)?.[0]
     expect(saved?.get('intent')).toBe('draft')
     expect(actions.publishAction).not.toHaveBeenCalled()
     expect(host.querySelector('.digital-profile-action-feedback')?.textContent).toContain('Publish once')
+  })
+
+  it('keeps client publication controls hidden while the profile awaits admin approval', async () => {
+    await act(async () => root.render(<DigitalProfileEditor profile={{ ...profile, status: 'draft' }} presentation={coverPresentation} canPublish={false} {...actions} />))
+
+    expect(host.querySelector('.digital-profile-publish')?.textContent).toContain('Only IQ Card can publish')
+    expect(host.querySelector('button[name="intent"][value="publish"]')).toBeNull()
+    expect(button(host, /Save Draft/i)).not.toBeNull()
   })
 
   it('loads existing links in their saved order and quick-adds an empty labeled row', async () => {

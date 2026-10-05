@@ -54,6 +54,16 @@ describe('listAdminClients', () => {
     ])
   })
 
+  it('marks completed private onboarding profiles as awaiting review', async () => {
+    vi.mocked(createAdminClient).mockReturnValue(clientWithRows({
+      profiles: [{ id: 'profile-review', owner_id: 'draft', slug: 'ada-lovelace', status: 'draft', full_name: 'Ada Lovelace' }],
+      progress: [{ owner_id: 'draft', current_step: 'publish', completed_steps: ['identity', 'contact', 'content', 'address', 'preview', 'publish'], started_at: '2026-09-02T00:00:00Z', completed_at: '2026-10-05T00:00:00Z' }],
+    }) as never)
+
+    const clients = await listAdminClients()
+    expect(clients.find((client) => client.id === 'draft')).toMatchObject({ status: 'Review', completedProfile: true })
+  })
+
   it('fails as a whole when any canonical source query fails', async () => {
     const client = clientWithRows({})
     vi.mocked(createAdminClient).mockReturnValue({
