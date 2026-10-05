@@ -34,7 +34,7 @@ Keep imported profiles in `draft` until their text, contact visibility, links, a
 2. Deploy the application with the feature flag disabled.
 3. Smoke-test `/customize`, legacy email confirmation, `/login`, and existing dashboards.
 4. Enable `IQCARD_ONBOARDING_V2=true` in a preview environment.
-5. With a dedicated test mailbox, complete design → email → confirmation → every onboarding step → private draft → publish.
+5. With a dedicated customer test mailbox, complete design → email → confirmation → every onboarding step → private submission. Sign in separately as an administrator, approve the profile, and verify the public card while signed out.
 6. Repeat with the email opened in another browser, an expired link, a replayed link, and a mismatched signed-in address.
 7. Confirm a stopped wizard resumes at the first incomplete step on another device.
 8. Enable production and monitor `registration_intent_created`, `registration_email_sent`, `registration_email_failed`, `registration_claimed`, `registration_claim_failed`, `registration_rate_limited`, `onboarding_step_saved`, and `onboarding_completed`.

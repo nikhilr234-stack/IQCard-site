@@ -20,6 +20,19 @@ to the checkout total. GST inclusion and any tax amount still need confirmation.
 - Production Supabase: `vscmmhpfuozyvangkmhq`; isolated sandbox: `zlmiiyuhuqmmrfcpzsxe`.
 - Do not rerun applied migrations or manage deployments through `iq-card-site`.
 
+## Preview-only working boundary (5 October)
+
+The user explicitly restricted this chat to `codex/october-registration-recovery-20261004` and sandbox `zlmiiyuhuqmmrfcpzsxe`. Do not change `main`, production deployments, production settings or the separate payment-testing branch.
+
+- Recovery source `4cde25f70e1af26196ca190c697019c9954549b5` is deployed and Ready at `https://iqcard-5b4mi19zi-nikkis-projects-f42d2896.vercel.app`.
+- Stable recovery branch alias: `https://iqcard-app-git-codex-october-re-8be149-nikkis-projects-f42d2896.vercel.app`.
+- Five variables have been created specifically for this branch's Preview target: sandbox `NEXT_PUBLIC_SUPABASE_URL`, sandbox `NEXT_PUBLIC_SUPABASE_ANON_KEY`, the stable branch alias as `NEXT_PUBLIC_SITE_URL`, a newly generated 32-byte `IQCARD_RATE_LIMIT_SECRET`, and `IQCARD_ONBOARDING_V2=true`.
+- The public key was checked against the sandbox's active keys. Other branches' variables and all production variables were left unchanged.
+- `SUPABASE_SERVICE_ROLE_KEY` and `IQCARD_ADMIN_EMAILS` are still absent from this branch's Preview scope. Vercel's sensitive value cannot be retrieved or copied through the connector. Add the sandbox service key directly in Vercel, and use a dedicated admin email distinct from the customer test mailbox `nrakesh@umich.edu`.
+- New environment settings require a new Preview deployment. The earlier Ready deployment does not prove these settings or the customer journey work.
+- Verify the sandbox Auth Site URL and allowed `/auth/confirm` and `/auth/callback` redirects use the stable recovery alias; verify the token-hash email template and actual delivery. Do not change production Auth settings.
+- Full acceptance remains pending: delivered email, resend, cross-browser confirmation, exact design restoration, required identity, private submission, admin approval and signed-out publication.
+
 ## Acceptance schedule
 
 | Flow | Target | Current verification boundary | Acceptance evidence required |
@@ -52,7 +65,7 @@ Live reproduction on 4 October:
 The reproduction did **not** submit a registration or send an email. It verifies
 the broken return navigation independently of email delivery.
 
-The initial repair was merged through PR #9 and deployed on `main`. The recovery branch retains that repair and adds the following local work:
+The initial repair was merged through PR #9 and deployed on `main`. The recovery branch retains that repair and adds the following work:
 
 - Registration recovery and request-another-link navigation use `/customize?restore=1`.
 - Submission checkpoints the exact configuration and its design reference before
@@ -86,7 +99,7 @@ Registration handoff repair in progress on `codex/october-registration-recovery-
 - The check-email screen resends from the current browser session against the saved design and email instead of sending the customer back through card design.
 - Final onboarding submits a private profile for review; the admin client list labels completed private profiles `Review` and offers an approval action.
 - Client self-publish controls are hidden in the digital-profile editor. Migration `20261005085331_require_admin_profile_approval` blocks client publication RPC calls; only the existing service-role admin publication path can publish.
-- Full local suite: 787 tests passed; lint and TypeScript passed. The approval migration was applied only to isolated Supabase sandbox `zlmiiyuhuqmmrfcpzsxe`; a database query confirmed authenticated submission permission, no anon execution, and the client-publication guard. No preview deployment or production change has happened yet.
+- Before the source push, the full local suite passed: 787 tests, lint and TypeScript. The approval migration was applied only to isolated Supabase sandbox `zlmiiyuhuqmmrfcpzsxe`; a database query confirmed authenticated submission permission, no anon execution, and the client-publication guard. The merged recovery source is deployed to Preview at `4cde25f70e1af26196ca190c697019c9954549b5`. These newer changes have not been merged or deployed to production.
 
 Append a row after each acceptance run, with commit/deployment identifiers and actual
 observations. Preserve unresolved limitations when another chat resumes.
@@ -98,6 +111,6 @@ observations. Preserve unresolved limitations when another chat resumes.
 | 5–6 payment | Blocked | Handoff records `checkout-disabled` / `sandbox-only` gate | Valid Test Mode provider configuration | Enter secrets directly in provider interface |
 
 The production recovery error path is verified. The newer resend, required-identity,
-private-submission and administrator-approval changes recorded above are local to the
-recovery branch and have not been deployed. The full real-email journey, signed-in
+private-submission and administrator-approval changes recorded above are deployed on the
+recovery Preview branch. The full real-email journey, signed-in
 dashboard and mobile visual acceptance remain open.
