@@ -28,7 +28,7 @@ The user explicitly restricted this chat to `codex/october-registration-recovery
 - Stable recovery branch alias: `https://iqcard-app-git-codex-october-re-8be149-nikkis-projects-f42d2896.vercel.app`.
 - Five variables have been created specifically for this branch's Preview target: sandbox `NEXT_PUBLIC_SUPABASE_URL`, sandbox `NEXT_PUBLIC_SUPABASE_ANON_KEY`, the stable branch alias as `NEXT_PUBLIC_SITE_URL`, a newly generated 32-byte `IQCARD_RATE_LIMIT_SECRET`, and `IQCARD_ONBOARDING_V2=true`.
 - The public key was checked against the sandbox's active keys. Other branches' variables and all production variables were left unchanged.
-- `SUPABASE_SERVICE_ROLE_KEY` and `IQCARD_ADMIN_EMAILS` are still absent from this branch's Preview scope. Vercel's sensitive value cannot be retrieved or copied through the connector. Add the sandbox service key directly in Vercel, and use a dedicated admin email distinct from the customer test mailbox `nrakesh@umich.edu`.
+- Required Preview variables are configured. Runtime validation and the complete customer journey remain pending. Administrator addresses and sensitive values remain in server-only environment configuration.
 - New environment settings require a new Preview deployment. The earlier Ready deployment does not prove these settings or the customer journey work.
 - Verify the sandbox Auth Site URL and allowed `/auth/confirm` and `/auth/callback` redirects use the stable recovery alias; verify the token-hash email template and actual delivery. Do not change production Auth settings.
 - Full acceptance remains pending: delivered email, resend, cross-browser confirmation, exact design restoration, required identity, private submission, admin approval and signed-out publication.

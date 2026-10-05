@@ -18,5 +18,6 @@ The user requires this chat's work to stay on the recovery Preview branch by def
 - Use Vercel project `iqcard-app`, Preview target, and environment variables scoped to the recovery branch. Leave other branch settings unchanged.
 - Database work targets only Supabase sandbox `zlmiiyuhuqmmrfcpzsxe`. Never modify production project `vscmmhpfuozyvangkmhq` or rerun applied migrations.
 - Keep payments disabled. A production change requires a new explicit instruction from the user; general permission does not override this Preview-only rule.
+- Keep administrator addresses in the server-only environment allowlist; do not copy personal administrator addresses or secrets into repository files.
 
 The current setup and remaining acceptance checks are recorded in `docs/october-production-readiness.md`.
