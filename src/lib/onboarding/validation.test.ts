@@ -8,6 +8,20 @@ import {
 } from './validation'
 
 describe('onboarding step validation', () => {
+  it.each([
+    ['example.com', 'https://example.com'],
+    ['example.in', 'https://example.in'],
+    [' www.example.co.in/work?x=1#about ', 'https://www.example.co.in/work?x=1#about'],
+  ])('saves a bare website address during setup: %s', (url, expected) => {
+    expect(validateContentStep([{ label: ' Website ', url }])).toEqual({
+      ok: true, value: [{ label: 'Website', url: expected }],
+    })
+  })
+
+  it.each(['example..com', 'example-.in', 'https://example.com:0', `example.com/${'a'.repeat(2030)}`])('rejects invalid website addresses during setup: %s', (url) => {
+    expect(validateContentStep([{ label: 'Website', url }])).toMatchObject({ ok: false })
+  })
+
   it('requires a first and last name for the public profile', () => {
     expect(validateIdentityStep({ firstName: '', lastName: '' })).toMatchObject({
       ok: false,

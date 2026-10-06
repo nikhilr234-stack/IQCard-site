@@ -1,7 +1,9 @@
 import { normalizeHandoffEmail } from '@/lib/checkout/handoff'
 import {
   isValidContactNumber,
+  isValidProfileLinkUrl,
   isValidPublicEmail,
+  normalizeProfileLinkUrl,
   normalizePublicEmail,
   PROFILE_BIO_MAX_LENGTH,
   PROFILE_HEADLINE_MAX_LENGTH,
@@ -62,7 +64,7 @@ export function validateContactStep(input: {
 
 export function validateContentStep(input: LinkInput[]): ValidationResult<LinkInput[]> {
   const fieldErrors: FieldErrors = {}
-  const links = input.map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
+  const links = input.map((link) => ({ label: link.label.trim(), url: normalizeProfileLinkUrl(link.url) }))
     .filter((link) => link.label || link.url)
 
   if (links.length > 12) fieldErrors.links = 'Add no more than 12 links.'
@@ -75,7 +77,7 @@ export function validateContentStep(input: LinkInput[]): ValidationResult<LinkIn
     }
     try {
       const protocol = new URL(link.url).protocol
-      if (!['https:', 'mailto:', 'tel:'].includes(protocol)) throw new Error('Unsupported protocol')
+      if (!['https:', 'mailto:', 'tel:'].includes(protocol) || !isValidProfileLinkUrl(link.url)) throw new Error('Invalid link')
     } catch {
       fieldErrors[`links.${index}.url`] = 'Use a secure HTTPS, email, or phone link.'
     }

@@ -97,6 +97,18 @@ describe('DigitalProfileEditor', () => {
     expect(signOut.form?.method).toBe('post')
   })
 
+  it('lets a customer save a bare domain and shows its HTTPS destination in the preview', async () => {
+    const input = host.querySelectorAll<HTMLInputElement>('[data-link-row] input[name="url"]').item(1)
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    setter?.call(input, 'www.example.in/portfolio')
+    await act(async () => input.dispatchEvent(new Event('input', { bubbles: true })))
+
+    expect(host.querySelector('[data-link-row] [role="alert"]')).toBeNull()
+    expect(host.querySelector('.digital-profile-phone-screen a[href="https://www.example.in/portfolio"]')).not.toBeNull()
+    await act(async () => button(host, /Save Changes/i).click())
+    expect(actions.saveDigitalProfileAction).toHaveBeenCalledOnce()
+  })
+
   it('keeps shared Cover controls available after switching through Minimal', async () => {
     await act(async () => button(host, /01 Minimal/i).click())
     expect(labelledInput(host, /Darken background/i).value).toBe('0.38')

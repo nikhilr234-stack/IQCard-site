@@ -11,7 +11,7 @@ import { PROFILE_PHOTO_MAX_BYTES } from '@/lib/profile/photo'
 import { normalizePresentation } from '@/lib/profile/presentation'
 import { PROFILE_TEMPLATE_OPTIONS } from '@/lib/profile/presentation'
 import { normalizeTemplateSettings } from '@/lib/profile/template-variants'
-import { validateLinkInput } from '@/lib/profile/validation'
+import { normalizeProfileLinkUrl, validateLinkInput } from '@/lib/profile/validation'
 import type { EditableProfile } from '@/lib/profile/validation'
 import { validateWhatsNext } from '@/lib/profile/whats-next'
 import type { CoverPresentation, Profile, ProfileTemplate, WhatsNextItem } from '@/lib/profile/types'
@@ -208,7 +208,7 @@ function ProfileLinksEditor({ links, onChange }: { links: EditableLink[]; onChan
         {links.map((link, index) => <div className="digital-profile-link-row" data-link-row key={link.key}>
           <div className="digital-profile-link-fields">
             <label>Label<input name="label" value={link.label} maxLength={60} aria-label={`Link ${index + 1} label`} onChange={(event) => updateLink(link.key, 'label', event.currentTarget.value)} /></label>
-            <label>URL<input name="url" value={link.url} maxLength={2048} placeholder="https://" aria-label={`Link ${index + 1} URL`} onChange={(event) => updateLink(link.key, 'url', event.currentTarget.value)} /></label>
+            <label>URL<input name="url" value={link.url} maxLength={2048} placeholder="example.com" inputMode="url" autoCapitalize="none" autoCorrect="off" aria-label={`Link ${index + 1} URL`} onChange={(event) => updateLink(link.key, 'url', event.currentTarget.value)} /></label>
           </div>
           <div className="digital-profile-link-controls">
             <button type="button" aria-label={`Move ${link.label || `link ${index + 1}`} up`} disabled={index === 0} onClick={() => moveLink(index, -1)}>↑</button>
@@ -374,7 +374,7 @@ export function DigitalProfileEditor({
   const previewProfile = {
     ...profile,
     ...profileDraft,
-    profile_links: links.map((link, sort_order) => ({ id: link.key, profile_id: profile.id, label: link.label, url: link.url, sort_order })),
+    profile_links: links.map((link, sort_order) => ({ id: link.key, profile_id: profile.id, label: link.label, url: normalizeProfileLinkUrl(link.url), sort_order })),
   }
 
   return <div className="digital-profile-shell">
