@@ -6,6 +6,7 @@ import { getOwnProfile } from '@/lib/profile/repository'
 import { getLatestClaimedRegistrationIntent } from '@/lib/registration/repository'
 import { OnboardingWizard } from '../onboarding-wizard'
 import { discoverOwnGiftProfile } from '@/lib/gifts/claims'
+import { getPublicEnv } from '@/lib/env'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,5 +28,5 @@ export default async function OnboardingStepPage({ params }: { params: Promise<{
     redirect(onboardingPath(progress.currentStep))
   }
 
-  return <OnboardingWizard step={step} profile={profile} verifiedEmail={account.email} designId={registration?.design_id ?? null} />
+  return <OnboardingWizard step={step} profile={profile} verifiedEmail={account.email} designId={registration?.design_id ?? null} siteUrl={getPublicEnv().siteUrl} />
 }

@@ -16,6 +16,7 @@ import { onboardingPath, onboardingSteps } from '@/lib/onboarding/steps'
 import type { OnboardingStep } from '@/lib/onboarding/types'
 import type { Profile } from '@/lib/profile/types'
 import { onboardingStepLabels } from './onboarding-styles'
+import { publicProfileUrl } from '@/lib/site-routing'
 
 const initialState: OnboardingActionState = { ok: false, fieldErrors: {} }
 type StepAction = (state: OnboardingActionState, formData: FormData) => Promise<OnboardingActionState>
@@ -34,7 +35,7 @@ const stepCopy: Record<OnboardingStep, { eyebrow: string; title: string; lead: s
   contact: { eyebrow: '02 · CONTACT', title: 'Choose how people reach you.', lead: 'Everything here is optional and private unless you explicitly make it visible.' },
   content: { eyebrow: '03 · CONTENT', title: 'Give people somewhere useful to go.', lead: 'Add complete links now, or leave this step empty and return later.' },
   address: { eyebrow: '04 · ADDRESS', title: 'Choose your public address.', lead: 'This is the short IQ Card URL you can share everywhere.' },
-  preview: { eyebrow: '05 · PREVIEW', title: 'See it before anyone else does.', lead: 'This draft remains private until you choose Publish.' },
+  preview: { eyebrow: '05 · PREVIEW', title: 'See it before anyone else does.', lead: 'This draft remains private until IQ Card approves it.' },
   publish: { eyebrow: '06 · REVIEW', title: 'Send it for review.', lead: 'Your profile will stay private until IQ Card approves it.' },
 }
 
@@ -48,8 +49,10 @@ function splitName(name: string) {
   return { firstName: parts[0] ?? '', lastName: parts.slice(1).join(' ') }
 }
 
-export function OnboardingWizard({ step, profile, verifiedEmail, designId }: { step: OnboardingStep; profile: Profile; verifiedEmail: string; designId: string | null }) {
+export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteUrl }: { step: OnboardingStep; profile: Profile; verifiedEmail: string; designId: string | null; siteUrl: string }) {
   const router = useRouter()
+  const displayUrl = publicProfileUrl(siteUrl, profile.slug).replace(/^https?:\/\//, '')
+  const addressPrefix = `${new URL(siteUrl).host}/`
   const [state, formAction, pending] = useActionState(actions[step], initialState)
   const [links, setLinks] = useState(profile.profile_links.map(({ label, url }) => ({ label, url })))
   const { firstName, lastName } = splitName(profile.full_name)
@@ -73,7 +76,7 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId }: { s
   return <section className="onboarding-stage" aria-labelledby="onboarding-title">
     <div className="onboarding-copy">
       <p>{copy.eyebrow}</p><h1 id="onboarding-title">{copy.title}</h1><span>{copy.lead}</span>
-      <div className="onboarding-card-note"><i /><div><strong>Your physical card is connected.</strong><small>{designId ? `${designId} · ` : ''}The saved design stays unchanged while you finish your profile.</small></div></div>
+      <div className="onboarding-card-note"><i /><div><strong>Your saved card design is connected.</strong><small>{designId ? `${designId} · ` : ''}The saved design stays unchanged while you finish your profile.</small></div></div>
     </div>
 
     <form action={formAction} className="onboarding-form" noValidate>
@@ -120,11 +123,11 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId }: { s
         <button type="button" className="onboarding-add" onClick={addLink}>＋ Add link</button>
       </div>}
 
-      {step === 'address' && <div className="onboarding-address"><label htmlFor="onboarding-slug"><span>Public profile URL <em>Required</em></span><div><b>iqcard.in/</b><input id="onboarding-slug" name="slug" defaultValue={profile.slug} required aria-invalid={Boolean(state.fieldErrors.slug)} aria-describedby="slug-error" /></div><ErrorText id="slug-error" message={state.fieldErrors.slug} /></label>{state.alternatives?.length ? <p>Try: {state.alternatives.join(' or ')}</p> : null}</div>}
+      {step === 'address' && <div className="onboarding-address"><label htmlFor="onboarding-slug"><span>Public profile URL <em>Required</em></span><div><b>{addressPrefix}</b><input id="onboarding-slug" name="slug" defaultValue={profile.slug} required aria-invalid={Boolean(state.fieldErrors.slug)} aria-describedby="slug-error" /></div><ErrorText id="slug-error" message={state.fieldErrors.slug} /></label>{state.alternatives?.length ? <p>Try: {state.alternatives.join(' or ')}</p> : null}</div>}
 
-      {step === 'preview' && <div className="onboarding-preview"><span>PRIVATE PREVIEW</span><h2>{profile.full_name || 'Your name'}</h2><p>{profile.headline || 'Your role or title'}</p><small>{profile.bio || 'Your short biography will appear here.'}</small><div>{profile.profile_links.map((link) => <span key={link.id}>{link.label}</span>)}</div><strong>iqcard.in/{profile.slug}</strong></div>}
+      {step === 'preview' && <div className="onboarding-preview"><span>PRIVATE PREVIEW</span><h2>{profile.full_name || 'Your name'}</h2><p>{profile.headline || 'Your role or title'}</p><small>{profile.bio || 'Your short biography will appear here.'}</small><div>{profile.profile_links.map((link) => <span key={link.id}>{link.label}</span>)}</div><strong>{displayUrl}</strong></div>}
 
-      {step === 'publish' && <div className="onboarding-publish"><div><span>PRIVATE UNTIL APPROVED</span><strong>Your profile is ready for Nikki to review.</strong><p>We’ll send it to the IQ Card admin queue. Your profile at iqcard.in/{profile.slug} will remain private until it is approved.</p><small>Only IQ Card can publish</small></div><ErrorText id="publish-name-error" message={state.fieldErrors.fullName} /><ErrorText id="publish-email-error" message={state.fieldErrors.verifiedEmail} /><ErrorText id="publish-slug-error" message={state.fieldErrors.slug} /></div>}
+      {step === 'publish' && <div className="onboarding-publish"><div><span>PRIVATE UNTIL APPROVED</span><strong>Your profile is ready for Nikki to review.</strong><p>We’ll send it to the IQ Card admin queue. Your profile at {displayUrl} will remain private until it is approved.</p><small>Only IQ Card can publish</small></div><ErrorText id="publish-name-error" message={state.fieldErrors.fullName} /><ErrorText id="publish-email-error" message={state.fieldErrors.verifiedEmail} /><ErrorText id="publish-slug-error" message={state.fieldErrors.slug} /></div>}
 
       {state.formError && <p className="onboarding-form-error" role="alert" aria-live="polite">{state.formError}</p>}
       <footer className="onboarding-actions">

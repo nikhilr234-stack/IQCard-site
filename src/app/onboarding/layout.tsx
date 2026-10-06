@@ -13,7 +13,7 @@ export default async function OnboardingLayout({ children }: { children: React.R
   return <main className="onboarding-shell">
     <header className="onboarding-topbar">
       <Link href="/" className="onboarding-logo" data-iq-brand="primary" aria-label="IQ Card home">iq</Link>
-      <div><strong>Set up your IQ</strong><span>Private until you publish</span></div>
+      <div><strong>Set up your IQ</strong><span>Private until approved</span></div>
       <nav className="onboarding-account-actions" aria-label="Account controls">
         <Link href="/dashboard" className="onboarding-exit">Save &amp; exit</Link>
         <SignOutButton />

@@ -6,5 +6,5 @@ export const onboardingStepLabels: Record<OnboardingStep, string> = {
   content: 'Content',
   address: 'Address',
   preview: 'Preview',
-  publish: 'Publish',
+  publish: 'Review',
 }

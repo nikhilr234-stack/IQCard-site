@@ -6,8 +6,46 @@ import { describe, expect, it } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { LiveOwnerCenter } from './live-owner-center'
+import type { ProfileStatus } from '@/lib/profile/types'
+
+function renderOwner(status: ProfileStatus) {
+  const host = document.createElement('div')
+  host.innerHTML = renderToStaticMarkup(createElement(LiveOwnerCenter, {
+    profile: {
+      id: 'profile-1', owner_id: 'owner-1', slug: 'ada', status, full_name: 'Ada Lovelace',
+      headline: '', tagline: '', bio: '', phone: '', email: 'ada@example.com', whatsapp: '', location: '',
+      public_email_visible: false, phone_visible: false, whatsapp_visible: false, location_visible: false,
+      photo_path: null, published_at: null, profile_links: [],
+    },
+    presentation: { template: 'minimal', cover: { coverPath: null, photoPathOverride: null, overlay: 0, focalY: 50, alignment: 'center' } },
+    savedDesign: null, siteUrl: 'https://preview.example.com', onEditDetails: () => {},
+  }))
+  return host
+}
 
 describe('live owner center', () => {
+  it('keeps private profiles out of live status and public sharing controls', () => {
+    const host = renderOwner('draft')
+    expect(host.querySelector('.owner-live')?.textContent).toBe('PRIVATE')
+    expect(host.textContent).not.toMatch(/\blive\b/i)
+    expect(host.textContent).toContain('Your profile is private. You can still edit it.')
+    expect(host.querySelector('.owner-profile-head')?.textContent).toContain('PRIVATE PREVIEW')
+    expect(host.querySelector('a[href="/ada"]')).toBeNull()
+    expect([...host.querySelectorAll('button')].map(button => button.textContent)).not.toContain('Share')
+    expect(host.querySelector('.owner-share button')).toBeNull()
+    expect(host.querySelector('.owner-share')?.textContent).toContain('Sharing is available after publication.')
+    expect(host.querySelector('a[href="/dashboard/digital-profile"]')).not.toBeNull()
+  })
+
+  it('enables public profile access and sharing after publication', () => {
+    const host = renderOwner('published')
+    expect(host.querySelector('.owner-live')?.textContent).toBe('LIVE')
+    expect(host.querySelector('a[href="/ada"]')?.textContent).toBe('View public profile ↗')
+    expect([...host.querySelectorAll('button')].map(button => button.textContent)).toContain('Share')
+    expect(host.querySelector('.owner-share button')).not.toBeNull()
+    expect(host.querySelector('.owner-share')?.textContent).toContain('preview.example.com/ada')
+  })
+
   it('offers an explicit sign-out form in the dashboard header', () => {
     const html = renderToStaticMarkup(createElement(LiveOwnerCenter, {
       profile: {
