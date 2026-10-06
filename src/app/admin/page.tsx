@@ -1,5 +1,4 @@
 import { AdminDashboard, type AdminDashboardActions } from '@/features/admin/AdminDashboard'
-import Link from 'next/link'
 import type { OnboardInput } from '@/features/admin/components/AddClientPanel'
 import { requireAdminAccount } from '@/lib/auth/account'
 import { listAdminClients } from '@/lib/admin/repository'
@@ -56,5 +55,5 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   await requireAdminAccount()
   const clients = await listAdminClients()
 
-  return <><Link href="/admin/gifts/new" className="admin-gift-shortcut">＋ Gift</Link><AdminDashboard clients={clients} actions={actions} initialNotice={adminActionMessage(params.error) ?? ''} /></>
+  return <AdminDashboard clients={clients} actions={actions} initialNotice={adminActionMessage(params.error) ?? ''} />
 }

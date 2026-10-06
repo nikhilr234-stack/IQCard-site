@@ -72,6 +72,14 @@ describe('AdminDashboard', () => {
     expect(personalDashboard?.getAttribute('href')).toBe('/dashboard')
   })
 
+  it('lets the administrator sign out to switch accounts', () => {
+    const signOut = button(host, /^sign out$/i)
+    expect(signOut.type).toBe('submit')
+    expect(signOut.form?.getAttribute('action')).toBe('/auth/sign-out')
+    expect(signOut.form?.method).toBe('post')
+    expect(host.querySelector('.topbar-actions a[href="/admin/gifts/new"]')).not.toBeNull()
+  })
+
   it('delegates publishing to the injected action without mutating the client list', async () => {
     await act(async () => button(host, /publish ada lovelace/i).click())
 
@@ -88,7 +96,7 @@ describe('AdminDashboard', () => {
       setValue(host.querySelector<HTMLInputElement>('[aria-label="Client name"]')!, 'Ada Lovelace')
       setValue(host.querySelector<HTMLSelectElement>('[aria-label="Client segment"]')!, 'Technology')
     })
-    await act(async () => host.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })))
+    await act(async () => host.querySelector<HTMLInputElement>('[aria-label="Client email"]')!.form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })))
 
     expect(host.querySelector<HTMLInputElement>('[aria-label="Client email"]')!.value).toBe('ada@example.com')
     expect(host.querySelector<HTMLInputElement>('[aria-label="Client name"]')!.value).toBe('Ada Lovelace')

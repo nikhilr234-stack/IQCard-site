@@ -1,8 +1,32 @@
+/** @vitest-environment jsdom */
+
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { LiveOwnerCenter } from './live-owner-center'
 
 describe('live owner center', () => {
+  it('offers an explicit sign-out form in the dashboard header', () => {
+    const html = renderToStaticMarkup(createElement(LiveOwnerCenter, {
+      profile: {
+        id: 'profile-1', owner_id: 'owner-1', slug: 'ada', status: 'published', full_name: 'Ada Lovelace',
+        headline: '', tagline: '', bio: '', phone: '', email: 'ada@example.com', whatsapp: '', location: '',
+        public_email_visible: false, phone_visible: false, whatsapp_visible: false, location_visible: false,
+        photo_path: null, published_at: null, profile_links: [],
+      },
+      presentation: { template: 'minimal', cover: { coverPath: null, photoPathOverride: null, overlay: 0, focalY: 50, alignment: 'center' } },
+      savedDesign: null, siteUrl: 'https://preview.example.com', onEditDetails: () => {},
+    }))
+    const host = document.createElement('div')
+    host.innerHTML = html
+    const form = host.querySelector<HTMLFormElement>('.owner-center-topbar form')
+    expect(form?.getAttribute('action')).toBe('/auth/sign-out')
+    expect(form?.method).toBe('post')
+    expect(form?.querySelector('button')?.textContent).toBe('Sign out')
+  })
+
   it('uses real owner data and explicit empty states instead of prototype data', () => {
     const source = readFileSync(resolve(process.cwd(), 'src/app/dashboard/live-owner-center.tsx'), 'utf8')
     expect(source).toContain('Good morning')

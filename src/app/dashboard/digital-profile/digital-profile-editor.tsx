@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { SignOutButton } from '@/components/sign-out-button'
 import { useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 
@@ -379,7 +380,7 @@ export function DigitalProfileEditor({
   return <div className="digital-profile-shell">
     <header className="digital-profile-topbar">
       <Link className="digital-profile-brand" href="/dashboard"><b>iq</b><span><strong>Your dashboard</strong><small>DIGITAL PROFILE</small></span></Link>
-      <nav aria-label="Digital Profile navigation"><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/preview">Full preview</Link></nav>
+      <nav aria-label="Digital Profile navigation"><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/preview">Full preview</Link><SignOutButton /></nav>
     </header>
 
     <main className="digital-profile-page">

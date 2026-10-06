@@ -90,6 +90,13 @@ describe('DigitalProfileEditor', () => {
     vi.clearAllMocks()
   })
 
+  it('keeps sign out available from the profile editor', () => {
+    const signOut = button(host, /^sign out$/i)
+    expect(signOut.type).toBe('submit')
+    expect(signOut.form?.getAttribute('action')).toBe('/auth/sign-out')
+    expect(signOut.form?.method).toBe('post')
+  })
+
   it('keeps shared Cover controls available after switching through Minimal', async () => {
     await act(async () => button(host, /01 Minimal/i).click())
     expect(labelledInput(host, /Darken background/i).value).toBe('0.38')
