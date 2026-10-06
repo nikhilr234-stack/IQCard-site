@@ -47,6 +47,29 @@ function presentation(template: ProfileTemplate): CoverPresentation {
 }
 
 describe('additional public profile templates', () => {
+  it.each(['directory', 'compact-stack', 'grid-index'])('renders website preview cards in Index %s while social and contact links remain compact', (variant) => {
+    const value = normalizePresentation({ draft: {
+      ...presentation('index'), templateSettings: { index: { variant } },
+    } }).draft
+    const linkedProfile = { ...profile, profile_links: [
+      { id: 'web', profile_id: profile.id, label: 'Website', url: 'https://iqcard.in/', sort_order: 0 },
+      { id: 'social', profile_id: profile.id, label: 'LinkedIn', url: 'https://linkedin.com/in/ada', sort_order: 1 },
+      { id: 'mail', profile_id: profile.id, label: 'Email', url: 'mailto:ada@example.com', sort_order: 2 },
+    ] }
+    const html = renderToStaticMarkup(<PublicProfile profile={linkedProfile} presentation={value} />)
+
+    expect(html).toContain('Homepage preview of iqcard.in')
+    expect(html).toContain('href="https://iqcard.in/"')
+    expect(html).toContain('href="https://linkedin.com/in/ada"')
+    expect(html).toContain('href="mailto:ada@example.com"')
+    expect(html).not.toContain('Homepage preview of linkedin.com')
+  })
+
+  it.each(['minimal', 'cover', 'studio', 'executive', 'signal'] as const)('keeps website previews scoped to Index when rendering %s', (template) => {
+    const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={presentation(template)} />)
+    expect(html).not.toContain('Homepage preview of example.com')
+  })
+
   it.each(['minimal', 'cover', 'studio', 'executive', 'signal', 'index'] as const)(
     'renders the shared Cover image as a page background on %s',
     (template) => {

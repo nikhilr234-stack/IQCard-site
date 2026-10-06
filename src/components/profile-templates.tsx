@@ -5,10 +5,12 @@ import { PublicProfileMenu } from '@/components/public-profile-menu'
 import { ProfileCoverBackground } from '@/components/profile-cover-background'
 import { ProfileLinkList } from '@/components/profile-link-list'
 import { ProfileWhatsNext } from '@/components/profile-whats-next'
+import { WebsitePreviewCard } from '@/components/website-preview-card'
 import { DEFAULT_PROFILE_DESIGN, getProfileDesignDataAttributes, getProfileDesignStyle } from '@/lib/profile/design'
 import { profileCoverImageUrl } from '@/lib/profile/media-urls'
 import { buildPublicProfileView } from '@/lib/profile/public-profile'
 import { getLinkIcon } from '@/lib/profile/link-icons'
+import { getWebsitePreviewTarget } from '@/lib/profile/website-preview'
 import type { NormalizedCoverPresentation, Profile, ProfileDesign } from '@/lib/profile/types'
 import styles from './profile-templates.module.css'
 
@@ -222,10 +224,25 @@ function directoryGroups(profile: Profile) {
   }
 }
 
+function DirectoryLinks({ links, design }: { links: ViewLink[]; design: ProfileDesign }) {
+  const blocks: Array<{ kind: 'website'; link: ViewLink } | { kind: 'links'; links: ViewLink[] }> = []
+  for (const link of links) {
+    if (getWebsitePreviewTarget(link.url)) blocks.push({ kind: 'website', link })
+    else {
+      const previous = blocks.at(-1)
+      if (previous?.kind === 'links') previous.links.push(link)
+      else blocks.push({ kind: 'links', links: [link] })
+    }
+  }
+  return <div className={styles.directoryLinks}>{blocks.map((block, index) => block.kind === 'website'
+    ? <WebsitePreviewCard key={`${block.link.url}-${index}`} label={block.link.label} url={block.link.url} />
+    : <TextLinks key={index} links={block.links} design={design} />)}</div>
+}
+
 function Directory({ profile, design }: { profile: Profile; design: ProfileDesign }) {
   const groups = directoryGroups(profile)
   return <div className={styles.directory}>
-    {Object.entries(groups).map(([name, links]) => links.length ? <section key={name}><h2>{name}</h2><TextLinks links={links} design={design} /></section> : null)}
+    {Object.entries(groups).map(([name, links]) => links.length ? <section key={name}><h2>{name}</h2><DirectoryLinks links={links} design={design} /></section> : null)}
   </div>
 }
 
