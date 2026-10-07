@@ -1,19 +1,13 @@
 export const HOME_CTA_HREF = '/customize'
 
 export const HOME_SECTION_IDS = [
-  'iq-object',
-  'iq-tap',
   'iq-identity-receive',
-  'iq-how-it-works',
-  'iq-people',
-  'iq-collection',
-  'iq-atelier',
-  'iq-faq',
+  'iq-sharing',
+  'iq-customize-tease',
 ] as const
 
 export const HOME_NAV_ITEMS = [
-  { label: 'Object', href: '#iq-object' },
   { label: 'Identity', href: '#iq-identity-receive' },
-  { label: 'Collection', href: '#iq-collection' },
-  { label: 'Atelier', href: '#iq-atelier' },
+  { label: 'Share', href: '#iq-sharing' },
+  { label: 'Customize', href: '#iq-customize-tease' },
 ] as const
