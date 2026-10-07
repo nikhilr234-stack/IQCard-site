@@ -237,6 +237,36 @@ const v3Css = `
 .iq-v3-offer{padding-top:170px;padding-bottom:170px;background:#f3f2ef}.iq-v3-offer h2{font-size:clamp(72px,9vw,145px)}.iq-v3-offer-grid{max-width:820px;margin:60px 0 50px;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid rgba(17,17,19,.15)}.iq-v3-offer-grid span{padding:18px 0;border-bottom:1px solid rgba(17,17,19,.15);font-size:11px}.iq-v3-offer-grid span:nth-child(even){padding-left:30px;border-left:1px solid rgba(17,17,19,.15)}
 .iq-v3-faq{padding-top:150px;padding-bottom:160px;background:#fff;display:grid;grid-template-columns:.8fr 1.2fr;gap:8vw}.iq-v3-faq h2{font-size:clamp(54px,6vw,94px)}.iq-v3-faq-list{border-top:1px solid var(--iq-line)}.iq-v3-faq details{border-bottom:1px solid var(--iq-line)}.iq-v3-faq summary{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:20px;cursor:pointer;font-size:15px;list-style:none}.iq-v3-faq summary::-webkit-details-marker{display:none}.iq-v3-faq summary span{font-size:20px;font-weight:300;transition:transform .25s}.iq-v3-faq details[open] summary span{transform:rotate(45deg)}.iq-v3-faq details p{max-width:600px;margin:0;padding:0 50px 28px 0;color:#777;font-size:13px;line-height:1.6}.iq-v3-final{padding-top:120px!important;padding-bottom:30px!important}
 @keyframes iqV3Pulse{0%,100%{opacity:.28;transform:scaleX(.5)}50%{opacity:1;transform:scaleX(1)}}
+@media(min-width:1100px){
+.iq-v3{--v3-gutter:clamp(64px,6.2vw,112px)}
+.iq-v3 .iq-opening__copy h1{font-size:clamp(78px,7.1vw,132px);line-height:.84;letter-spacing:-.075em}
+.iq-v3 .iq-opening__subcopy{max-width:430px;font-size:15px;line-height:1.55}
+.iq-v3-object{padding-top:190px;padding-bottom:180px}
+.iq-v3-object-stage{min-height:820px;margin-top:80px}
+.iq-v3-object-card-wrap{width:min(59vw,980px)}
+.iq-v3-tap,.iq-v3-how,.iq-v3-people{padding-top:190px;padding-bottom:190px}
+.iq-v3-people-grid{gap:26px;margin-top:100px}
+.iq-v3-person-stage{min-height:720px}
+.iq-v3-collection{padding-top:200px;padding-bottom:160px;gap:8vw}
+.iq-v3-finish-stage{min-height:760px}
+.iq-v3-editions{padding-top:200px;padding-bottom:210px}
+.iq-v3-edition-stage{margin-top:130px}
+.iq-v3-atelier{padding-top:190px;padding-bottom:190px}
+.iq-v3-offer{padding-top:210px;padding-bottom:210px}
+.iq-v3-faq{padding-top:190px;padding-bottom:200px}
+}
+.iq-v3-object{background:linear-gradient(135deg,#f7f5f0,#efede7 52%,#f8f7f3)}
+.iq-v3-object-card-wrap{filter:drop-shadow(0 75px 75px rgba(35,28,22,.18))}
+.iq-v3-tap{background:radial-gradient(circle at 50% 54%,#fff,#faf9f6 45%,#f3f1ec)}
+.iq-v3-people{background:linear-gradient(180deg,#f1f0ec,#e8e5df)}
+.iq-v3-person-stage{border:1px solid rgba(15,15,16,.06);box-shadow:0 35px 90px rgba(27,24,20,.08)}
+.iq-v3-collection{background:linear-gradient(135deg,#fff,#f7f5f0)}
+.iq-v3-finish-card{box-shadow:0 65px 130px rgba(32,27,22,.22)}
+.iq-v3-editions{background:radial-gradient(circle at 26% 45%,#202022,#0d0d0f 34%,#060607 74%)}
+.iq-v3-atelier{background:radial-gradient(circle at 70% 45%,#1d1d20,#0b0b0d 39%,#050506 78%)}
+.iq-v3-offer{background:linear-gradient(145deg,#f4f1eb,#e9e5dd)}
+.iq-v3-faq{background:#fbfaf7}
+.iq-v3 .iq-button:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.12)}
 @media(max-width:900px){.iq-v3-people-grid,.iq-v3-collection,.iq-v3-edition-stage,.iq-v3-atelier,.iq-v3-faq{grid-template-columns:1fr}.iq-v3-how-grid{grid-template-columns:1fr 1fr}.iq-v3-object-stage{min-height:600px}.iq-v3-person-stage{min-height:580px}.iq-v3-collection{gap:30px}.iq-v3-finish-stage{min-height:560px}.iq-v3-finish-card{width:min(82vw,680px)}.iq-v3-atelier-stage{min-height:580px}.iq-v3-layer{width:min(76vw,620px)}}
 @media(max-width:700px){.iq-v3 .iq-nav__actions .iq-button--secondary{display:none}.iq-v3 .iq-nav__actions .iq-button{font-size:10px;padding:0 13px}.iq-v3-kicker{display:none}.iq-v3-hero-actions{align-items:flex-start;flex-direction:column;gap:14px}.iq-v3-proof{max-width:270px;flex-wrap:wrap}.iq-v3-object{min-height:auto;padding-top:110px;padding-bottom:90px}.iq-v3-object-stage{min-height:520px;margin-top:30px}.iq-v3-object-card-wrap{width:92vw;left:55%;top:45%}.iq-v3-object-note{max-width:140px}.iq-v3-object-note--a{top:4%;left:0}.iq-v3-object-note--b{top:auto;bottom:2%;right:0}.iq-v3-object-note--c{display:none}.iq-v3-tap{padding-top:110px;padding-bottom:100px}.iq-v3-tap-line{height:350px;width:100%;grid-template-columns:1fr 40px 1fr;margin-top:30px}.iq-v3-tap-phone{width:120px;border-radius:25px}.iq-v3-center-copy{max-width:250px}.iq-v3-how{padding-top:100px;padding-bottom:100px}.iq-v3-how>.iq-eyebrow{margin-bottom:35px}.iq-v3-how-grid{grid-template-columns:1fr}.iq-v3-how article{min-height:190px;border-right:0;border-bottom:1px solid var(--iq-line);padding:20px 0!important}.iq-v3-how h3{margin:55px 0 10px}.iq-v3-people{padding-top:100px;padding-bottom:100px}.iq-v3-people-grid{margin-top:45px}.iq-v3-person-stage{min-height:480px}.iq-v3-person-stage>.iq-v3-card{width:78%;left:2%;top:10%}.iq-v3-person-profile{width:54%;right:4%;bottom:5%;min-height:52%;padding:24px 18px;border-radius:22px}.iq-v3-person-profile strong{font-size:18px}.iq-v3-collection{padding-top:105px;padding-bottom:85px}.iq-v3-finish-stage{min-height:430px}.iq-v3-finish-card{width:88vw;border-radius:24px}.iq-v3-finish-meta{bottom:1%}.iq-v3-finish-rail{margin-right:-22px;padding-right:22px}.iq-v3-finish-rail button{flex-basis:105px}.iq-v3-editions{padding-top:100px;padding-bottom:100px}.iq-v3-edition-stage{margin-top:55px;gap:65px}.iq-v3-edition-card{width:105%;margin-left:-10%;}.iq-v3-atelier{min-height:auto;padding-top:110px;padding-bottom:100px}.iq-v3-atelier-stage{min-height:430px}.iq-v3-layer{width:84vw;border-radius:22px}.iq-v3-offer{padding-top:110px;padding-bottom:110px}.iq-v3-offer-grid{grid-template-columns:1fr}.iq-v3-offer-grid span:nth-child(even){padding-left:0;border-left:0}.iq-v3-faq{padding-top:100px;padding-bottom:110px;gap:55px}.iq-v3-faq summary{min-height:72px;font-size:13px}.iq-v3-section-head h2,.iq-v3-object h2,.iq-v3-tap h2,.iq-v3-how h2,.iq-v3-people h2,.iq-v3-collection h2,.iq-v3-editions h2,.iq-v3-atelier h2,.iq-v3-offer h2,.iq-v3-faq h2{font-size:clamp(50px,14vw,70px)}}
 @media(prefers-reduced-motion:reduce){.iq-v3 *{animation:none!important;transition-duration:.001ms!important}}
