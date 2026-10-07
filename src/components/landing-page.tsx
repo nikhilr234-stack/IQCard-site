@@ -239,7 +239,13 @@ const v3Css = `
 @keyframes iqV3Pulse{0%,100%{opacity:.28;transform:scaleX(.5)}50%{opacity:1;transform:scaleX(1)}}
 @media(min-width:1100px){
 .iq-v3{--v3-gutter:clamp(64px,6.2vw,112px)}
-.iq-v3 .iq-opening__copy h1{font-size:clamp(78px,7.1vw,132px);line-height:.84;letter-spacing:-.075em}
+.iq-v3 .iq-opening__copy{width:min(760px,42vw);max-width:760px;left:clamp(70px,7vw,140px);transform:none}
+.iq-v3 .iq-opening__copy h1{font-size:clamp(68px,5.65vw,108px);line-height:.89;letter-spacing:-.068em;max-width:760px}
+.iq-v3 .iq-opening__sticky{overflow:hidden}
+.iq-v3 .iq-stage{left:auto;right:clamp(40px,5.5vw,110px);width:min(48vw,900px)}
+.iq-v3 .iq-opening__cue{left:var(--v3-gutter);right:auto}
+.iq-v3 .iq-nav__links{gap:34px}
+.iq-v3 .iq-nav{padding-left:var(--v3-gutter);padding-right:var(--v3-gutter)}
 .iq-v3 .iq-opening__subcopy{max-width:430px;font-size:15px;line-height:1.55}
 .iq-v3-object{padding-top:190px;padding-bottom:180px}
 .iq-v3-object-stage{min-height:820px;margin-top:80px}
