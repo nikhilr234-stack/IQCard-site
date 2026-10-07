@@ -24,6 +24,11 @@ function renderOwner(status: ProfileStatus) {
 }
 
 describe('live owner center', () => {
+  it('connects the dashboard to the customer order history', () => {
+    const host = renderOwner('published')
+    expect(host.querySelector('a[href="/dashboard/orders"]')?.textContent).toBe('Orders')
+    expect(host.querySelector('.owner-quick a[href="/dashboard/orders"]')).not.toBeNull()
+  })
   it('keeps private profiles out of live status and public sharing controls', () => {
     const host = renderOwner('draft')
     expect(host.querySelector('.owner-live')?.textContent).toBe('PRIVATE')

@@ -37,7 +37,7 @@ const validBody = {
       material: 'Walnut',
       customColor: null,
       identity: {
-        name: 'Nikhil Rakesh',
+        name: 'Sample Person',
         tone: 'dark',
         composition: 'signature',
         fineTune: { nameScale: 1, x: 0, y: 0, align: 'left' },
@@ -57,7 +57,7 @@ const canonicalPayload = {
   pricing: {
     currency: 'INR',
     pricingVersion: 'flat-inr-v2',
-    provisional: true,
+    provisional: false,
     components: { base: 799, material: 0, craft: 0, customLogoSetup: 0 },
     total: 799,
   },
@@ -68,7 +68,7 @@ const canonicalPayload = {
       back: { material: 'Walnut', customColor: null },
     },
     identity: {
-      name: 'Nikhil Rakesh',
+      name: 'Sample Person',
       fineTune: { nameScale: 1, x: 0, y: 0, align: 'left' },
       logoMode: 'iq',
       logoPlacement: { scale: 1, x: 0, y: 0, align: 'right' },
@@ -99,8 +99,8 @@ describe('checkout registration handoff route', () => {
       email: 'owner@example.com',
       designId: 'IQD-ABC123',
       payload: canonicalPayload,
-      firstName: 'Nikhil',
-      lastName: 'Rakesh',
+      firstName: 'Sample',
+      lastName: 'Person',
     })
     expect(mocks.createCheckoutHandoff).not.toHaveBeenCalled()
     expect(mocks.signInWithOtp).toHaveBeenCalledWith({

@@ -72,6 +72,10 @@ describe('AdminDashboard', () => {
     expect(personalDashboard?.getAttribute('href')).toBe('/dashboard')
   })
 
+  it('connects the administrator to the fulfillment queue', () => {
+    expect(host.querySelector('.topbar-actions a[href="/admin/orders"]')?.textContent).toBe('Orders')
+  })
+
   it('lets the administrator sign out to switch accounts', () => {
     const signOut = button(host, /^sign out$/i)
     expect(signOut.type).toBe('submit')

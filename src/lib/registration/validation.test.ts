@@ -11,7 +11,7 @@ const validRequest = {
       material: 'Walnut',
       customColor: null,
       identity: {
-        name: '  Nikhil   Rakesh  ',
+        name: '  Sample   Person  ',
         tone: 'dark',
         composition: 'signature',
         fineTune: { nameScale: 1, x: 0, y: 0, align: 'left' },
@@ -32,7 +32,7 @@ const canonicalPayload = {
     material: 'Walnut',
     customColor: null,
     identity: {
-      name: 'Nikhil Rakesh',
+      name: 'Sample Person',
       tone: 'dark',
       composition: 'signature',
       fineTune: { nameScale: 1, x: 0, y: 0, align: 'left' },
@@ -44,7 +44,7 @@ const canonicalPayload = {
   pricing: {
     currency: 'INR',
     pricingVersion: 'flat-inr-v2',
-    provisional: true,
+    provisional: false,
     components: { base: 799, material: 0, craft: 0, customLogoSetup: 0 },
     total: 799,
   },
@@ -55,7 +55,7 @@ const canonicalPayload = {
       back: { material: 'Walnut', customColor: null },
     },
     identity: {
-      name: 'Nikhil Rakesh',
+      name: 'Sample Person',
       fineTune: { nameScale: 1, x: 0, y: 0, align: 'left' },
       logoMode: 'iq',
       logoPlacement: { scale: 1, x: 0, y: 0, align: 'right' },
@@ -71,8 +71,8 @@ describe('registration request validation', () => {
       email: 'owner@example.com',
       designId: 'IQD-ABC123',
       payload: canonicalPayload,
-      firstName: 'Nikhil',
-      lastName: 'Rakesh',
+      firstName: 'Sample',
+      lastName: 'Person',
     })
   })
 
@@ -80,14 +80,14 @@ describe('registration request validation', () => {
     [{ ...validRequest, email: 'bad' }, 'email', 'invalid-email'],
     [{ ...validRequest, designId: 'bad-id' }, 'design', 'invalid-design'],
     [{ ...validRequest, payload: { ...validRequest.payload, configuration: { ...validRequest.payload.configuration, material: 'Copper' } } }, 'payload', 'invalid-payload'],
-    [{ ...validRequest, payload: { schemaVersion: '1.0', configuration: { identity: { name: 'Nikhil Rakesh' } } } }, 'payload', 'invalid-payload'],
+    [{ ...validRequest, payload: { schemaVersion: '1.0', configuration: { identity: { name: 'Sample Person' } } } }, 'payload', 'invalid-payload'],
   ])('returns a field-specific error for malformed input', (input, field, code) => {
     expect(validateRegistrationRequest(input)).toMatchObject({ ok: false, field, code })
     expect(parseRegistrationRequest(input)).toBeNull()
   })
 
   it('accepts an empty or single-word card identity', () => {
-    for (const name of ['', 'YOUR NAME', 'Nikhil']) {
+    for (const name of ['', 'YOUR NAME', 'Sample']) {
       const payload = {
         ...validRequest.payload,
         configuration: { ...validRequest.payload.configuration, identity: { ...validRequest.payload.configuration.identity, name } },
@@ -97,7 +97,7 @@ describe('registration request validation', () => {
         ...validRequest,
         payload,
       })
-      expect(result).toMatchObject({ firstName: name === 'Nikhil' ? 'Nikhil' : name === 'YOUR NAME' ? 'YOUR' : '', lastName: name === 'YOUR NAME' ? 'NAME' : '' })
+      expect(result).toMatchObject({ firstName: name === 'Sample' ? 'Sample' : name === 'YOUR NAME' ? 'YOUR' : '', lastName: name === 'YOUR NAME' ? 'NAME' : '' })
     }
   })
 
