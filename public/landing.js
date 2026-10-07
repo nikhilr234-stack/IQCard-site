@@ -33,7 +33,7 @@ function cardMarkup() {
     <div class="iq-object__skin iq-object__front" data-iq-card-layer="front-skin">
       <div class="iq-object__content">
         <div class="iq-object__mark">iq</div>
-        <div class="iq-object__micro">NFC / IQ 01</div>
+        <div class="iq-object__micro">IQ / 01</div>
         <div class="iq-object__name" data-card-name>Nikhil Rakesh</div>
       </div>
     </div>
@@ -45,7 +45,7 @@ function cardMarkup() {
     <div class="iq-object__skin iq-object__back" data-iq-card-layer="back-skin">
       <div class="iq-object__content">
         <div class="iq-object__back-name" data-card-back-name>Nikhil Rakesh</div>
-        <div class="iq-object__back-label">TAP TO CONNECT</div>
+        <div class="iq-object__back-label">TAP TO CONNECT · NFC</div>
       </div>
     </div>
     <div class="iq-object__edge iq-object__edge--top"></div>
@@ -340,24 +340,6 @@ if (typeof document !== 'undefined') {
           <p>Likewise — here is everything in one place.</p>
         </div>
         <button type="button" class="iq-profile-view__cta">Message on WhatsApp <span>↗</span></button>
-      </div>`,
-    book: `
-      <div class="iq-profile-view iq-profile-view--book" data-book-preview>
-        <div class="iq-profile-view__eyebrow">BOOK A CONVERSATION</div>
-        <strong class="iq-book-date">Tuesday · 08 Sep</strong>
-        <div class="iq-book-slots">
-          <button type="button">10:30</button>
-          <button type="button">12:00</button>
-          <button type="button">16:30</button>
-        </div>
-        <div class="iq-profile-view__foot">30 min · Google Meet</div>
-      </div>`,
-    pay: `
-      <div class="iq-profile-view iq-profile-view--pay" data-pay-preview>
-        <div class="iq-profile-view__eyebrow">PAY DIRECTLY</div>
-        <div class="iq-pay-mark"><span>₹</span><strong>UPI</strong></div>
-        <div class="iq-pay-handle">nikhil@upi</div>
-        <button type="button" class="iq-profile-view__cta">Open payment <span>↗</span></button>
       </div>`,
   };
 
