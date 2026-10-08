@@ -9,7 +9,7 @@ const payload = {
     material: 'Walnut',
     customColor: null,
     identity: {
-      name: 'Nikhil Rakesh',
+      name: 'Sample Person',
       tone: 'dark',
       composition: 'signature',
       fineTune: { nameScale: 1, x: 0, y: 0, align: 'left' },
@@ -21,7 +21,7 @@ const payload = {
   pricing: {
     currency: 'INR',
     pricingVersion: 'flat-inr-v2',
-    provisional: true,
+    provisional: false,
     components: { base: 799, material: 0, craft: 0, customLogoSetup: 0 },
     total: 799,
   },
@@ -32,7 +32,7 @@ const payload = {
       back: { material: 'Walnut', customColor: null },
     },
     identity: {
-      name: 'Nikhil Rakesh',
+      name: 'Sample Person',
       fineTune: { nameScale: 1, x: 0, y: 0, align: 'left' },
       logoMode: 'iq',
       logoPlacement: { scale: 1, x: 0, y: 0, align: 'right' },
@@ -46,8 +46,8 @@ const input = {
   email: 'owner@example.com',
   designId: 'IQD-ABC123',
   payload,
-  firstName: 'Nikhil',
-  lastName: 'Rakesh',
+  firstName: 'Sample',
+  lastName: 'Person',
 }
 
 function createStore(): RegistrationIntentStore & {
@@ -78,8 +78,8 @@ describe('registration intent repository', () => {
       design_id: 'IQD-ABC123',
       design_payload: input.payload,
       schema_version: 1,
-      first_name: 'Nikhil',
-      last_name: 'Rakesh',
+      first_name: 'Sample',
+      last_name: 'Person',
       status: 'pending',
       expires_at: '2026-09-05T10:30:00.000Z',
     })
