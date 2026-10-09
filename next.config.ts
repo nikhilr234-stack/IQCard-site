@@ -1,5 +1,5 @@
 import type { NextConfig } from 'next'
-import { legacyRouteRedirects } from './src/lib/site-routing'
+import { foundingProfileRewrites, legacyRouteRedirects } from './src/lib/site-routing'
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
     return [
       { source: '/customize', destination: '/customize/index.html' },
       { source: '/customize/', destination: '/customize/index.html' },
+      ...foundingProfileRewrites,
     ]
   },
   async headers() {

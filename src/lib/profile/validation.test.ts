@@ -24,6 +24,14 @@ const editableProfile = {
 }
 
 describe('profile slugs', () => {
+  it.each(['infant', 'aadhya', 'prerna', 'hema', 'sharath', 'mithul', 'naveen', 'rajesh', 'rakesh', 'ravichandra', 'rohan', 'teju', 'ashwin'])('keeps the original founder address %s unavailable to unrelated accounts', (slug) => {
+    expect(validateSlug(slug)).toBe('That profile URL is reserved.')
+    expect(isReservedSlug(slug.toUpperCase())).toBe(true)
+    expect(validateEditableProfile({ ...editableProfile, slug })).toMatchObject({
+      ok: false, fieldErrors: { slug: 'That profile URL is reserved.' },
+    })
+  })
+
   it('reserves the legacy iq landing slug', () => {
     expect(validateSlug('iq')).toBe('That profile URL is reserved.')
   })
