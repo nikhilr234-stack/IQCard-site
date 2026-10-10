@@ -21,8 +21,16 @@ async function providerRequest(path: string, init: RequestInit, config: OrderChe
     headers: { authorization: credentials(config), 'content-type': 'application/json', ...init.headers },
     signal: AbortSignal.timeout(8_000),
     cache: 'no-store',
+  }).catch((error: unknown) => {
+    console.error('[orders] Razorpay transport failed', {
+      code: error instanceof Error && error.name === 'TimeoutError' ? 'timeout' : 'network-error',
+    })
+    throw error
   })
-  if (!response.ok) throw new Error(`Razorpay request failed (${response.status})`)
+  if (!response.ok) {
+    console.error('[orders] Razorpay request failed', { status: response.status })
+    throw new Error(`Razorpay request failed (${response.status})`)
+  }
   return response.json()
 }
 

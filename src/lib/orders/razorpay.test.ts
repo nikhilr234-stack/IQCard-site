@@ -3,9 +3,26 @@ import { createRazorpayOrder, findRazorpayOrderByReceipt } from './razorpay'
 
 const config = { mode: 'test' as const, keyId: 'rzp_test_public', keySecret: 'server-secret', webhookSecret: 'webhook-secret', shippingPaise: 12500, taxPaise: 0 }
 
-afterEach(() => vi.unstubAllGlobals())
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks() })
 
 describe('Razorpay sandbox client', () => {
+  it('records a transport failure without logging the thrown message', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('private transport message')))
+    await expect(findRazorpayOrderByReceipt('IQ-261003-000001', config)).rejects.toThrow('private transport message')
+    expect(log).toHaveBeenCalledWith('[orders] Razorpay transport failed', { code: 'network-error' })
+    expect(JSON.stringify(log.mock.calls)).not.toContain('private transport message')
+  })
+  it('records the provider HTTP status without logging its body or credentials', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('private provider response', { status: 401 })))
+
+    await expect(findRazorpayOrderByReceipt('IQ-261003-000001', config)).rejects.toThrow('Razorpay request failed (401)')
+
+    expect(log).toHaveBeenCalledWith('[orders] Razorpay request failed', { status: 401 })
+    expect(JSON.stringify(log.mock.calls)).not.toContain('private provider response')
+    expect(JSON.stringify(log.mock.calls)).not.toContain(config.keySecret)
+  })
   it('creates an INR order using the configured sandbox key and verifies amount/currency', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'order_test123', amount: 92400, currency: 'INR', receipt: 'IQ-261003-000001' }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
