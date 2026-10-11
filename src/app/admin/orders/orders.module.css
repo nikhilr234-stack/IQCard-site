@@ -75,3 +75,6 @@
   .detailHeader { display: grid; }
   .detailState { display: flex; justify-items: start; }
 }
+
+/* Operations controls stay readable at desk and phone widths. */
+.header > div,.detailHeader > div{min-width:0}.header h1,.detailHeader h1{overflow-wrap:anywhere}.panel > p{color:#655f56;font-size:13px;line-height:1.6;overflow-wrap:anywhere}.table th{font-size:10px;color:#62635d}.table td,.table td > strong,.openLink{font-size:12px}.table td small{font-size:11px;color:#62635d}.eyebrow,.footerNote,.empty{color:#62635d}.filters a{font-size:12px;min-height:44px;display:inline-flex;align-items:center}.status,.payment{font-size:11px}.back,.openLink{min-height:44px;align-items:center}.detailsList dt,.priceList dt,.updateForm label,.trackingFields label,.controlNote,.refundPanel p{font-size:12px;color:#62635d}.detailsList dd,.priceList dd,.trackingCurrent{font-size:13px}.updateForm input,.updateForm select{min-height:44px;font-size:16px}.updateForm > button,.secondaryButton{min-height:44px;font-size:12px}.error,.notice{font-size:13px}.history time,.history span,.history small{font-size:12px;color:#62635d}.history strong{font-size:13px}@media(max-width:760px){.header h1,.detailHeader h1{font-size:clamp(36px,10vw,48px)}.detailsList > div,.priceList > div{grid-template-columns:minmax(82px,.5fr) minmax(0,1fr)}}
