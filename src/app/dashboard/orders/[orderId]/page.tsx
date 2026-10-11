@@ -23,7 +23,7 @@ export default async function CustomerOrderPage({ params }: Props) {
   return <main className={styles.page}>
     <Link href="/dashboard" className={styles.back}>← Your account</Link>
     <header className={styles.header}><div><p className={styles.eyebrow}>IQ CARD · ORDER {order.order_number}</p><h1>{order.payment_status === 'paid' ? 'Your card is in motion.' : 'Your order is saved.'}</h1><p>Open or refresh this page to see the latest status as your order moves through production and delivery.</p></div><span className={styles.status}>{order.fulfillment_status.replaceAll('_', ' ')}</span></header>
-    {order.payment_status === 'pending' ? <><RefreshWhilePending /><p className={styles.pending} role="status">We’re waiting for Razorpay to confirm payment. This page refreshes automatically while we wait.</p></> : null}
+    {order.payment_status === 'pending' ? <><RefreshWhilePending orderId={order.id} /><p className={styles.pending} role="status">We’re waiting for Razorpay to confirm payment. This page refreshes automatically while we wait.</p></> : null}
     {['pending', 'failed'].includes(order.payment_status) ? <p><Link href={`/dashboard/orders/checkout?order=${encodeURIComponent(order.id)}`}>Resume checkout →</Link></p> : null}
     <div className={styles.grid}>
       <section className={styles.panel}><h2>Payment</h2><dl><div><dt>Status</dt><dd>{order.payment_status.replaceAll('_', ' ')}</dd></div><div><dt>Card</dt><dd>{formatINR(order.card_subtotal_paise)}</dd></div><div><dt>Delivery</dt><dd>{formatINR(order.shipping_paise)}</dd></div><div><dt>Tax</dt><dd>{formatINR(order.tax_paise)}</dd></div><div><dt>Total</dt><dd>{formatINR(order.total_paise)}</dd></div></dl></section>

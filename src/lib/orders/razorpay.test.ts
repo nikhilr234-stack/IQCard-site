@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createRazorpayOrder, findRazorpayOrderByReceipt } from './razorpay'
+import { createRazorpayOrder, findRazorpayOrderByReceipt, findCapturedRazorpayPayment } from './razorpay'
 
 const config = { mode: 'test' as const, keyId: 'rzp_test_public', keySecret: 'server-secret', webhookSecret: 'webhook-secret', shippingPaise: 12500, taxPaise: 0 }
 
@@ -57,5 +57,29 @@ describe('Razorpay sandbox client', () => {
     await expect(createRazorpayOrder({ amount: 92400, currency: 'INR', receipt: 'IQ-261003-000001', notes: {} }, config)).rejects.toThrow('Invalid payment provider response')
     await expect(createRazorpayOrder({ amount: 92400, currency: 'INR', receipt: 'bad/receipt', notes: {} }, config)).rejects.toThrow('Invalid payment order')
     expect(fetchMock).toHaveBeenCalledOnce()
+  })
+})
+
+const captured = { id: 'pay_real', order_id: 'order_real', amount: 79900, currency: 'INR', status: 'captured', captured: true, amount_refunded: 0 }
+describe('captured payment verification', () => {
+  it('fetches payment facts from the stored gateway order', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [captured] })))
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await findCapturedRazorpayPayment('order_real', 79900, config)).toEqual(captured)
+    expect(fetchMock.mock.calls[0][0]).toBe('https://api.razorpay.com/v1/orders/order_real/payments')
+  })
+  it.each([{ order_id: 'order_other' }, { amount: 1 }, { currency: 'USD' }, { amount_refunded: 1 }, { refund_status: 'pending' }, { captured: false }, { id: 'invalid' }])('rejects inconsistent or refunded captures: %j', async (override) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [{ ...captured, ...override }] }))))
+    await expect(findCapturedRazorpayPayment('order_real', 79900, config)).rejects.toThrow()
+  })
+  it('does not treat authorization as capture', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ items: [{ ...captured, status: 'authorized', captured: false }] }))))
+    expect(await findCapturedRazorpayPayment('order_real', 79900, config)).toBeNull()
+  })
+  it('rejects malformed collections and multiple captured payments', async () => {
+    const mock = vi.fn().mockResolvedValueOnce(new Response('{}')).mockResolvedValueOnce(new Response(JSON.stringify({ items: [captured, captured] })))
+    vi.stubGlobal('fetch', mock)
+    await expect(findCapturedRazorpayPayment('order_real', 79900, config)).rejects.toThrow()
+    await expect(findCapturedRazorpayPayment('order_real', 79900, config)).rejects.toThrow()
   })
 })

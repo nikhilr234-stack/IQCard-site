@@ -18,16 +18,29 @@ describe('RefreshWhilePending', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     routerRefresh.mockReset()
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }))
     host = document.createElement('div')
     document.body.append(host)
     root = createRoot(host)
-    act(() => root.render(<RefreshWhilePending />))
+    act(() => root.render(<RefreshWhilePending orderId="order-local" />))
   })
 
   afterEach(() => {
     act(() => root.unmount())
     host.remove()
     vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  it('checks the owned order automatically and stops recovery checks on unmount', async () => {
+    await act(async () => {})
+    expect(fetch).toHaveBeenCalledWith('/api/orders/order-local/reconcile', { method: 'POST', cache: 'no-store' })
+    await act(async () => { vi.advanceTimersByTime(30_000) })
+    expect(fetch).toHaveBeenCalledTimes(2)
+    act(() => root.unmount())
+    root = createRoot(host)
+    await act(async () => { vi.advanceTimersByTime(60_000) })
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 
   it('refreshes the server-rendered order periodically while payment is pending', () => {

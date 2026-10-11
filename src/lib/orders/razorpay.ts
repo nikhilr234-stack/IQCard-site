@@ -61,3 +61,25 @@ function requireCheckoutConfig(): OrderCheckoutConfig {
   if (!availability.ready) throw new Error('Sandbox payment configuration is unavailable')
   return availability.config
 }
+
+export type RazorpayCapturedPayment = {
+  id: string; order_id: string; amount: number; currency: 'INR';
+  status: 'captured'; captured: true; amount_refunded: 0
+}
+
+export async function findCapturedRazorpayPayment(
+  orderId: string, amount: number, config: OrderCheckoutConfig = requireCheckoutConfig(),
+): Promise<RazorpayCapturedPayment | null> {
+  if (!/^order_[A-Za-z0-9]+$/.test(orderId) || !Number.isSafeInteger(amount) || amount < 1) throw new Error('Invalid payment order')
+  const value = await providerRequest(`/orders/${encodeURIComponent(orderId)}/payments`, { method: 'GET' }, config)
+  if (!value || typeof value !== 'object' || !Array.isArray((value as { items?: unknown }).items)) throw new Error('Invalid payment collection')
+  const items = (value as { items: unknown[] }).items
+  const captures = items.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object' && (item as Record<string, unknown>).status === 'captured'))
+  if (captures.length === 0) return null
+  if (captures.length !== 1) throw new Error('Ambiguous payment capture')
+  const payment = captures[0]
+  if (typeof payment.id !== 'string' || !/^pay_[A-Za-z0-9]+$/.test(payment.id) || payment.order_id !== orderId ||
+    payment.amount !== amount || payment.currency !== 'INR' || payment.captured !== true || payment.amount_refunded !== 0 ||
+    (payment.refund_status !== null && payment.refund_status !== undefined)) throw new Error('Invalid payment capture')
+  return { id: payment.id, order_id: orderId, amount, currency: 'INR', status: 'captured', captured: true, amount_refunded: 0 }
+}
