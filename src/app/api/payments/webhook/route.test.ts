@@ -1,5 +1,5 @@
 import { createHash, createHmac } from 'node:crypto'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
@@ -45,6 +45,8 @@ function request(rawBody = body, options: { signature?: string; eventId?: string
 }
 
 describe('Razorpay webhook route', () => {
+  afterEach(() => { vi.restoreAllMocks() })
+
   beforeEach(() => {
     mocks.rpc.mockReset().mockResolvedValue({ data: [{ outcome: 'processed', order_id: 'local-order-id' }], error: null })
     mocks.getRazorpayWebhookSecret.mockReturnValue('webhook-secret')
@@ -77,6 +79,27 @@ describe('Razorpay webhook route', () => {
 
     expect(response.status).toBe(401)
     expect(mocks.rpc).not.toHaveBeenCalled()
+  })
+
+  it('logs only a safe rejection reason without webhook secrets or request data', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const privateBody = JSON.stringify({ private: 'customer-private-data' })
+    const response = await POST(request(privateBody, { signature: '0'.repeat(64) }))
+
+    expect(response.status).toBe(401)
+    expect(warn.mock.calls).toEqual([['[orders] webhook rejected', { status: 401, code: 'invalid-signature' }]])
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('customer-private-data')
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('webhook-secret')
+    expect(mocks.rpc).not.toHaveBeenCalled()
+  })
+
+  it('logs a successful signed delivery without payment identifiers or payloads', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {})
+
+    expect((await POST(request())).status).toBe(200)
+    expect(info.mock.calls).toEqual([['[orders] webhook accepted', { outcome: 'processed' }]])
+    expect(JSON.stringify(info.mock.calls)).not.toContain('pay_capture123')
+    expect(JSON.stringify(info.mock.calls)).not.toContain('order_test123')
   })
 
   it('rejects signed events when the endpoint is not configured for preview sandbox payments', async () => {

@@ -9,6 +9,7 @@ export const runtime = 'nodejs'
 const maxBodyBytes = 64_000
 
 function fail(status: number, code: string) {
+  console.warn('[orders] webhook rejected', { status, code })
   return NextResponse.json({ ok: false, code }, { status, headers: { 'Cache-Control': 'no-store' } })
 }
 
@@ -65,5 +66,7 @@ export async function POST(request: Request) {
   after(async () => {
     try { await deliverOrderEmailBatch(5) } catch { console.error('[orders] email outbox drain failed', { code: 'outbox-drain-failed' }) }
   })
+  const loggedOutcome = ['processed', 'duplicate', 'order_not_found'].includes(outcome) ? outcome : 'acknowledged'
+  console.info('[orders] webhook accepted', { outcome: loggedOutcome })
   return NextResponse.json({ ok: true, outcome: typeof outcome === 'string' ? outcome : 'processed' }, { headers: { 'Cache-Control': 'no-store' } })
 }
