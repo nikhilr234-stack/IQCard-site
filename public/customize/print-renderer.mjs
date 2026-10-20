@@ -29,6 +29,7 @@ function observeCanvas(canvas,side,boxes){
 export async function renderPrintArtwork(renderer,configuration,settings={}) {
   const g=printGeometry(settings);
   if(!renderer?.ready||!renderer.gl||renderer.gl.isContextLost())throw new Error('The Atelier renderer is unavailable. Use a browser with WebGL2 enabled. No substitute artwork has been generated.');
+  await renderer.materialReady;
   await document.fonts.ready;
   if(configuration.logo.mode==='custom'){
     const img=new Image();img.src=configuration.logo.dataUrl;
