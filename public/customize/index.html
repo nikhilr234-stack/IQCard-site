@@ -751,7 +751,7 @@
       const s=specs[layout]||specs.signature;let x=s.x+xOffset,y=s.y+yOffset,align=config.identity.fineTune.align||'left';if(layout==='centered')align='center';else if(align==='center')x=800+xOffset;else if(align==='right')x=1490+xOffset;
       ctx.save();this.applyCraftTextStyle(ctx,config);ctx.textBaseline='alphabetic';ctx.textAlign=align;ctx.font=`700 ${Math.round(s.font*scale)}px Helvetica,Arial,sans-serif`;ctx.fillText(config.identity.name||'',x,y);ctx.restore();
       let lx=s.logoX+config.logo.x*2.5,ly=s.logoY+config.logo.y*2.5,lalign=config.logo.align||s.logoAlign;if(config.logo.align==='center')lx=800+config.logo.x*2.5;else if(config.logo.align==='right')lx=1490+config.logo.x*2.5;this.drawLogo(ctx,config,lx,ly,s.logoSize,lalign);
-      ctx.save();ctx.globalAlpha=.58;ctx.fillStyle=config.identity.tone==='light'?'#f5f0e6':'#171615';ctx.font='600 20px Helvetica,Arial,sans-serif';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('NFC / IQ 01',1490,92);ctx.restore();
+      ctx.save();ctx.globalAlpha=.58;ctx.fillStyle=config.identity.tone==='light'?'#f5f0e6':'#171615';ctx.font='600 20px Helvetica,Arial,sans-serif';ctx.textAlign=config.logo.align==='right'?'left':'right';ctx.textBaseline='top';ctx.fillText('NFC / IQ 01',config.logo.align==='right'?105:1490,92);ctx.restore();
     }
     drawBackDecal(config){
       const c=this.backDecalCanvas,ctx=c.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);ctx.setTransform(c.width/1600,0,0,c.height/1000,0,0);ctx.globalAlpha=1;const light=config.identity.tone==='light';

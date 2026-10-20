@@ -3,6 +3,7 @@ import { requireVerifiedAdminAccount } from '@/lib/auth/account'
 import { listPrintDesigns, getPrintDesign, validPrintLookup, type PrintSource } from '@/lib/print/repository'
 import styles from './print.module.css'
 import { PrintFrame } from './PrintFrame'
+import { PrintImport } from './PrintImport'
 export const dynamic='force-dynamic'
 export const metadata={title:'Print desk · IQ Card',robots:{index:false,follow:false}}
 export default async function PrintDeskPage({searchParams}:{searchParams:Promise<{source?:string;id?:string;q?:string}>}) {
@@ -18,6 +19,7 @@ export default async function PrintDeskPage({searchParams}:{searchParams:Promise
   const filtered=designs.filter(d=>!search||`${d.email} ${d.name??''} ${d.material??''} ${d.designId} ${d.label}`.toLowerCase().includes(search))
   return <main className={styles.desk}>
     <header className={styles.header}><Link href="/admin" className={styles.brand} aria-label="IQ Card admin">iq</Link><div><h1>Print desk</h1><p>Exact saved artwork. Ready for your printer.</p></div><Link href="/admin/orders">Order queue</Link></header>
+    <PrintImport frameClassName={styles.frame}/>
     <div className={styles.workspace}>
       <aside className={styles.queue}><h2>Choose a design</h2><form action="/admin/print"><label htmlFor="print-search">Find by name, email, material or design ID</label><div className={styles.search}><input id="print-search" name="q" defaultValue={params.q??''} placeholder="Search saved designs"/><button type="submit">Find</button></div></form>
         <p className={styles.count}>Latest 100 per source · {filtered.length} shown</p>
