@@ -51,6 +51,7 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
           <div><dt>Engraving</dt><dd>{card.available ? card.engravedName || 'None' : '—'}</dd></div>
           <div><dt>NFC back</dt><dd>{card.available ? card.backLayout : '—'}</dd></div>
         </dl>
+        <p><Link href={`/admin/print?source=order&id=${order.id}`}>Open exact front & back print artwork →</Link></p>
         <div className={styles.cardSnapshot}>{JSON.stringify(order.card_snapshot, null, 2)}</div>
       </section>
 

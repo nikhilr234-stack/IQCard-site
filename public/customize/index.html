@@ -315,7 +315,8 @@
 <script type="module">
   import { loadOwnedAtelierDesign, saveOwnedAtelierDesign } from '/customize/saved-design.mjs';
   const entryParams = new URLSearchParams(location.search);
-  const previewMode = entryParams.get('preview') === '1';
+  const printMode = entryParams.get('print') === '1';
+  const previewMode = entryParams.get('preview') === '1' || printMode;
   const resumeMode = entryParams.get('resume') === '1';
   const restoreMode = entryParams.get('restore') === '1';
   if(previewMode) document.documentElement.classList.add('saved-preview');
@@ -632,13 +633,13 @@
       layout(location=0) in vec3 aPosition;
       layout(location=1) in vec3 aNormal;
       layout(location=2) in vec2 aUv;
-      uniform mat4 uModel;uniform mat4 uViewProj;
+      uniform mat4 uModel;uniform mat4 uViewProj;uniform bool uPrint;uniform vec2 uFlatScale;uniform vec2 uFlatOffset;
       out vec3 vNormal;out vec3 vWorld;out vec2 vUv;
-      void main(){vec4 world=uModel*vec4(aPosition,1.0);vWorld=world.xyz;vNormal=normalize(mat3(uModel)*aNormal);vUv=aUv;gl_Position=uViewProj*world;}`;
+      void main(){if(uPrint){vUv=aUv*uFlatScale-uFlatOffset;vWorld=vec3(0.0);vNormal=vec3(0.0,0.0,1.0);gl_Position=vec4(aUv*2.0-1.0,0.0,1.0);return;}vec4 world=uModel*vec4(aPosition,1.0);vWorld=world.xyz;vNormal=normalize(mat3(uModel)*aNormal);vUv=aUv;gl_Position=uViewProj*world;}`;
       const fs=`#version 300 es
       precision highp float;
       in vec3 vNormal;in vec3 vWorld;in vec2 vUv;
-      uniform vec3 uBase;uniform float uRoughness;uniform float uMetalness;uniform vec3 uCamera;uniform int uMaterialKind;uniform float uPatternScale;uniform float uSweep;
+      uniform bool uPrint;uniform vec3 uBase;uniform float uRoughness;uniform float uMetalness;uniform vec3 uCamera;uniform int uMaterialKind;uniform float uPatternScale;uniform float uSweep;
       out vec4 outColor;
       float sat(float x){return clamp(x,0.0,1.0);} 
       float hash21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
@@ -668,7 +669,7 @@
       void main(){
         vec3 N=normalize(vNormal),V=normalize(uCamera-vWorld);
         vec3 L1=normalize(vec3(mix(-4.8,4.8,uSweep),4.0,5.5)-vWorld),L2=normalize(vec3(3.8,1.4,3.2)-vWorld),L3=normalize(vec3(0.0,-3.0,2.0)-vWorld);
-        float micro=0.0;vec3 base=materialPattern(uBase,vUv,uMaterialKind,micro);float rough=clamp(uRoughness+micro,.06,1.0);vec3 f0=mix(vec3(.04),base,uMetalness);
+        float micro=0.0;vec3 base=materialPattern(uBase,uPrint?clamp(vUv,vec2(0.0),vec2(1.0)):vUv,uMaterialKind,micro);if(uPrint){outColor=vec4(clamp(base,0.0,1.0),1.0);return;}float rough=clamp(uRoughness+micro,.06,1.0);vec3 f0=mix(vec3(.04),base,uMetalness);
         vec3 total=base*(.24+.08*(1.0-rough));
         vec3 lights[3]=vec3[3](L1,L2,L3);vec3 cols[3]=vec3[3](vec3(1.0,.985,.96)*2.0,vec3(.78,.84,1.0)*.8,vec3(1.0,.72,.52)*.35);
         for(int i=0;i<3;i++){
@@ -686,7 +687,7 @@
       if(!gl.getProgramParameter(program,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program)||'program link failed');
       this.program=program;
       this.uniforms={
-        model:gl.getUniformLocation(program,'uModel'),viewProj:gl.getUniformLocation(program,'uViewProj'),base:gl.getUniformLocation(program,'uBase'),roughness:gl.getUniformLocation(program,'uRoughness'),metalness:gl.getUniformLocation(program,'uMetalness'),camera:gl.getUniformLocation(program,'uCamera'),materialKind:gl.getUniformLocation(program,'uMaterialKind'),patternScale:gl.getUniformLocation(program,'uPatternScale'),sweep:gl.getUniformLocation(program,'uSweep')
+        print:gl.getUniformLocation(program,'uPrint'),flatScale:gl.getUniformLocation(program,'uFlatScale'),flatOffset:gl.getUniformLocation(program,'uFlatOffset'),model:gl.getUniformLocation(program,'uModel'),viewProj:gl.getUniformLocation(program,'uViewProj'),base:gl.getUniformLocation(program,'uBase'),roughness:gl.getUniformLocation(program,'uRoughness'),metalness:gl.getUniformLocation(program,'uMetalness'),camera:gl.getUniformLocation(program,'uCamera'),materialKind:gl.getUniformLocation(program,'uMaterialKind'),patternScale:gl.getUniformLocation(program,'uPatternScale'),sweep:gl.getUniformLocation(program,'uSweep')
       };
     }
     createDecalProgram(){
@@ -743,7 +744,7 @@
       }
     }
     drawFrontDecal(config){
-      const c=this.frontDecalCanvas,ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.globalAlpha=1;
+      const c=this.frontDecalCanvas,ctx=c.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);ctx.setTransform(c.width/1600,0,0,c.height/1000,0,0);ctx.globalAlpha=1;
       const stepIndex=STEPS.indexOf(config.step);if(stepIndex>=0&&stepIndex<STEPS.indexOf('identity'))return;
       const layout=config.identity.composition,scale=config.identity.fineTune.nameScale,xOffset=config.identity.fineTune.x*2.5,yOffset=config.identity.fineTune.y*2.5;
       const specs={signature:{x:105,y:910,font:104,logoX:105,logoY:86,logoSize:108,logoAlign:'left'},editorial:{x:105,y:910,font:148,logoX:1495,logoY:86,logoSize:70,logoAlign:'right'},minimal:{x:105,y:910,font:56,logoX:105,logoY:86,logoSize:62,logoAlign:'left'},centered:{x:800,y:555,font:98,logoX:800,logoY:86,logoSize:62,logoAlign:'center'},statement:{x:70,y:930,font:170,logoX:1490,logoY:82,logoSize:62,logoAlign:'right'}};
@@ -753,7 +754,7 @@
       ctx.save();ctx.globalAlpha=.58;ctx.fillStyle=config.identity.tone==='light'?'#f5f0e6':'#171615';ctx.font='600 20px Helvetica,Arial,sans-serif';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('NFC / IQ 01',1490,92);ctx.restore();
     }
     drawBackDecal(config){
-      const c=this.backDecalCanvas,ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.globalAlpha=1;const light=config.identity.tone==='light';
+      const c=this.backDecalCanvas,ctx=c.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);ctx.setTransform(c.width/1600,0,0,c.height/1000,0,0);ctx.globalAlpha=1;const light=config.identity.tone==='light';
       ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 34px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('TAP TO CONNECT',105,910);ctx.restore();
       if(config.backLayout==='identity'||config.backLayout==='custom'){ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 72px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(config.identity.name||'',105,100);ctx.restore();}
       if(config.backLayout==='branded'||config.backLayout==='custom')this.drawLogo(ctx,config,1490,86,74,'right');
@@ -839,9 +840,26 @@
       };
       this.sweepFrame=requestAnimationFrame(tick);
     }
+    renderFlatSurface(g){
+      const gl=this.gl,framebuffer=gl.createFramebuffer(),texture=gl.createTexture(),previous=gl.getParameter(gl.FRAMEBUFFER_BINDING),viewport=gl.getParameter(gl.VIEWPORT),canvas=document.createElement('canvas');
+      canvas.width=g.pixelsWide;canvas.height=g.pixelsHigh;
+      try{
+        gl.bindTexture(gl.TEXTURE_2D,texture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,g.pixelsWide,g.pixelsHigh,0,gl.RGBA,gl.UNSIGNED_BYTE,null);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+        gl.bindFramebuffer(gl.FRAMEBUFFER,framebuffer);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,texture,0);
+        if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)throw new Error('Print surface allocation failed.');
+        gl.viewport(0,0,g.pixelsWide,g.pixelsHigh);gl.disable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);gl.useProgram(this.program);gl.uniform1i(this.uniforms.print,1);
+        gl.uniform2f(this.uniforms.flatScale,g.artWidth/g.trimWidth,g.artHeight/g.trimHeight);gl.uniform2f(this.uniforms.flatOffset,g.bleed/g.trimWidth,g.bleed/g.trimHeight);
+        const mat=this.layerMaterials.frontSkin,c=iqHexToRgb(mat.base);gl.uniform3f(this.uniforms.base,...c);gl.uniform1i(this.uniforms.materialKind,mat.materialKind||0);gl.uniform1f(this.uniforms.patternScale,mat.patternScale||1);gl.bindVertexArray(this.frontDecalMesh.vao);gl.drawElements(gl.TRIANGLES,this.frontDecalMesh.count,gl.UNSIGNED_SHORT,0);
+        const data=new Uint8Array(g.pixelsWide*g.pixelsHigh*4);gl.readPixels(0,0,g.pixelsWide,g.pixelsHigh,gl.RGBA,gl.UNSIGNED_BYTE,data);
+        if(gl.isContextLost()||gl.getError()!==gl.NO_ERROR)throw new Error('Print surface rendering failed.');
+        const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(g.pixelsWide,g.pixelsHigh),row=g.pixelsWide*4;
+        for(let y=0;y<g.pixelsHigh;y++)pixels.data.set(data.subarray((g.pixelsHigh-y-1)*row,(g.pixelsHigh-y)*row),y*row);
+        ctx.putImageData(pixels,0,0);return canvas;
+      }finally{gl.uniform1i(this.uniforms.print,0);gl.bindFramebuffer(gl.FRAMEBUFFER,previous);gl.viewport(...viewport);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.bindVertexArray(null);gl.deleteFramebuffer(framebuffer);gl.deleteTexture(texture);this.draw();}
+    }
     draw(){
       const gl=this.gl;if(!gl||!this.ready||!this.program||this.paused)return;
-      gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);
+      gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);gl.uniform1i(this.uniforms.print,0);
       const aspect=this.canvas.width/Math.max(1,this.canvas.height),proj=iqPerspective(34,aspect,.1,100),view=new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,-this.cameraDistance,1]),vp=iqMultiply4(proj,view);
       const p=this.pose,model=iqModelMatrix(p.x*Math.PI/180,p.y*Math.PI/180,p.z*Math.PI/180,p.zoom*1.03);
       gl.uniformMatrix4fv(this.uniforms.model,false,model);gl.uniformMatrix4fv(this.uniforms.viewProj,false,vp);gl.uniform3f(this.uniforms.camera,0,0,this.cameraDistance);gl.uniform1f(this.uniforms.sweep,this.sweepProgress);
@@ -1578,7 +1596,10 @@
    autosaveReady = false;
 
    initPBRRenderer();
-  if(previewMode || resumeMode){
+  if(printMode){
+    const { mountPrintDesk } = await import('/customize/print-desk.mjs');
+    await mountPrintDesk(window.__iqPBR, entryParams);
+  } else if(previewMode || resumeMode){
     try {
       const record = await loadOwnedAtelierDesign(entryParams.get('design'));
       if(!restoreSavedDesign(record)) throw new Error('Your saved card configuration is unavailable.');
