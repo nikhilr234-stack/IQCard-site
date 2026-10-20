@@ -14,3 +14,11 @@ Browser data is a fixture injected at the admin API boundary, not an authenticat
 Existing designs use system Helvetica/Arial fonts. Historical cross-platform glyph equality cannot be proved without saved font outlines or a canonical font asset; export records the workstation's font metrics. Material is unlit using the same shader pattern and base; physical reflections are excluded, and craft depth/foil is simulated ink. RGB output is not PDF/X/CMYK certified. Corner radius 3.18 mm, bleed 3 mm and inset 0 mm are editable proposed settings, not user-confirmed printer specifications. A physical matte-laminated proof must approve fit, colour conversion, legibility and lamination before batch production.
 
 Work remains on recovery Preview. No schema change, production promotion, payment change or production database mutation.
+
+## Follow-up: black-on-black screenshot
+
+Read-only sandbox inspection confirmed selected frozen design IQD-E84B29 stores Black material, dark ink, the IQ mark, a name, and Pure back. These were present, but invisible dark-on-dark print ink was not detected by the first release's bounds-only preflight. The earlier 240-variant rendering check established canvas/asset availability, not print legibility.
+
+Added full saved component analysis; measured contrast against actual unlit material pixels and logo alpha; block near-invisible identity ink; preserve original configuration and offer an explicit white/black flat print copy. Original and printed configurations, chosen ink and original revision travel together in the manifest; filenames distinguish saved ink from production overrides. Pure back remains without a name/logo. Opaque logo backgrounds must not cause false blocking of distinguishable foreground lettering; a reproducing regression test covers this case.
+
+Browser verification using the exact selected card configuration confirms saved dark ink is blocked, choosing the explicit white-ink proof renders readable lettering/IQ mark, the original config stays dark and unchanged in the print pack, and the actual-size PDF remains85.6×54mm. The broader240-variant check now correctly flags30 low-contrast combinations. Also corrected inherited global main width and added source/origin-checked automatic iframe height. Queue metadata now includes saved name and material using JSON projections, excluding logo data.

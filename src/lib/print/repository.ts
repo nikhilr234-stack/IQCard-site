@@ -5,7 +5,7 @@ import { type CanonicalCardConfiguration } from '@/lib/customizer/card-configura
 import { readPrintableCard } from './design'
 
 export type PrintSource = 'order' | 'registration' | 'handoff'
-export type PrintDesignSummary = { id: string; source: PrintSource; designId: string; email: string; createdAt: string; label: string }
+export type PrintDesignSummary = { id: string; source: PrintSource; designId: string; email: string; name?: string | null; material?: string | null; createdAt: string; label: string }
 export type PrintDesign = PrintDesignSummary & { configuration: CanonicalCardConfiguration; revision: string; frozen: boolean }
 export function validPrintLookup(source: unknown, id: unknown): source is PrintSource {
   return ['order', 'registration', 'handoff'].includes(String(source)) && typeof id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
@@ -14,17 +14,17 @@ export function validPrintLookup(source: unknown, id: unknown): source is PrintS
 export async function listPrintDesigns(): Promise<PrintDesignSummary[]> {
   const db=createAdminClient()
   const results=await Promise.all([
-    db.from('paid_orders').select('id,design_id,email,created_at,order_number').order('created_at',{ascending:false}).limit(100),
-    db.from('registration_intents').select('id,design_id,email,created_at').eq('status','claimed').not('owner_id','is',null).order('created_at',{ascending:false}).limit(100),
-    db.from('checkout_handoffs').select('owner_id,design_id,email,created_at').not('claimed_at','is',null).not('owner_id','is',null).order('claimed_at',{ascending:false}).limit(100),
+    db.from('paid_orders').select('id,design_id,email,created_at,order_number,print_name:card_snapshot->configuration->identity->>name,print_material:card_snapshot->configuration->>material').order('created_at',{ascending:false}).limit(100),
+    db.from('registration_intents').select('id,design_id,email,created_at,print_name:design_payload->configuration->identity->>name,print_material:design_payload->configuration->>material').eq('status','claimed').not('owner_id','is',null).order('created_at',{ascending:false}).limit(100),
+    db.from('checkout_handoffs').select('owner_id,design_id,email,created_at,print_name:payload->configuration->identity->>name,print_material:payload->configuration->>material').not('claimed_at','is',null).not('owner_id','is',null).order('claimed_at',{ascending:false}).limit(100),
   ])
   if(results.some(r=>r.error))throw new Error('Unable to load print designs.')
   const [orders,registrations,handoffs]=results
   const seen=new Set<string>()
   return [
-    ...(orders.data??[]).map(row=>({id:row.id,source:'order' as const,designId:row.design_id,email:row.email,createdAt:row.created_at,label:`Order ${row.order_number} · frozen snapshot`})),
-    ...(registrations.data??[]).map(row=>({id:row.id,source:'registration' as const,designId:row.design_id,email:row.email,createdAt:row.created_at,label:'Saved registration design'})),
-    ...(handoffs.data??[]).filter(row=>{if(seen.has(row.owner_id))return false;seen.add(row.owner_id);return true}).map(row=>({id:row.owner_id,source:'handoff' as const,designId:row.design_id,email:row.email,createdAt:row.created_at,label:'Latest legacy saved design'})),
+    ...(orders.data??[]).map(row=>({id:row.id,source:'order' as const,designId:row.design_id,email:row.email,name:row.print_name,material:row.print_material,createdAt:row.created_at,label:`Order ${row.order_number} · frozen snapshot`})),
+    ...(registrations.data??[]).map(row=>({id:row.id,source:'registration' as const,designId:row.design_id,email:row.email,name:row.print_name,material:row.print_material,createdAt:row.created_at,label:'Saved registration design'})),
+    ...(handoffs.data??[]).filter(row=>{if(seen.has(row.owner_id))return false;seen.add(row.owner_id);return true}).map(row=>({id:row.owner_id,source:'handoff' as const,designId:row.design_id,email:row.email,name:row.print_name,material:row.print_material,createdAt:row.created_at,label:'Latest legacy saved design'})),
   ]
 }
 export async function getPrintDesign(source: PrintSource,id: string): Promise<PrintDesign|null> {
@@ -39,5 +39,5 @@ export async function getPrintDesign(source: PrintSource,id: string): Promise<Pr
   if(!row)return null
   const card=readPrintableCard(source==='order'?row.card_snapshot:source==='registration'?row.design_payload:row.payload)
   if(!card)return null
-  return {id,source,designId:String(row.design_id),email:String(row.email),createdAt:String(row.created_at),label:source==='order'?`Order ${row.order_number} · frozen snapshot`:source==='registration'?'Saved registration design':'Latest legacy saved design',configuration:card.configuration,revision:createHash('sha256').update(JSON.stringify(card.configuration)).digest('hex').slice(0,16),frozen:source==='order'}
+  return {id,source,name:card.configuration.identity.name,material:card.configuration.material,designId:String(row.design_id),email:String(row.email),createdAt:String(row.created_at),label:source==='order'?`Order ${row.order_number} · frozen snapshot`:source==='registration'?'Saved registration design':'Latest legacy saved design',configuration:card.configuration,revision:createHash('sha256').update(JSON.stringify(card.configuration)).digest('hex').slice(0,16),frozen:source==='order'}
 }

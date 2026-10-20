@@ -26,6 +26,11 @@ const id='10000000-0000-4000-8000-000000000001';
    }
    return {count,blocked,problems};
  },base);
+ // The screenshot's actual configuration must be diagnosed, not silently made printable.
+ const contrastRegression=await page.evaluate(async config=>{
+   const {renderPrintArtwork}=await import('/customize/print-renderer.mjs');const {applyPrintInk}=await import('/customize/print-analysis.mjs');const c={...config,material:'Black',backLayout:'pure',identity:{...config.identity,name:'nikhil preview2',tone:'dark'}};const original=JSON.stringify(c);window.__iqPBR.update({...c,step:'final'});const dark=await renderPrintArtwork(window.__iqPBR,c,{dpi:300});const white=await renderPrintArtwork(window.__iqPBR,applyPrintInk(c,'light'),{dpi:300});return {blocked:dark.preflight.errors.some(x=>x.includes('almost invisible')),whiteErrors:white.preflight.errors,unchanged:JSON.stringify(c)===original,namePreserved:white.boxes.some(x=>x.label.includes('nikhil preview2')),pureBackPreserved:!white.boxes.some(x=>x.side==='Back'&&x.label.includes('nikhil preview2'))};
+ },base);
+ if(!contrastRegression.blocked||contrastRegression.whiteErrors.length||!contrastRegression.unchanged||!contrastRegression.namePreserved||!contrastRegression.pureBackPreserved)throw new Error('Actual card contrast regression failed: '+JSON.stringify(contrastRegression));
  // Custom logo must be present and blank lettering must remain blank.
  const logo=await page.evaluate(async config=>{
   const {renderPrintArtwork}=await import('/customize/print-renderer.mjs');const canvas=document.createElement('canvas');canvas.width=1000;canvas.height=400;const ctx=canvas.getContext('2d');ctx.fillStyle='#ff0000';ctx.fillRect(0,0,1000,400);const c={...config,identity:{...config.identity,name:''},logo:{...config.logo,mode:'custom',dataUrl:canvas.toDataURL(),filename:'logo.png',mimeType:'image/png'},backLayout:'custom'};window.__iqPBR.update({...c,step:'final'});const result=await renderPrintArtwork(window.__iqPBR,c,{dpi:300});return {custom:result.boxes.filter(x=>x.label==='custom logo').length,blankPreserved:!result.boxes.some(x=>x.label.includes('NIKHIL')),errors:result.preflight.errors};
@@ -33,8 +38,8 @@ const id='10000000-0000-4000-8000-000000000001';
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:path.join(artifacts,'print-mobile.png'),fullPage:true});
  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
  // Changing dimensions disables stale downloads until applied.
- await page.locator('[name=inset]').fill('0.5');const staleDisabled=await page.locator('#print-pack').isDisabled();await page.getByRole('button',{name:'Apply dimensions'}).click();await page.waitForFunction(()=>document.querySelector('#print-status').textContent.startsWith('Proof ready'));
+ await page.locator('[name=inset]').fill('0.5');const staleDisabled=await page.locator('#print-pack').isDisabled();await page.getByRole('button',{name:'Apply print settings'}).click();await page.waitForFunction(()=>document.querySelector('#print-status').textContent.startsWith('Proof ready'));
  const revised=await page.locator('#print-measurements').innerText();
  if(matrix.count!==240||matrix.problems.length||logo.custom!==2||!logo.blankPreserved||logo.errors.length||overflow||!staleDisabled||errors.length)throw new Error('Print verification failed: '+JSON.stringify({matrix,logo,overflow,staleDisabled,errors}));
- fs.writeFileSync(path.join(artifacts,'print-verification.json'),JSON.stringify({desktop,bleedInvariant,matrix,logo,overflow,staleDisabled,revised,pageErrors:errors},null,2));console.log(JSON.stringify({matrix,logo,overflow,staleDisabled,revised,pageErrors:errors}));await browser.close();
+ fs.writeFileSync(path.join(artifacts,'print-verification.json'),JSON.stringify({desktop,bleedInvariant,contrastRegression,matrix,logo,overflow,staleDisabled,revised,pageErrors:errors},null,2));console.log(JSON.stringify({contrastRegression,matrix,logo,overflow,staleDisabled,revised,pageErrors:errors}));await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
