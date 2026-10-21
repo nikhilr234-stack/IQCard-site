@@ -1,3 +1,4 @@
+import { applyBrandPolicy } from './brand-policy.mjs';
 import { addContrastMeasurements, captureLogoSamples } from './print-analysis.mjs';
 import { printGeometry } from './print-files.mjs';
 import { surfaceFor } from './material-surfaces.mjs';
@@ -28,7 +29,7 @@ function observeCanvas(canvas,side,boxes){
   ctx.drawImage=(img,x,y,w,h,...rest)=>{boxes.push({side,label:'custom logo',x,y,width:w,height:h,alpha:ctx.globalAlpha,logoSamples:captureLogoSamples(img),rasterWidth:img.src?.startsWith('data:image/svg+xml')?undefined:img.naturalWidth});return image(img,x,y,w,h,...rest);};
 }
 export async function renderPrintArtwork(renderer,configuration,settings={}) {
-  configuration=structuredClone(configuration);
+  configuration=applyBrandPolicy(configuration);
   const g=printGeometry(settings);
   if(!renderer?.ready||!renderer.gl||renderer.gl.isContextLost())throw new Error('The Atelier renderer is unavailable. Use a browser with WebGL2 enabled. No substitute artwork has been generated.');
   const generation=renderer.printGeneration=(renderer.printGeneration||0)+1;
@@ -54,4 +55,15 @@ export async function renderPrintArtwork(renderer,configuration,settings={}) {
     ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(decal,x,y,w,h);ctx.restore();sides[side]=canvas;
   }
   return {geometry:g,sides,preflight:inspectBounds(boxes,g),boxes};
+}
+
+// Finished-card proof; press masters retain rectangular bleed for the cutter.
+export function roundedTrimArtwork(source,g) {
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.round(g.trimWidth/25.4*g.dpi);canvas.height=Math.round(g.trimHeight/25.4*g.dpi);
+  const ctx=canvas.getContext('2d');
+  const radius=Math.max(0,g.radius-g.inset)/25.4*g.dpi;
+  ctx.beginPath();ctx.roundRect(0,0,canvas.width,canvas.height,radius);ctx.clip();
+  ctx.drawImage(source,g.bleed/g.artWidth*source.width,g.bleed/g.artHeight*source.height,g.trimWidth/g.artWidth*source.width,g.trimHeight/g.artHeight*source.height,0,0,canvas.width,canvas.height);
+  return canvas;
 }

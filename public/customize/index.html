@@ -168,7 +168,6 @@
                   <div class="card-content">
                     <div class="card-logo" aria-label="IQ logo">iq</div>
                     <img id="customLogoPreview" class="custom-logo-preview" alt="Custom logo preview">
-                    <div class="card-micro">NFC / IQ 01</div>
                     <div class="card-name" id="frontName">YOUR NAME</div>
                   </div>
                 </div>
@@ -313,6 +312,7 @@
 
 </main>
 <script type="module">
+  import { applyBrandPolicy } from "/customize/brand-policy.mjs";
   import { loadOwnedAtelierDesign, saveOwnedAtelierDesign } from '/customize/saved-design.mjs';
   const entryParams = new URLSearchParams(location.search);
   const previewMode = entryParams.get('preview') === '1';
@@ -736,6 +736,7 @@
     drawLogo(ctx,config,x,y,size,align='left'){
       if(config.logo.mode==='none')return;
       if(config.logo.mode==='iq'){
+        x=105;y=86;align='left';
         ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font=`700 ${Math.round(size*config.logo.scale)}px Helvetica,Arial,sans-serif`;ctx.textBaseline='top';ctx.textAlign=align;ctx.fillText('iq',x,y);ctx.restore();return;
       }
       if(config.logo.mode==='custom'&&config.logo.dataUrl){
@@ -750,7 +751,6 @@
       const s=specs[layout]||specs.signature;let x=s.x+xOffset,y=s.y+yOffset,align=config.identity.fineTune.align||'left';if(layout==='centered')align='center';else if(align==='center')x=800+xOffset;else if(align==='right')x=1490+xOffset;
       ctx.save();this.applyCraftTextStyle(ctx,config);ctx.textBaseline='alphabetic';ctx.textAlign=align;ctx.font=`700 ${Math.round(s.font*scale)}px Helvetica,Arial,sans-serif`;ctx.fillText(config.identity.name||'',x,y);ctx.restore();
       let lx=s.logoX+config.logo.x*2.5,ly=s.logoY+config.logo.y*2.5,lalign=config.logo.align||s.logoAlign;if(config.logo.align==='center')lx=800+config.logo.x*2.5;else if(config.logo.align==='right')lx=1490+config.logo.x*2.5;this.drawLogo(ctx,config,lx,ly,s.logoSize,lalign);
-      ctx.save();ctx.globalAlpha=.58;ctx.fillStyle=config.identity.tone==='light'?'#f5f0e6':'#171615';ctx.font='600 20px Helvetica,Arial,sans-serif';ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText('NFC / IQ 01',1490,92);ctx.restore();
     }
     drawBackDecal(config){
       const c=this.backDecalCanvas,ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.globalAlpha=1;const light=config.identity.tone==='light';
@@ -936,6 +936,7 @@
   }
 
   function renderCard(config) {
+    if(config.logo.mode==='iq') Object.assign(config.logo,applyBrandPolicy(config).logo);
     const palette = corePalette[config.core];
     root.style.setProperty('--core-tone', palette.core);
     root.style.setProperty('--adhesive-tone', palette.adhesive);
@@ -1031,6 +1032,7 @@
     if(identityEcho) identityEcho.textContent = config.identity.name;
     document.querySelectorAll('[data-name-align]').forEach(button => button.setAttribute('aria-pressed', button.dataset.nameAlign === config.identity.fineTune.align ? 'true' : 'false'));
     document.querySelectorAll('[data-logo-align]').forEach(button => button.setAttribute('aria-pressed', button.dataset.logoAlign === config.logo.align ? 'true' : 'false'));
+    document.querySelectorAll('[data-logo-align]').forEach(button=>{button.disabled=config.logo.mode==='iq';});
     document.querySelectorAll('[data-side]').forEach(button => button.setAttribute('aria-pressed', button.dataset.side === config.side ? 'true' : 'false'));
     document.querySelectorAll('[data-back-layout]').forEach(button => button.setAttribute('aria-pressed', button.dataset.backLayout === config.backLayout ? 'true' : 'false'));
     document.querySelectorAll('[data-craft]').forEach(button => button.setAttribute('aria-pressed', button.dataset.craft === config.craft ? 'true' : 'false'));

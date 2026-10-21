@@ -10,6 +10,8 @@ import * as registration from '../../../public/customize/registration-validation
 import * as inspection from '../../../public/customize/mobile-inspection.mjs'
 // @ts-expect-error Browser modules served directly.
 import * as savedDesign from '../../../public/customize/saved-design.mjs'
+// @ts-expect-error Browser modules served directly.
+import { applyBrandPolicy } from '../../../public/customize/brand-policy.mjs'
 const html = readFileSync('public/customize/index.html', 'utf8')
 const config = { core: 'black', material: 'Ivory Marble', craft: 'engrave', customColor: null, backLayout: 'identity', identity: { name: 'Rohan Biligi', tone: 'light', composition: 'signature', fineTune: { align: 'right', nameScale: 1.2, x: 8, y: -4 } }, logo: { mode: 'iq', dataUrl: null, filename: null, mimeType: null, align: 'right', scale: 0.8, x: 12, y: 5 } }
 async function scene(mode: string, success = true, saved = config, history: unknown[] = [], marker: string | null = null) {
@@ -17,7 +19,7 @@ async function scene(mode: string, success = true, saved = config, history: unkn
   const window = dom.window
   window.localStorage.setItem('iqcard.savedDesigns.v1', JSON.stringify(history))
   if (marker !== null) window.localStorage.setItem('iqcard.checkoutHandoff.v1', marker)
-  Object.assign(window, persistence, registration, inspection, savedDesign)
+  Object.assign(window, persistence, registration, inspection, savedDesign, { applyBrandPolicy })
   window.matchMedia = () => ({ matches: false, addEventListener() {} }) as unknown as MediaQueryList
   window.HTMLElement.prototype.scrollIntoView = () => {}
   window.HTMLElement.prototype.scrollTo = () => {}
@@ -30,12 +32,12 @@ async function scene(mode: string, success = true, saved = config, history: unkn
   return { dom, current: api.current, confirmBuild: api.confirmBuild, restoreSavedDesign: api.restoreSavedDesign }
 }
 describe('shared Atelier scene restore', () => {
-  it.each(['preview', 'resume'])('hydrates %s without changing saved lettering, surface or logo placement', async mode => {
+  it.each(['preview', 'resume'])('hydrates %s preserving saved lettering and surface while applying mandatory IQ placement', async mode => {
     const { dom, current } = await scene(mode)
     try {
-      expect(current).toMatchObject(config)
+      expect(current).toMatchObject(applyBrandPolicy(config))
       expect(dom.window.document.querySelector('#frontName')!.textContent).toBe('Rohan Biligi')
-      expect(dom.window.document.querySelector<HTMLElement>('.card-front .card-logo')!.style.right).toBe('34px')
+      expect(dom.window.document.querySelector<HTMLElement>('.card-front .card-logo')!.style.left).toBe('34px')
       if (mode === 'preview') expect(dom.window.localStorage.getItem('iqcard.savedDesigns.v1')).toBe('[]')
     } finally { dom.window.close() }
   })
@@ -61,7 +63,7 @@ describe('shared Atelier scene restore', () => {
     ]
     const { dom, current } = await scene('restore', true, config, history, '{"designId":"IQD-SENT"}')
     try {
-      expect(current).toMatchObject(config)
+      expect(current).toMatchObject(applyBrandPolicy(config))
       expect(dom.window.document.querySelector('#frontName')!.textContent).toBe('Rohan Biligi')
       expect(dom.window.document.querySelector('#iq-atelier')!.classList.contains('order-review-mode')).toBe(true)
     } finally { dom.window.close() }
@@ -100,12 +102,12 @@ describe('shared Atelier scene restore', () => {
       let requested = false
       dom.window.fetch = async () => {
         const records = JSON.parse(dom.window.localStorage.getItem('iqcard.savedDesigns.v1')!)
-        expect(records[0]).toMatchObject({ id: 'IQD-SUBMITTED', saveMode: 'manual', configuration: config })
+        expect(records[0]).toMatchObject({ id: 'IQD-SUBMITTED', saveMode: 'manual', configuration: applyBrandPolicy(config) })
         expect(JSON.parse(dom.window.localStorage.getItem('iqcard.checkoutHandoff.v1')!)).toEqual({ designId: 'IQD-SUBMITTED' })
         requested = true
         return { ok: true, json: async () => ({ ok: true, sent: true }) } as Response
       }
-      expect(await confirmBuild()).toMatchObject({ designId: 'IQD-SUBMITTED', configuration: config })
+      expect(await confirmBuild()).toMatchObject({ designId: 'IQD-SUBMITTED', configuration: applyBrandPolicy(config) })
       expect(requested).toBe(true)
     } finally { dom.window.close() }
   })
