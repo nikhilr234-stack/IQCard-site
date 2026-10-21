@@ -736,7 +736,7 @@
       const specs={signature:{x:105,y:910,font:104,logoX:105,logoY:86,logoSize:108,logoAlign:'left'},editorial:{x:105,y:910,font:148,logoX:1495,logoY:86,logoSize:70,logoAlign:'right'},minimal:{x:105,y:910,font:56,logoX:105,logoY:86,logoSize:62,logoAlign:'left'},centered:{x:800,y:555,font:98,logoX:800,logoY:86,logoSize:62,logoAlign:'center'},statement:{x:70,y:930,font:170,logoX:1490,logoY:82,logoSize:62,logoAlign:'right'}};
       const s=specs[layout]||specs.signature;let x=s.x+xOffset,y=s.y+yOffset,align=config.identity.fineTune.align||'left';if(layout==='centered')align='center';else if(align==='center')x=800+xOffset;else if(align==='right')x=1490+xOffset;
       ctx.save();this.applyCraftTextStyle(ctx,config);ctx.textBaseline='alphabetic';ctx.textAlign=align;ctx.font=`700 ${Math.round(s.font*scale)}px Helvetica,Arial,sans-serif`;ctx.fillText(config.identity.name||'',x,y);ctx.restore();
-      let lx=s.logoX+config.logo.x*2.5,ly=s.logoY+config.logo.y*2.5,lalign=config.logo.align||s.logoAlign;if(config.logo.align==='center')lx=800+config.logo.x*2.5;else if(config.logo.align==='right')lx=1490+config.logo.x*2.5;this.drawLogo(ctx,config,lx,ly,s.logoSize,lalign);
+      let lx=s.logoX+config.logo.x*2.5,ly=s.logoY+config.logo.y*2.5,lalign=config.logo.align||s.logoAlign;if(config.logo.align==='center')lx=800+config.logo.x*2.5;else if(config.logo.align==='right')lx=1490+config.logo.x*2.5;this.drawLogo(ctx,{...config,logo:{mode:'iq',scale:config.logo.mode==='iq'?config.logo.scale:1}},105,86,config.logo.mode==='iq'?s.logoSize:108,'left');if(config.logo.mode==='custom')this.drawLogo(ctx,config,lx,ly,s.logoSize,lalign);
     }
     drawBackDecal(config){
       const c=this.backDecalCanvas,ctx=c.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);ctx.setTransform(c.width/1600,0,0,c.height/1000,0,0);ctx.globalAlpha=1;const light=config.identity.tone==='light';
@@ -1008,14 +1008,11 @@
     const iqLogo = card.querySelector('.card-front .card-logo');
     const customLogo = document.getElementById('customLogoPreview');
     if(iqLogo) {
-      iqLogo.style.display = config.logo.mode === 'custom' ? 'none' : '';
-      const align = config.logo.align;
-      iqLogo.style.left = align === 'right' ? 'auto' : align === 'center' ? '50%' : '34px';
-      iqLogo.style.right = align === 'right' ? '34px' : 'auto';
-      iqLogo.style.transform = align === 'center'
-        ? `translate(calc(-50% + ${config.logo.x}px),${config.logo.y}px) scale(${config.logo.scale})`
-        : `translate(${config.logo.x}px,${config.logo.y}px) scale(${config.logo.scale})`;
-      iqLogo.style.transformOrigin = `${align} top`;
+      iqLogo.style.display = '';
+      iqLogo.style.left = '34px';
+      iqLogo.style.right = 'auto';
+      iqLogo.style.transform = `scale(${config.logo.mode === 'iq' ? config.logo.scale : 1})`;
+      iqLogo.style.transformOrigin = 'left top';
     }
     if(customLogo) {
       customLogo.style.display = config.logo.mode === 'custom' && config.logo.dataUrl ? 'block' : 'none';

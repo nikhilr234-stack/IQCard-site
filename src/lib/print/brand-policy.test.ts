@@ -13,7 +13,7 @@ describe('mandatory IQ branding policy', () => {
     const custom = { ...saved, logo: { ...saved.logo, mode: 'custom', dataUrl: 'data:image/png;base64,saved', filename: 'own.png' } }
     expect(applyBrandPolicy(custom)).toEqual(custom)
   })
-  it('keeps deliberately absent logos absent', () => {
+  it('preserves the saved opt-out field while the renderer independently enforces IQ branding', () => {
     const absent = { ...saved, logo: { ...saved.logo, mode: 'none' } }
     expect(applyBrandPolicy(absent)).toEqual(absent)
   })
