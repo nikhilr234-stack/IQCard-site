@@ -47,7 +47,7 @@
   .layer-back-adhesive{transform:translateZ(calc(var(--thickness)*-.24)) scale(.998);background:var(--adhesive-tone)}
   .card-skin{overflow:hidden;backface-visibility:hidden;box-shadow:var(--card-shadow);background:var(--material-base)}
   .card-front{transform:translateZ(calc(var(--thickness)/2))}
-  .card-back{transform:rotateY(180deg) translateZ(calc(var(--thickness)/2))}
+  .card-back{background:var(--back-material-base,var(--material-base));transform:rotateY(180deg) translateZ(calc(var(--thickness)/2))}
   .card-skin:before{content:"";position:absolute;inset:0;background:var(--grain-pattern);opacity:.76;mix-blend-mode:multiply;pointer-events:none}
   .card-skin:after{content:"";position:absolute;inset:-25%;background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,calc(var(--specular)*1.2)) 0 5%,rgba(255,255,255,calc(var(--specular)*.38)) 17%,transparent 48%),linear-gradient(112deg,transparent 22%,rgba(255,255,255,calc(var(--specular)*.55)) 44%,transparent 61%);transform:translate3d(0,0,1px);filter:blur(calc(var(--roughness)*2.4px));opacity:calc(.42 + var(--specular));transition:opacity .35s ease;pointer-events:none}
   .finish-gloss .card-skin:after{opacity:.9;filter:blur(.35px)}.finish-satin .card-skin:after{opacity:.62}.finish-matte .card-skin:after{opacity:.28;filter:blur(2.2px)}
@@ -312,9 +312,13 @@
 
 </main>
 <script type="module">
+  import { MATERIAL_SURFACES, SurfaceMapCache, surfaceFor } from '/customize/material-surfaces.mjs';
+  import { verifyBytes } from '/customize/print-integrity.mjs';
   import { applyBrandPolicy } from "/customize/brand-policy.mjs";
   import { loadOwnedAtelierDesign, saveOwnedAtelierDesign } from '/customize/saved-design.mjs';
   const entryParams = new URLSearchParams(location.search);
+  const materialPairsMode = entryParams.get('pairs') === '1';
+  const materialReviewMode = entryParams.get('materials') === '1';
   const previewMode = entryParams.get('preview') === '1';
   const resumeMode = entryParams.get('resume') === '1';
   const restoreMode = entryParams.get('restore') === '1';
@@ -372,6 +376,7 @@
 
 
   // V8 commercial pricing is intentionally centralized and provisional.
+  materials.forEach(material=>{material.surface=`url("${MATERIAL_SURFACES[material.name].url}") center / 100% 100% no-repeat`;material.grain='none';});
   const PRICING_TABLE = {
     pricingVersion: 'flat-inr-v2',
     currency: 'INR',
@@ -610,6 +615,7 @@
       this.mount.appendChild(this.canvas);
       this.gl=null;this.ready=false;this.failed=false;this.lastConfig=null;this.paused=false;this.reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;this.resizeObserver=null;
       this.pose={x:8,y:-18,z:-4,zoom:1};
+      this.surfaceMaps=new SurfaceMapCache(surface=>this.loadSurfaceMap(surface));this.activeSurface=null;this.activeBackSurface=null;this.surfaceRequest=0;this.surfaceKey=undefined;this.materialReady=Promise.resolve(null);
       this.program=null;this.meshes=[];this.cameraDistance=9.6;this.sweepProgress=.22;this.sweepFrame=0;
       this.frontDecalCanvas=document.createElement('canvas');this.backDecalCanvas=document.createElement('canvas');this.frontDecalCanvas.width=this.backDecalCanvas.width=1600;this.frontDecalCanvas.height=this.backDecalCanvas.height=1000;this.customLogoImageCache=new Map();this.decalProgram=null;this.decalMeshes=[];
       this.layerMaterials={
@@ -632,45 +638,24 @@
       layout(location=0) in vec3 aPosition;
       layout(location=1) in vec3 aNormal;
       layout(location=2) in vec2 aUv;
-      uniform mat4 uModel;uniform mat4 uViewProj;
+      uniform mat4 uModel;uniform mat4 uViewProj;uniform bool uPrint;uniform vec2 uFlatScale;uniform vec2 uFlatOffset;
       out vec3 vNormal;out vec3 vWorld;out vec2 vUv;
-      void main(){vec4 world=uModel*vec4(aPosition,1.0);vWorld=world.xyz;vNormal=normalize(mat3(uModel)*aNormal);vUv=aUv;gl_Position=uViewProj*world;}`;
+      void main(){if(uPrint){vUv=aUv*uFlatScale-uFlatOffset;vWorld=vec3(0.0);vNormal=vec3(0.0,0.0,1.0);gl_Position=vec4(aUv*2.0-1.0,0.0,1.0);return;}vec4 world=uModel*vec4(aPosition,1.0);vWorld=world.xyz;vNormal=normalize(mat3(uModel)*aNormal);vUv=aUv;gl_Position=uViewProj*world;}`;
       const fs=`#version 300 es
       precision highp float;
       in vec3 vNormal;in vec3 vWorld;in vec2 vUv;
-      uniform vec3 uBase;uniform float uRoughness;uniform float uMetalness;uniform vec3 uCamera;uniform int uMaterialKind;uniform float uPatternScale;uniform float uSweep;
+      uniform bool uPrint;uniform vec3 uBase;uniform float uRoughness;uniform float uMetalness;uniform vec3 uCamera;uniform int uMaterialKind;uniform float uPatternScale;uniform float uSweep;uniform bool uUseSurfaceMap;uniform sampler2D uSurfaceMap;
       out vec4 outColor;
       float sat(float x){return clamp(x,0.0,1.0);} 
       float hash21(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
       float noise21(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash21(i),hash21(i+vec2(1,0)),f.x),mix(hash21(i+vec2(0,1)),hash21(i+vec2(1,1)),f.x),f.y);}
       vec3 fresnel(float cosTheta,vec3 f0){return f0+(1.0-f0)*pow(1.0-cosTheta,5.0);} 
-      vec3 materialPattern(vec3 base,vec2 rawUv,int kind,out float micro){
-        vec2 uv=rawUv*uPatternScale;micro=0.0;
-        if(kind==1){float warp=(noise21(vec2(uv.y*1.8,uv.x*.65))-.5)*.18;float grain=noise21(vec2((uv.x+warp)*4.0,uv.y*58.0))+noise21(vec2((uv.x+warp)*9.0,uv.y*125.0))*.35;float tonal=noise21(uv*2.8);micro=(grain-.5)*.035;return base*(.86+grain*.17+tonal*.06);}
-        if(kind==2){float warp=(noise21(vec2(uv.y*1.6,uv.x*.55))-.5)*.12;float grain=noise21(vec2((uv.x+warp)*3.0,uv.y*42.0));float tonal=noise21(uv*2.2);micro=(grain-.5)*.025;return base*(.90+grain*.12+tonal*.05);}
-        if(kind==3){float warp=(noise21(vec2(uv.y*3.0,uv.x*2.0))-.5)*.2;float g=.5+.5*sin((uv.x*18.0+warp)*6.28318);micro=(g-.5)*.035;return base*mix(.78,1.08,g);}
-        if(kind==4){float f=noise21(uv*170.0);micro=(f-.5)*.1;return base*mix(.95,1.04,f);}
-        if(kind==5){float wx=abs(sin(uv.x*260.0)),wy=abs(sin(uv.y*220.0));float w=pow(wx*wy,.35);micro=(w-.55)*.14;return base*mix(.82,1.11,w);}
-        if(kind==6){float p=noise21(uv*75.0);float q=noise21(uv*150.0+9.3);float pebbled=smoothstep(.30,.78,p*.7+q*.3);micro=(pebbled-.5)*.16;return base*mix(.78,1.10,pebbled);}
-        if(kind==7){float s=hash21(floor(uv*145.0));micro=(s-.5)*.08;return base*mix(.80,1.17,smoothstep(.74,.98,s));}
-        if(kind==8){float n=noise21(uv*3.2);float d=abs(sin((uv.y*1.9+uv.x*.32+n*1.35)*3.14159));float vein=1.0-smoothstep(.025,.105,d);micro=-vein*.055;return mix(base,vec3(.52,.53,.55),vein*.28);}
-        if(kind==9){vec2 cell=floor(uv*22.0);float h=hash21(cell);float chip=step(.73,h);vec3 chipCol=mix(vec3(.32,.42,.44),vec3(.62,.34,.25),hash21(cell+4.1));micro=chip*.06;return mix(base,chipCol,chip*.72);}
-        if(kind==10){vec2 q=uv*45.0;float a=step(.5,fract(q.x)),b=step(.5,fract(q.y));float weave=abs(a-b);micro=(weave-.5)*.09;return base*mix(.64,1.25,weave);}
-        if(kind==11){float brush=noise21(vec2(uv.x*8.0,uv.y*520.0));micro=(brush-.5)*.12;return base*mix(.84,1.12,brush);}
-        if(kind==12){float n=noise21(uv*3.5);float d=abs(sin((uv.x*1.7+uv.y*.55+n*1.5)*3.14159));float vein=1.0-smoothstep(.02,.085,d);micro=-vein*.045;return mix(base,vec3(.43,.39,.37),vein*.24);}
-        if(kind==13){float broad=noise21(uv*3.2);float pebble=noise21(uv*118.0+noise21(uv*6.0)*1.4);float fine=noise21(uv*265.0);float texture=broad*.10+pebble*.62+fine*.28;micro=(texture-.52)*.042;return base*(.91+texture*.14);}
-        if(kind==14){float mineral=noise21(uv*42.0);float fine=noise21(uv*220.0);float fleck=noise21(uv*9.0+4.7);float texture=mineral*.48+fine*.38+fleck*.14;float darkFleck=smoothstep(.76,.96,noise21(uv*31.0+8.2));micro=(texture-.52)*.040-darkFleck*.018;return base*(.90+texture*.16-darkFleck*.035);}
-        if(kind==15){float broad=noise21(uv*3.5);float grain=noise21(uv*118.0+noise21(uv*9.0)*2.5);float fine=noise21(uv*250.0);float texture=broad*.12+grain*.62+fine*.26;micro=(texture-.52)*.055;return base*(.87+texture*.22);}
-        if(kind==16){float cloud=noise21(uv*5.5)*.55+noise21(uv*15.0)*.45;float fine=noise21(uv*190.0);float pin=smoothstep(.84,.97,noise21(uv*58.0+3.1));float texture=cloud*.62+fine*.38;micro=(texture-.52)*.035-pin*.022;return base*(.91+texture*.15-pin*.025);}
-        if(kind==17){float grain=noise21(uv*165.0+noise21(uv*8.0)*1.2);float fine=noise21(uv*285.0);float texture=grain*.72+fine*.28;micro=(texture-.52)*.026;return base*(.93+texture*.11);}
-        return base;
-      }
       void main(){
         vec3 N=normalize(vNormal),V=normalize(uCamera-vWorld);
         vec3 L1=normalize(vec3(mix(-4.8,4.8,uSweep),4.0,5.5)-vWorld),L2=normalize(vec3(3.8,1.4,3.2)-vWorld),L3=normalize(vec3(0.0,-3.0,2.0)-vWorld);
-        float micro=0.0;vec3 base=materialPattern(uBase,vUv,uMaterialKind,micro);float rough=clamp(uRoughness+micro,.06,1.0);vec3 f0=mix(vec3(.04),base,uMetalness);
-        vec3 total=base*(.24+.08*(1.0-rough));
-        vec3 lights[3]=vec3[3](L1,L2,L3);vec3 cols[3]=vec3[3](vec3(1.0,.985,.96)*2.0,vec3(.78,.84,1.0)*.8,vec3(1.0,.72,.52)*.35);
+        float micro=0.0;vec2 uv=clamp(vUv,vec2(0.0),vec2(1.0));vec3 base=uUseSurfaceMap?texture(uSurfaceMap,uv).rgb:uBase;if(uPrint){outColor=vec4(clamp(base,0.0,1.0),1.0);return;}base=pow(base,vec3(2.2));float rough=clamp(uRoughness+micro,.06,1.0);vec3 f0=mix(vec3(.04),base,uMetalness);
+        vec3 total=base*(.58+.08*(1.0-rough));
+        vec3 lights[3]=vec3[3](L1,L2,L3);vec3 cols[3]=vec3[3](vec3(1.0,.995,.985)*2.6,vec3(.94,.97,1.0)*.75,vec3(1.0,.97,.93)*.35);
         for(int i=0;i<3;i++){
           vec3 L=lights[i],H=normalize(V+L);float nl=sat(dot(N,L)),nv=sat(dot(N,V)),nh=sat(dot(N,H)),vh=sat(dot(V,H));
           float a=rough*rough,a2=a*a,den=(nh*nh*(a2-1.0)+1.0);float D=a2/max(3.14159*den*den,.0001);
@@ -679,14 +664,15 @@
           total+=(kd*base/3.14159+spec)*cols[i]*nl;
         }
         float rim=pow(1.0-sat(dot(N,V)),3.0);total+=vec3(.34,.36,.4)*rim*.22;
-        total=total/(total+vec3(1.0));total=pow(total,vec3(1.0/2.2));
+        total=clamp((total*(2.51*total+.03))/(total*(2.43*total+.59)+.14),0.0,1.0);total=pow(total,vec3(1.0/2.2));
         outColor=vec4(total,1.0);
       }`;
       const program=gl.createProgram();gl.attachShader(program,this.compile(gl.VERTEX_SHADER,vs));gl.attachShader(program,this.compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);
       if(!gl.getProgramParameter(program,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program)||'program link failed');
       this.program=program;
       this.uniforms={
-        model:gl.getUniformLocation(program,'uModel'),viewProj:gl.getUniformLocation(program,'uViewProj'),base:gl.getUniformLocation(program,'uBase'),roughness:gl.getUniformLocation(program,'uRoughness'),metalness:gl.getUniformLocation(program,'uMetalness'),camera:gl.getUniformLocation(program,'uCamera'),materialKind:gl.getUniformLocation(program,'uMaterialKind'),patternScale:gl.getUniformLocation(program,'uPatternScale'),sweep:gl.getUniformLocation(program,'uSweep')
+        useSurfaceMap:gl.getUniformLocation(program,'uUseSurfaceMap'),surfaceMap:gl.getUniformLocation(program,'uSurfaceMap'),
+        print:gl.getUniformLocation(program,'uPrint'),flatScale:gl.getUniformLocation(program,'uFlatScale'),flatOffset:gl.getUniformLocation(program,'uFlatOffset'),model:gl.getUniformLocation(program,'uModel'),viewProj:gl.getUniformLocation(program,'uViewProj'),base:gl.getUniformLocation(program,'uBase'),roughness:gl.getUniformLocation(program,'uRoughness'),metalness:gl.getUniformLocation(program,'uMetalness'),camera:gl.getUniformLocation(program,'uCamera'),materialKind:gl.getUniformLocation(program,'uMaterialKind'),patternScale:gl.getUniformLocation(program,'uPatternScale'),sweep:gl.getUniformLocation(program,'uSweep')
       };
     }
     createDecalProgram(){
@@ -744,7 +730,7 @@
       }
     }
     drawFrontDecal(config){
-      const c=this.frontDecalCanvas,ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.globalAlpha=1;
+      const c=this.frontDecalCanvas,ctx=c.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);ctx.setTransform(c.width/1600,0,0,c.height/1000,0,0);ctx.globalAlpha=1;
       const stepIndex=STEPS.indexOf(config.step);if(stepIndex>=0&&stepIndex<STEPS.indexOf('identity'))return;
       const layout=config.identity.composition,scale=config.identity.fineTune.nameScale,xOffset=config.identity.fineTune.x*2.5,yOffset=config.identity.fineTune.y*2.5;
       const specs={signature:{x:105,y:910,font:104,logoX:105,logoY:86,logoSize:108,logoAlign:'left'},editorial:{x:105,y:910,font:148,logoX:1495,logoY:86,logoSize:70,logoAlign:'right'},minimal:{x:105,y:910,font:56,logoX:105,logoY:86,logoSize:62,logoAlign:'left'},centered:{x:800,y:555,font:98,logoX:800,logoY:86,logoSize:62,logoAlign:'center'},statement:{x:70,y:930,font:170,logoX:1490,logoY:82,logoSize:62,logoAlign:'right'}};
@@ -753,7 +739,7 @@
       let lx=s.logoX+config.logo.x*2.5,ly=s.logoY+config.logo.y*2.5,lalign=config.logo.align||s.logoAlign;if(config.logo.align==='center')lx=800+config.logo.x*2.5;else if(config.logo.align==='right')lx=1490+config.logo.x*2.5;this.drawLogo(ctx,config,lx,ly,s.logoSize,lalign);
     }
     drawBackDecal(config){
-      const c=this.backDecalCanvas,ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.globalAlpha=1;const light=config.identity.tone==='light';
+      const c=this.backDecalCanvas,ctx=c.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);ctx.setTransform(c.width/1600,0,0,c.height/1000,0,0);ctx.globalAlpha=1;const light=config.identity.tone==='light';
       ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 34px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('TAP TO CONNECT',105,910);ctx.restore();
       if(config.backLayout==='identity'||config.backLayout==='custom'){ctx.save();this.applyCraftTextStyle(ctx,config);ctx.font='700 72px Helvetica,Arial,sans-serif';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(config.identity.name||'',105,100);ctx.restore();}
       if(config.backLayout==='branded'||config.backLayout==='custom')this.drawLogo(ctx,config,1490,86,74,'right');
@@ -806,6 +792,32 @@
         });
       }
     }
+    async loadSurfaceMap(surface){
+      const image=new Image(),controller=new AbortController();let objectUrl;
+      const timeout=setTimeout(()=>controller.abort(),15000);
+      try{
+        const response=await fetch(surface.url,{credentials:'same-origin',signal:controller.signal});
+        if(!response.ok)throw new Error('The selected material texture could not be loaded.');
+        const bytes=new Uint8Array(await response.arrayBuffer());await verifyBytes(bytes,surface.sha256);
+        objectUrl=URL.createObjectURL(new Blob([bytes],{type:'image/webp'}));image.src=objectUrl;
+        await Promise.race([image.decode(),new Promise((_,reject)=>{controller.signal.addEventListener('abort',()=>reject(new Error('Material texture did not load. Please reload before printing.')),{once:true});})]);
+      }finally{clearTimeout(timeout);if(objectUrl)URL.revokeObjectURL(objectUrl);}
+      if(image.naturalWidth!==surface.width||image.naturalHeight!==surface.height)throw new Error('Material master dimensions do not match. Export is blocked.');
+      const gl=this.gl,texture=gl.createTexture();gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.generateMipmap(gl.TEXTURE_2D);gl.activeTexture(gl.TEXTURE0);
+      return {texture,image};
+    }
+    prepareSurface(config){
+      const key=surfaceFor(config)?.key||null;if(key===this.surfaceKey&&this.mount.dataset.surfaceState!=='failed')return;
+      this.surfaceKey=key;this.activeSurface=null;this.activeBackSurface=null;const request=++this.surfaceRequest;this.mount.dataset.surfaceState=key?'loading':'ready';this.mount.setAttribute('aria-busy',String(Boolean(key)));
+      this.materialReady=Promise.all([this.surfaceMaps.get(config,'front'),this.surfaceMaps.get(config,'back')]).then(([source,back])=>{if(request===this.surfaceRequest){this.activeSurface=source;this.activeBackSurface=back;this.mount.dataset.surfaceState='ready';this.mount.setAttribute('aria-busy','false');this.draw();}return source;},error=>{if(request===this.surfaceRequest){this.mount.dataset.surfaceState='failed';this.mount.setAttribute('aria-busy','false');}throw error;});
+      this.materialReady.catch(()=>{});
+    }
+    bindSurface(enabled,printing=false,face='front'){
+      const source=face==='back'?this.activeBackSurface:this.activeSurface;
+      const gl=this.gl;gl.uniform1i(this.uniforms.useSurfaceMap,Boolean(enabled&&source));gl.uniform1i(this.uniforms.surfaceMap,1);
+      gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,source?.texture||this.frontDecalTexture);if(source)gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,printing?gl.LINEAR:gl.LINEAR_MIPMAP_LINEAR);gl.activeTexture(gl.TEXTURE0);
+    }
     init(){
       try{
         const gl=this.canvas.getContext('webgl2',{antialias:true,alpha:true,premultipliedAlpha:true,preserveDrawingBuffer:false});
@@ -825,7 +837,7 @@
       if(!this.gl)return;const rect=this.mount.getBoundingClientRect(),dpr=Math.min(MAX_PIXEL_RATIO,window.devicePixelRatio||1),w=Math.max(1,Math.round(rect.width*dpr)),h=Math.max(1,Math.round(rect.height*dpr));
       if(this.canvas.width!==w||this.canvas.height!==h){this.canvas.width=w;this.canvas.height=h;}this.gl.viewport(0,0,w,h);this.draw();
     }
-    update(config){this.lastConfig=config;this.updateCoreAppearance(config);this.updateDecals(config);this.draw();}
+    update(config){this.lastConfig=config;this.updateCoreAppearance(config);this.prepareSurface(config);this.updateDecals(config);this.draw();}
     setPose(x,y,z,zoom){this.pose={x,y,z,zoom};this.draw();}
     sweep(kind='material'){
       if(this.reducedMotion||this.paused){this.sweepProgress=.22;this.draw();return;}
@@ -839,13 +851,34 @@
       };
       this.sweepFrame=requestAnimationFrame(tick);
     }
+    renderFlatSurface(g,face='front'){
+      const selected=surfaceFor(this.lastConfig,face),source=face==='back'?this.activeBackSurface:this.activeSurface;
+      if(selected&&(!source||source.surface.key!==selected.key))throw new Error('The exact material map is not ready. Reload before printing.');
+      const gl=this.gl,framebuffer=gl.createFramebuffer(),texture=gl.createTexture(),previous=gl.getParameter(gl.FRAMEBUFFER_BINDING),viewport=gl.getParameter(gl.VIEWPORT),canvas=document.createElement('canvas');
+      canvas.width=g.pixelsWide;canvas.height=g.pixelsHigh;
+      try{
+        gl.bindTexture(gl.TEXTURE_2D,texture);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,g.pixelsWide,g.pixelsHigh,0,gl.RGBA,gl.UNSIGNED_BYTE,null);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+        gl.bindFramebuffer(gl.FRAMEBUFFER,framebuffer);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,texture,0);
+        if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)throw new Error('Print surface allocation failed.');
+        gl.viewport(0,0,g.pixelsWide,g.pixelsHigh);gl.disable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);gl.useProgram(this.program);gl.uniform1i(this.uniforms.print,1);
+        gl.uniform2f(this.uniforms.flatScale,g.artWidth/g.trimWidth,g.artHeight/g.trimHeight);gl.uniform2f(this.uniforms.flatOffset,g.bleed/g.trimWidth,g.bleed/g.trimHeight);
+        this.bindSurface(true,true,face);
+        const mat=this.layerMaterials.frontSkin,c=iqHexToRgb(mat.base);gl.uniform3f(this.uniforms.base,...c);gl.uniform1i(this.uniforms.materialKind,mat.materialKind||0);gl.uniform1f(this.uniforms.patternScale,mat.patternScale||1);gl.bindVertexArray(this.frontDecalMesh.vao);gl.drawElements(gl.TRIANGLES,this.frontDecalMesh.count,gl.UNSIGNED_SHORT,0);
+        const data=new Uint8Array(g.pixelsWide*g.pixelsHigh*4);gl.readPixels(0,0,g.pixelsWide,g.pixelsHigh,gl.RGBA,gl.UNSIGNED_BYTE,data);
+        if(gl.isContextLost()||gl.getError()!==gl.NO_ERROR)throw new Error('Print surface rendering failed.');
+        const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(g.pixelsWide,g.pixelsHigh),row=g.pixelsWide*4;
+        for(let y=0;y<g.pixelsHigh;y++)pixels.data.set(data.subarray((g.pixelsHigh-y-1)*row,(g.pixelsHigh-y)*row),y*row);
+        ctx.putImageData(pixels,0,0);return canvas;
+      }finally{gl.uniform1i(this.uniforms.print,0);gl.bindFramebuffer(gl.FRAMEBUFFER,previous);gl.viewport(...viewport);gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);gl.bindVertexArray(null);gl.deleteFramebuffer(framebuffer);gl.deleteTexture(texture);this.draw();}
+    }
     draw(){
       const gl=this.gl;if(!gl||!this.ready||!this.program||this.paused)return;
-      gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);
+      gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);gl.uniform1i(this.uniforms.print,0);
       const aspect=this.canvas.width/Math.max(1,this.canvas.height),proj=iqPerspective(34,aspect,.1,100),view=new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,-this.cameraDistance,1]),vp=iqMultiply4(proj,view);
       const p=this.pose,model=iqModelMatrix(p.x*Math.PI/180,p.y*Math.PI/180,p.z*Math.PI/180,p.zoom*1.03);
       gl.uniformMatrix4fv(this.uniforms.model,false,model);gl.uniformMatrix4fv(this.uniforms.viewProj,false,vp);gl.uniform3f(this.uniforms.camera,0,0,this.cameraDistance);gl.uniform1f(this.uniforms.sweep,this.sweepProgress);
       for(const mesh of this.meshes){
+        this.bindSurface(mesh.materialKey==='frontSkin'||mesh.materialKey==='backSkin',false,mesh.materialKey==='backSkin'?'back':'front');
         const mat=this.layerMaterials[mesh.materialKey];const c=iqHexToRgb(mat.base);gl.uniform3f(this.uniforms.base,c[0],c[1],c[2]);gl.uniform1f(this.uniforms.roughness,mat.roughness);gl.uniform1f(this.uniforms.metalness,mat.metalness||0);gl.uniform1i(this.uniforms.materialKind,mat.materialKind||0);gl.uniform1f(this.uniforms.patternScale,mat.patternScale||1);gl.bindVertexArray(mesh.vao);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_SHORT,0);
       }
       if(this.decalProgram&&this.frontDecalTexture){
@@ -958,6 +991,7 @@
       root.style.setProperty('--stage-b', color ? '#f1f1f4' : material.preferredTone==='light' ? '#efeff3' : '#f4f4f6');
       root.style.setProperty('--stage-c', color ? '#e5e5e9' : material.preferredTone==='light' ? '#e2e3e7' : '#e8e8ec');
     }
+    const rearSurface=surfaceFor(config,'back');root.style.setProperty('--back-material-base',rearSurface?`url("${rearSurface.url}") center / 100% 100% no-repeat`:getComputedStyle(root).getPropertyValue('--material-base'));
     const stepIndex = STEPS.indexOf(config.step);
     card.classList.toggle('pre-identity-preview', stepIndex >= 0 && stepIndex < STEPS.indexOf('identity'));
     frontName.textContent = config.identity.name;
@@ -1380,7 +1414,7 @@
   materials.forEach((m,i)=>{
     const b=document.createElement('button');
     b.className='material';b.dataset.material=m.name;b.setAttribute('aria-pressed',i===0?'true':'false');
-    b.innerHTML=`<i class="swatch" style="--swatch:${m.surface};--grain:${m.grain}"></i><span class="material-copy"><strong>${m.name}</strong><span>${m.feel}</span></span>`;
+    b.innerHTML=`<i class="swatch" style="--swatch:url(/customize/surfaces/v2/thumbs/${MATERIAL_SURFACES[m.name].key}.webp) center / 100% 100% no-repeat;--grain:none"></i><span class="material-copy"><strong>${m.name}</strong><span>${m.feel}</span></span>`;
     b.addEventListener('click',()=>setMaterial(m));
     materialGrid.appendChild(b);
   });
@@ -1577,7 +1611,13 @@
    autosaveReady = false;
 
    initPBRRenderer();
-  if(previewMode || resumeMode){
+  if(materialPairsMode){
+    const { mountSurfacePairs } = await import('/customize/material-pairs.mjs');
+    await mountSurfacePairs(window.__iqPBR);
+  } else if(materialReviewMode){
+    const { mountMaterialReview } = await import('/customize/material-review.mjs');
+    await mountMaterialReview(window.__iqPBR,materials);
+  } else if(previewMode || resumeMode){
     try {
       const record = await loadOwnedAtelierDesign(entryParams.get('design'));
       if(!restoreSavedDesign(record)) throw new Error('Your saved card configuration is unavailable.');

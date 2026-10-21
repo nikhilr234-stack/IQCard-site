@@ -47,7 +47,7 @@
   .layer-back-adhesive{transform:translateZ(calc(var(--thickness)*-.24)) scale(.998);background:var(--adhesive-tone)}
   .card-skin{overflow:hidden;backface-visibility:hidden;box-shadow:var(--card-shadow);background:var(--material-base)}
   .card-front{transform:translateZ(calc(var(--thickness)/2))}
-  .card-back{transform:rotateY(180deg) translateZ(calc(var(--thickness)/2))}
+  .card-back{background:var(--back-material-base,var(--material-base));transform:rotateY(180deg) translateZ(calc(var(--thickness)/2))}
   .card-skin:before{content:"";position:absolute;inset:0;background:var(--grain-pattern);opacity:.76;mix-blend-mode:multiply;pointer-events:none}
   .card-skin:after{content:"";position:absolute;inset:-25%;background:radial-gradient(circle at var(--mx) var(--my),rgba(255,255,255,calc(var(--specular)*1.2)) 0 5%,rgba(255,255,255,calc(var(--specular)*.38)) 17%,transparent 48%),linear-gradient(112deg,transparent 22%,rgba(255,255,255,calc(var(--specular)*.55)) 44%,transparent 61%);transform:translate3d(0,0,1px);filter:blur(calc(var(--roughness)*2.4px));opacity:calc(.42 + var(--specular));transition:opacity .35s ease;pointer-events:none}
   .finish-gloss .card-skin:after{opacity:.9;filter:blur(.35px)}.finish-satin .card-skin:after{opacity:.62}.finish-matte .card-skin:after{opacity:.28;filter:blur(2.2px)}
@@ -619,7 +619,7 @@
       this.mount.appendChild(this.canvas);
       this.gl=null;this.ready=false;this.failed=false;this.lastConfig=null;this.paused=false;this.reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;this.resizeObserver=null;
       this.pose={x:8,y:-18,z:-4,zoom:1};
-      this.surfaceMaps=new SurfaceMapCache(surface=>this.loadSurfaceMap(surface));this.activeSurface=null;this.surfaceRequest=0;this.surfaceKey=undefined;this.materialReady=Promise.resolve(null);
+      this.surfaceMaps=new SurfaceMapCache(surface=>this.loadSurfaceMap(surface));this.activeSurface=null;this.activeBackSurface=null;this.surfaceRequest=0;this.surfaceKey=undefined;this.materialReady=Promise.resolve(null);
       this.program=null;this.meshes=[];this.cameraDistance=9.6;this.sweepProgress=.22;this.sweepFrame=0;
       this.frontDecalCanvas=document.createElement('canvas');this.backDecalCanvas=document.createElement('canvas');this.frontDecalCanvas.width=this.backDecalCanvas.width=1600;this.frontDecalCanvas.height=this.backDecalCanvas.height=1000;this.customLogoImageCache=new Map();this.decalProgram=null;this.decalMeshes=[];
       this.layerMaterials={
@@ -812,14 +812,15 @@
       return {texture,image};
     }
     prepareSurface(config){
-      const key=surfaceFor(config)?.key||null;if(key===this.surfaceKey)return;
-      this.surfaceKey=key;this.activeSurface=null;const request=++this.surfaceRequest;this.mount.dataset.surfaceState=key?'loading':'ready';this.mount.setAttribute('aria-busy',String(Boolean(key)));
-      this.materialReady=this.surfaceMaps.get(config).then(source=>{if(request===this.surfaceRequest){this.activeSurface=source;this.mount.dataset.surfaceState='ready';this.mount.setAttribute('aria-busy','false');this.draw();}return source;},error=>{if(request===this.surfaceRequest){this.mount.dataset.surfaceState='failed';this.mount.setAttribute('aria-busy','false');}throw error;});
+      const key=surfaceFor(config)?.key||null;if(key===this.surfaceKey&&this.mount.dataset.surfaceState!=='failed')return;
+      this.surfaceKey=key;this.activeSurface=null;this.activeBackSurface=null;const request=++this.surfaceRequest;this.mount.dataset.surfaceState=key?'loading':'ready';this.mount.setAttribute('aria-busy',String(Boolean(key)));
+      this.materialReady=Promise.all([this.surfaceMaps.get(config,'front'),this.surfaceMaps.get(config,'back')]).then(([source,back])=>{if(request===this.surfaceRequest){this.activeSurface=source;this.activeBackSurface=back;this.mount.dataset.surfaceState='ready';this.mount.setAttribute('aria-busy','false');this.draw();}return source;},error=>{if(request===this.surfaceRequest){this.mount.dataset.surfaceState='failed';this.mount.setAttribute('aria-busy','false');}throw error;});
       this.materialReady.catch(()=>{});
     }
-    bindSurface(enabled,printing=false){
-      const gl=this.gl;gl.uniform1i(this.uniforms.useSurfaceMap,Boolean(enabled&&this.activeSurface));gl.uniform1i(this.uniforms.surfaceMap,1);
-      gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.activeSurface?.texture||this.frontDecalTexture);if(this.activeSurface)gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,printing?gl.LINEAR:gl.LINEAR_MIPMAP_LINEAR);gl.activeTexture(gl.TEXTURE0);
+    bindSurface(enabled,printing=false,face='front'){
+      const source=face==='back'?this.activeBackSurface:this.activeSurface;
+      const gl=this.gl;gl.uniform1i(this.uniforms.useSurfaceMap,Boolean(enabled&&source));gl.uniform1i(this.uniforms.surfaceMap,1);
+      gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,source?.texture||this.frontDecalTexture);if(source)gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,printing?gl.LINEAR:gl.LINEAR_MIPMAP_LINEAR);gl.activeTexture(gl.TEXTURE0);
     }
     init(){
       try{
@@ -854,8 +855,9 @@
       };
       this.sweepFrame=requestAnimationFrame(tick);
     }
-    renderFlatSurface(g){
-      if(this.surfaceKey&&(!this.activeSurface||this.activeSurface.surface.key!==this.surfaceKey))throw new Error('The exact material map is not ready. Reload before printing.');
+    renderFlatSurface(g,face='front'){
+      const selected=surfaceFor(this.lastConfig,face),source=face==='back'?this.activeBackSurface:this.activeSurface;
+      if(selected&&(!source||source.surface.key!==selected.key))throw new Error('The exact material map is not ready. Reload before printing.');
       const gl=this.gl,framebuffer=gl.createFramebuffer(),texture=gl.createTexture(),previous=gl.getParameter(gl.FRAMEBUFFER_BINDING),viewport=gl.getParameter(gl.VIEWPORT),canvas=document.createElement('canvas');
       canvas.width=g.pixelsWide;canvas.height=g.pixelsHigh;
       try{
@@ -864,7 +866,7 @@
         if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)throw new Error('Print surface allocation failed.');
         gl.viewport(0,0,g.pixelsWide,g.pixelsHigh);gl.disable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);gl.useProgram(this.program);gl.uniform1i(this.uniforms.print,1);
         gl.uniform2f(this.uniforms.flatScale,g.artWidth/g.trimWidth,g.artHeight/g.trimHeight);gl.uniform2f(this.uniforms.flatOffset,g.bleed/g.trimWidth,g.bleed/g.trimHeight);
-        this.bindSurface(true,true);
+        this.bindSurface(true,true,face);
         const mat=this.layerMaterials.frontSkin,c=iqHexToRgb(mat.base);gl.uniform3f(this.uniforms.base,...c);gl.uniform1i(this.uniforms.materialKind,mat.materialKind||0);gl.uniform1f(this.uniforms.patternScale,mat.patternScale||1);gl.bindVertexArray(this.frontDecalMesh.vao);gl.drawElements(gl.TRIANGLES,this.frontDecalMesh.count,gl.UNSIGNED_SHORT,0);
         const data=new Uint8Array(g.pixelsWide*g.pixelsHigh*4);gl.readPixels(0,0,g.pixelsWide,g.pixelsHigh,gl.RGBA,gl.UNSIGNED_BYTE,data);
         if(gl.isContextLost()||gl.getError()!==gl.NO_ERROR)throw new Error('Print surface rendering failed.');
@@ -880,7 +882,7 @@
       const p=this.pose,model=iqModelMatrix(p.x*Math.PI/180,p.y*Math.PI/180,p.z*Math.PI/180,p.zoom*1.03);
       gl.uniformMatrix4fv(this.uniforms.model,false,model);gl.uniformMatrix4fv(this.uniforms.viewProj,false,vp);gl.uniform3f(this.uniforms.camera,0,0,this.cameraDistance);gl.uniform1f(this.uniforms.sweep,this.sweepProgress);
       for(const mesh of this.meshes){
-        this.bindSurface(mesh.materialKey==='frontSkin'||mesh.materialKey==='backSkin');
+        this.bindSurface(mesh.materialKey==='frontSkin'||mesh.materialKey==='backSkin',false,mesh.materialKey==='backSkin'?'back':'front');
         const mat=this.layerMaterials[mesh.materialKey];const c=iqHexToRgb(mat.base);gl.uniform3f(this.uniforms.base,c[0],c[1],c[2]);gl.uniform1f(this.uniforms.roughness,mat.roughness);gl.uniform1f(this.uniforms.metalness,mat.metalness||0);gl.uniform1i(this.uniforms.materialKind,mat.materialKind||0);gl.uniform1f(this.uniforms.patternScale,mat.patternScale||1);gl.bindVertexArray(mesh.vao);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_SHORT,0);
       }
       if(this.decalProgram&&this.frontDecalTexture){
@@ -993,6 +995,7 @@
       root.style.setProperty('--stage-b', color ? '#f1f1f4' : material.preferredTone==='light' ? '#efeff3' : '#f4f4f6');
       root.style.setProperty('--stage-c', color ? '#e5e5e9' : material.preferredTone==='light' ? '#e2e3e7' : '#e8e8ec');
     }
+    const rearSurface=surfaceFor(config,'back');root.style.setProperty('--back-material-base',rearSurface?`url("${rearSurface.url}") center / 100% 100% no-repeat`:getComputedStyle(root).getPropertyValue('--material-base'));
     const stepIndex = STEPS.indexOf(config.step);
     card.classList.toggle('pre-identity-preview', stepIndex >= 0 && stepIndex < STEPS.indexOf('identity'));
     frontName.textContent = config.identity.name;

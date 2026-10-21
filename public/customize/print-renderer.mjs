@@ -41,15 +41,15 @@ export async function renderPrintArtwork(renderer,configuration,settings={}) {
     let timeout;try{await Promise.race([img.decode(),new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error('The saved logo did not load. Export is blocked.')),10000);})]);}finally{clearTimeout(timeout);}
     if(!img.naturalWidth)throw new Error('The saved logo is empty.');renderer.customLogoImageCache.set(configuration.logo.dataUrl,img);
   }
-  if(renderer.printGeneration!==generation||renderer.surfaceKey!==(surfaceFor(configuration)?.key||null)||renderer.lastConfig.customColor!==configuration.customColor||renderer.lastConfig.material!==configuration.material||renderer.lastConfig.core!==configuration.core)throw new Error('The selected artwork changed during preparation. Apply print settings again.');
+  if(renderer.printGeneration!==generation||renderer.surfaceKey!==(surfaceFor(configuration)?.key||null)||renderer.activeBackSurface?.surface.key!==(surfaceFor(configuration,'back')?.key||undefined)||renderer.lastConfig.customColor!==configuration.customColor||renderer.lastConfig.material!==configuration.material||renderer.lastConfig.core!==configuration.core)throw new Error('The selected artwork changed during preparation. Apply print settings again.');
   // Existing drawing functions retain the original 1600 × 1000 design coordinate system.
   const oldFront=renderer.frontDecalCanvas,oldBack=renderer.backDecalCanvas,front=document.createElement('canvas'),back=document.createElement('canvas'),boxes=[];
   front.width=back.width=3200;front.height=back.height=2000;
   observeCanvas(front,'Front',boxes);observeCanvas(back,'Back',boxes);
   try{renderer.frontDecalCanvas=front;renderer.backDecalCanvas=back;renderer.drawFrontDecal({...configuration,step:'final'});renderer.drawBackDecal({...configuration,step:'final'});}finally{renderer.frontDecalCanvas=oldFront;renderer.backDecalCanvas=oldBack;}
-  const surface=renderer.renderFlatSurface(g),sides={};
-  addContrastMeasurements(boxes,surface,g);
+  const sides={};
   for(const [side,decal] of [['front',front],['back',back]]){
+    const surface=renderer.renderFlatSurface(g,side);addContrastMeasurements(boxes.filter(b=>b.side.toLowerCase()===side),surface,g);
     const canvas=document.createElement('canvas');canvas.width=g.pixelsWide;canvas.height=g.pixelsHigh;const ctx=canvas.getContext('2d');ctx.drawImage(surface,0,0);
     const x=g.bleed/g.artWidth*canvas.width,y=g.bleed/g.artHeight*canvas.height,w=g.trimWidth/g.artWidth*canvas.width,h=g.trimHeight/g.artHeight*canvas.height;
     ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(decal,x,y,w,h);ctx.restore();sides[side]=canvas;

@@ -1,5 +1,5 @@
 // The same immutable colour map and UV rectangle are used by preview, swatches and print.
-export const MATERIAL_SURFACE_VERSION='iq-surfaces-v2';
+export const MATERIAL_SURFACE_VERSION='iq-surface-pairs-v3';
 export const MATERIAL_SURFACES=Object.freeze({
   "White": {
     "key": "white",
@@ -86,16 +86,61 @@ export const MATERIAL_SURFACES=Object.freeze({
     "sha256": "c1255b3f8e556d63f5d5dbfc8dea826b1a672900e4b414455bfa52c5ed6338db"
   }
 });
-export function surfaceFor(config){
+export const MATERIAL_BACK_SURFACES=Object.freeze({
+  "Concrete": {
+    "key": "concrete-back-v3",
+    "url": "/customize/surfaces/v3/back/concrete.webp",
+    "width": 1580,
+    "height": 995,
+    "sha256": "1c74f6ea86f8994b2bea29c8dd1d642f4cd4d71765d75c49b3131c3fc569014a"
+  },
+  "Ivory Marble": {
+    "key": "ivory-marble-back-v3",
+    "url": "/customize/surfaces/v3/back/ivory-marble.webp",
+    "width": 1582,
+    "height": 994,
+    "sha256": "3bf31ca9c6792e03df434deb8394d9c0b08d8a29ddcc4fef489ce71aab31ef84"
+  },
+  "Natural Oak": {
+    "key": "natural-oak-back-v3",
+    "url": "/customize/surfaces/v3/back/natural-oak.webp",
+    "width": 1576,
+    "height": 998,
+    "sha256": "c5b92e1b7ff96a9a93b5948694e6b7a4f7b4fd946f38994de6615b1cf349dca1"
+  },
+  "Oxidised Steel": {
+    "key": "oxidised-steel-back-v3",
+    "url": "/customize/surfaces/v3/back/oxidised-steel.webp",
+    "width": 1575,
+    "height": 999,
+    "sha256": "7feea381ed027d8adb497aa221e4476147c4705934ef3e3b5b995b553dffd47c"
+  },
+  "Travertine": {
+    "key": "travertine-back-v3",
+    "url": "/customize/surfaces/v3/back/travertine.webp",
+    "width": 1623,
+    "height": 969,
+    "sha256": "578d91f9d82127e58b80fe98f84bf737373f5b49e5e637bc3f85d2265c287bf6"
+  },
+  "Walnut": {
+    "key": "walnut-back-v3",
+    "url": "/customize/surfaces/v3/back/walnut.webp",
+    "width": 1576,
+    "height": 998,
+    "sha256": "a806f5062810dcb35e9fbdc84f7163cdd6d8bd254c4adca7d4d51bb52436ad9b"
+  }
+});
+export function surfaceFor(config,face='front'){
+  if(!['front','back'].includes(face))throw new Error('Choose a valid material face: front or back.');
   if(config?.step==='core'||config?.customColor)return null;
-  const surface=MATERIAL_SURFACES[config?.material];
+  const surface=(face==='back'?MATERIAL_BACK_SURFACES[config?.material]:null)||MATERIAL_SURFACES[config?.material];
   if(!surface)throw new Error('The saved material has no approved surface map. No substitute was loaded.');
   return surface;
 }
 export class SurfaceMapCache{
   constructor(load){this.load=load;this.pending=new Map();}
-  get(config){
-    const surface=surfaceFor(config);if(!surface)return Promise.resolve(null);
+  get(config,face='front'){
+    const surface=surfaceFor(config,face);if(!surface)return Promise.resolve(null);
     if(!this.pending.has(surface.key)){
       const task=Promise.resolve().then(()=>this.load(surface)).then(result=>({...result,surface})).catch(error=>{this.pending.delete(surface.key);throw error;});
       this.pending.set(surface.key,task);

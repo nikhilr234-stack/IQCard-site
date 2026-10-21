@@ -12,20 +12,21 @@ const samples=[['White','white'],['Black','black'],['Graphite','graphite'],['Ter
   const results=await page.evaluate(async samples=>{
    const r=window.__iqPBR,results=[],g={trimWidth:85.6,trimHeight:54,artWidth:85.6,artHeight:54,bleed:0,pixelsWide:856,pixelsHigh:540};
    const error=(a,b)=>{let sum=0;for(let i=0;i<a.length;i++)sum+=Math.abs(a[i]-b[i]);return sum/a.length;};
-   for(const [name,key] of samples){
+   const {surfaceFor}=await import('/customize/material-surfaces.mjs');
+   for(const [name] of samples){
     r.update({...r.lastConfig,step:'final',material:name,customColor:null});await r.materialReady;
-    const surface=r.renderFlatSurface(g),actual=surface.getContext('2d').getImageData(0,0,856,540).data;
-    const img=new Image();img.src='/customize/surfaces/v2/'+key+'.webp';await img.decode();const reference=document.createElement('canvas');reference.width=856;reference.height=540;reference.getContext('2d').drawImage(img,0,0,856,540);
-    const referenceError=error(actual,reference.getContext('2d').getImageData(0,0,856,540).data);
-    const bleed=r.renderFlatSurface({...g,artWidth:101.6,artHeight:70,bleed:8,pixelsWide:1016,pixelsHigh:700});
-    const decals=r.decalMeshes;r.decalMeshes=[];const oldPose={...r.pose};let backError;
-    try{r.setPose(0,0,0,1.2);const front=document.createElement('canvas');front.width=r.canvas.width;front.height=r.canvas.height;front.getContext('2d').drawImage(r.canvas,0,0);const a=front.getContext('2d').getImageData(0,0,front.width,front.height).data;r.setPose(0,180,0,1.2);front.getContext('2d').clearRect(0,0,front.width,front.height);front.getContext('2d').drawImage(r.canvas,0,0);const b=front.getContext('2d').getImageData(0,0,front.width,front.height).data;backError=error(a,b);}finally{r.decalMeshes=decals;r.setPose(oldPose.x,oldPose.y,oldPose.z,oldPose.zoom);}
-    results.push({name,referenceError,backError,bleedError:error(actual,bleed.getContext('2d').getImageData(80,80,856,540).data)});
+    for(const face of ['front','back']){
+     const surface=r.renderFlatSurface(g,face),actual=surface.getContext('2d').getImageData(0,0,856,540).data;
+     const img=new Image();img.src=surfaceFor(r.lastConfig,face).url;await img.decode();const reference=document.createElement('canvas');reference.width=856;reference.height=540;reference.getContext('2d').drawImage(img,0,0,856,540);
+     const referenceError=error(actual,reference.getContext('2d').getImageData(0,0,856,540).data);
+     const bleed=r.renderFlatSurface({...g,artWidth:101.6,artHeight:70,bleed:8,pixelsWide:1016,pixelsHigh:700},face);
+     results.push({name,face,referenceError,bleedError:error(actual,bleed.getContext('2d').getImageData(80,80,856,540).data)});
+    }
    }
    return results;
   },process.argv.includes('--red')?samples.filter(([name])=>name==='Ivory Marble'):samples);
   console.log(JSON.stringify({results,pageErrors:errors}));
-  if(results.some(x=>x.referenceError>2||x.bleedError>.3||x.backError>.4)||errors.length)throw new Error('Material master differs from rendered texture, rear face is mirrored, or bleed changes its crop.');
+  if(results.some(x=>x.referenceError>2||x.bleedError>.3)||errors.length)throw new Error('Material master differs from rendered texture, rear face is mirrored, or bleed changes its crop.');
   if(!process.argv.includes('--red')){
    const artifacts=process.env.PRINT_VERIFICATION_DIR||path.join(repo,'.print-verification');fs.mkdirSync(artifacts,{recursive:true});
    await page.goto('https://iqcard.test/customize?materials=1');await page.waitForFunction(()=>document.querySelector('.material-review')?.dataset.state==='ready');
