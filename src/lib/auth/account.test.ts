@@ -28,7 +28,7 @@ vi.mock('next/navigation', () => ({
   },
 }))
 
-import { requireAdminAccount } from './account'
+import { getVerifiedCurrentAccount, requireAdminAccount, requireVerifiedAdminAccount } from './account'
 
 describe('requireAdminAccount', () => {
   beforeEach(() => {
@@ -56,5 +56,47 @@ describe('requireAdminAccount', () => {
       email: 'client@example.com',
       role: 'admin',
     })
+  })
+})
+
+describe('getVerifiedCurrentAccount', () => {
+  beforeEach(() => {
+    mockMaybeSingle.mockReset()
+    mockGetUser.mockReset()
+  })
+
+  it('returns null when the signed-in address is not verified', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-123', email: 'client@example.com', email_confirmed_at: null } } })
+
+    await expect(getVerifiedCurrentAccount()).resolves.toBeNull()
+    expect(mockMaybeSingle).not.toHaveBeenCalled()
+  })
+
+  it('returns the account only after email verification', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-123', email: 'client@example.com', email_confirmed_at: '2026-10-03T00:00:00.000Z' } } })
+    mockMaybeSingle.mockResolvedValue({ data: { role: 'client' }, error: null })
+
+    await expect(getVerifiedCurrentAccount()).resolves.toEqual({ id: 'user-123', email: 'client@example.com', role: 'client' })
+  })
+})
+
+describe('requireVerifiedAdminAccount', () => {
+  beforeEach(() => {
+    mockMaybeSingle.mockReset()
+    mockGetUser.mockReset()
+  })
+
+  it('redirects an unverified admin before loading the account role', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'admin-1', email: 'admin@example.com', email_confirmed_at: null } } })
+
+    await expect(requireVerifiedAdminAccount()).rejects.toThrow('redirect:/login?next=%2Fadmin')
+    expect(mockMaybeSingle).not.toHaveBeenCalled()
+  })
+
+  it('returns a verified administrator', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'admin-1', email: 'admin@example.com', email_confirmed_at: '2026-10-03T00:00:00.000Z' } } })
+    mockMaybeSingle.mockResolvedValue({ data: { role: 'admin' }, error: null })
+
+    await expect(requireVerifiedAdminAccount()).resolves.toEqual({ id: 'admin-1', email: 'admin@example.com', role: 'admin' })
   })
 })

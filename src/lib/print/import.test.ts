@@ -1,0 +1,10 @@
+import {describe,it,expect,vi} from 'vitest'
+// @ts-expect-error Browser module served directly.
+import {loadPrintRecord,PRINT_IMPORT_KEY} from '../../../public/customize/print-import.mjs'
+const record={id:'selected',source:'import',importVersion:1,revision:'rev',designId:'IQD-REAL',configuration:{material:'Ivory Marble'}}
+describe('private saved snapshot loading',()=>{
+ it('revalidates the matching private tab snapshot through verified-admin API before display',async()=>{const fetcher=vi.fn(async()=>({ok:true,json:async()=>({...record,id:'new-validation'})})),getItem=vi.fn(()=>JSON.stringify(record));expect(await loadPrintRecord(new URLSearchParams('source=import&id=selected'),fetcher,{getItem})).toEqual(record);expect(fetcher).toHaveBeenCalledWith('/api/admin/print-design',expect.objectContaining({method:'POST',credentials:'same-origin'}));expect(getItem).toHaveBeenCalledWith(PRINT_IMPORT_KEY+'selected')})
+ it('clears a private snapshot after auth expires and never renders cached artwork',async()=>{const removeItem=vi.fn(),getItem=(key:string)=>key.endsWith('active')?'selected':JSON.stringify(record);await expect(loadPrintRecord(new URLSearchParams('source=import&id=selected'),async()=>({ok:false,status:401,json:async()=>({error:'Sign in.'})}),{getItem,removeItem})).rejects.toThrow('Sign in');expect(removeItem).toHaveBeenCalledWith(PRINT_IMPORT_KEY+'selected');expect(removeItem).toHaveBeenCalledWith(PRINT_IMPORT_KEY+'active')})
+ it('loads ordinary saved cards without touching tab storage',async()=>{const storage={getItem:()=>{throw new Error('Storage unavailable')}},fetcher=vi.fn(async()=>({ok:true,json:async()=>({...record,source:'order'})}));expect((await loadPrintRecord(new URLSearchParams('source=order&id=selected'),fetcher,storage)).source).toBe('order')})
+ it.each([null,'bad json',JSON.stringify({...record,id:'other'})])('never substitutes an absent or mismatched imported card',async value=>{await expect(loadPrintRecord(new URLSearchParams('source=import&id=selected'),async()=>({ok:true,json:async()=>record}),{getItem:()=>value})).rejects.toThrow()})
+})

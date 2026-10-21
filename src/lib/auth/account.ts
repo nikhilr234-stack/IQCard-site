@@ -36,6 +36,17 @@ async function createMissingAccount(id: string, email: string): Promise<CurrentA
 export async function getCurrentAccount(): Promise<CurrentAccount | null> {
   const supabase = await createServerClient()
   const { data: { user } } = await supabase.auth.getUser()
+  return resolveAccount(user, supabase)
+}
+
+export async function getVerifiedCurrentAccount(): Promise<CurrentAccount | null> {
+  const supabase = await createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user?.email || !user.email_confirmed_at) return null
+  return resolveAccount(user, supabase)
+}
+
+async function resolveAccount(user: { id: string; email?: string; email_confirmed_at?: string | null } | null, supabase: Awaited<ReturnType<typeof createServerClient>>): Promise<CurrentAccount | null> {
   if (!user?.email) return null
 
   await promoteAdministratorIfAllowed(user.id, user.email)
@@ -60,6 +71,13 @@ export async function requireAuthenticatedAccount(): Promise<CurrentAccount> {
 
 export async function requireAdminAccount(): Promise<CurrentAccount> {
   const account = await requireAuthenticatedAccount()
+  if (account.role !== 'admin') redirect('/dashboard?error=admin-only')
+  return account
+}
+
+export async function requireVerifiedAdminAccount(): Promise<CurrentAccount> {
+  const account = await getVerifiedCurrentAccount()
+  if (!account) redirect('/login?next=%2Fadmin')
   if (account.role !== 'admin') redirect('/dashboard?error=admin-only')
   return account
 }
