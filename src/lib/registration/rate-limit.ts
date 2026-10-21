@@ -38,3 +38,15 @@ export async function checkRegistrationRateLimit(
   })
   return emailAllowed && ipAllowed ? { allowed: true } : { allowed: false, retryAfterSeconds: 600 }
 }
+
+export async function checkOrderRateLimit(
+  input: { email: string; ip: string },
+  dependencies: { store?: RegistrationRateLimitStore; secret?: string } = {},
+): Promise<{ allowed: true } | { allowed: false; retryAfterSeconds: number }> {
+  const secret = dependencies.secret ?? process.env.IQCARD_RATE_LIMIT_SECRET?.trim()
+  if (!secret) throw new Error('Order rate limiting is not configured')
+  const store = dependencies.store ?? createRateLimitStore()
+  const emailAllowed = await store.consume({ keyHash: hashRateLimitKey('email', `order:${input.email}`, secret), windowSeconds: 600, maximum: 4 })
+  const ipAllowed = await store.consume({ keyHash: hashRateLimitKey('ip', `order:${input.ip || input.email}`, secret), windowSeconds: 600, maximum: 12 })
+  return emailAllowed && ipAllowed ? { allowed: true } : { allowed: false, retryAfterSeconds: 600 }
+}

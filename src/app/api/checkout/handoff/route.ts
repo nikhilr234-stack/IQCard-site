@@ -71,7 +71,7 @@ export async function POST(request: Request) {
   const environment = getPublicEnv()
   const callbackUrl = new URL('/auth/confirm', environment.siteUrl)
   callbackUrl.searchParams.set(registrationV2 ? 'registration' : 'handoff', token)
-  callbackUrl.searchParams.set('next', '/dashboard')
+  callbackUrl.searchParams.set('next', '/dashboard/orders/checkout')
 
   const supabase = await createServerClient()
   const { error } = await supabase.auth.signInWithOtp({
