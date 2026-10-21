@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { printGeometry, createPrintPdf, createStoredZip, withRasterDpi, cutContourSvg } from '../../../public/customize/print-files.mjs'
 
 describe('physical print files', () => {
+  it('embeds lossless RGB artwork in PDF without forcing JPEG recompression',()=>{const pdf=createPrintPdf([{bytes:new Uint8Array([1,2,3]),width:1,height:1,filter:'FlateDecode'},{bytes:new Uint8Array([4,5,6]),width:1,height:1,filter:'FlateDecode'}],printGeometry(),false);expect(new TextDecoder().decode(pdf)).toContain('/Filter /FlateDecode');expect(new TextDecoder().decode(pdf)).not.toContain('/Filter /DCTDecode')})
   it('keeps confirmed card size exact, including separate bleed/inset', () => {
     expect(printGeometry()).toMatchObject({ trimWidth: 85.6, trimHeight: 54, artWidth: 91.6, artHeight: 60, dpi: 600, pixelsWide: 2164, pixelsHigh: 1417 })
     expect(printGeometry({ inset: .5 })).toMatchObject({ trimWidth: 84.6, trimHeight: 53 })

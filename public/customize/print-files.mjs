@@ -35,16 +35,17 @@ export async function withRasterDpi(blob,type,dpi) {
   throw new Error('Unsupported raster format.');
 }
 const pt=mm=>(mm*72/25.4).toFixed(4);
-// Each image is flattened RGB JPEG. Precise boxes carry dimensions; pixel rounding never changes mm.
+// RGB image streams may be lossless FlateDecode; dimensions live in mm, never rounded pixels.
 export function createPrintPdf(images,g,press=true) {
   if(images.length!==2)throw new Error('Both front and back are required.');
   const margin=press?5:0,bleed=press?g.bleed:0,W=g.trimWidth+2*(margin+bleed),H=g.trimHeight+2*(margin+bleed),trim=margin+bleed;
   const objects=[null,bytes('<< /Type /Catalog /Pages 2 0 R >>'),bytes('<< /Type /Pages /Count 2 /Kids [3 0 R 6 0 R] >>')];
   for(let i=0;i<2;i++){
-    const pageId=3+i*3,imId=pageId+1,streamId=pageId+2,image=images[i];
+    const pageId=3+i*3,imId=pageId+1,streamId=pageId+2,image=images[i],filter=image.filter||'DCTDecode';
+    if(!['DCTDecode','FlateDecode'].includes(filter))throw new Error('Unsupported PDF image encoding.');
     const rect=(x,y,w,h)=>`[${pt(x)} ${pt(y)} ${pt(x+w)} ${pt(y+h)}]`;
     objects.push(bytes(`<< /Type /Page /Parent 2 0 R /MediaBox ${rect(0,0,W,H)} /TrimBox ${rect(trim,trim,g.trimWidth,g.trimHeight)} /BleedBox ${rect(margin,margin,W-2*margin,H-2*margin)} /Resources << /XObject << /Im ${imId} 0 R >> >> /Contents ${streamId} 0 R >>`));
-    objects.push(join([bytes(`<< /Type /XObject /Subtype /Image /Width ${image.width} /Height ${image.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${image.bytes.length} >>\nstream\n`),image.bytes,bytes('\nendstream')]));
+    objects.push(join([bytes(`<< /Type /XObject /Subtype /Image /Width ${image.width} /Height ${image.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /${filter} /Length ${image.bytes.length} >>\nstream\n`),image.bytes,bytes('\nendstream')]));
     const artX=press?margin:-g.bleed,artY=press?margin:-g.bleed;
     let content=`q\n${pt(g.artWidth)} 0 0 ${pt(g.artHeight)} ${pt(artX)} ${pt(artY)} cm\n/Im Do\nQ\n`;
     if(press){content+='0 G 0.25 w\n';const x1=trim,x2=trim+g.trimWidth,y1=trim,y2=trim+g.trimHeight;
@@ -76,5 +77,12 @@ export function createStoredZip(files) {
 }
 export async function canvasRaster(canvas,type,dpi) {
   const blob=await new Promise(resolve=>canvas.toBlob(resolve,type,1));if(!blob)throw new Error('Image export failed.');return withRasterDpi(blob,type,dpi);
+}
+export async function canvasPdfRaster(canvas){
+  if(typeof CompressionStream!=='function')throw new Error('This browser cannot create lossless print PDFs. Update your browser. PNG masters remain lossless.');
+  const rgba=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data,rgb=new Uint8Array(canvas.width*canvas.height*3);
+  for(let from=0,to=0;from<rgba.length;from+=4){rgb[to++]=rgba[from];rgb[to++]=rgba[from+1];rgb[to++]=rgba[from+2];}
+  const stream=new Blob([rgb]).stream().pipeThrough(new CompressionStream('deflate'));
+  return {bytes:new Uint8Array(await new Response(stream).arrayBuffer()),width:canvas.width,height:canvas.height,filter:'FlateDecode'};
 }
 export function downloadBlob(blob,filename){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}

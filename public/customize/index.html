@@ -329,6 +329,7 @@
   import { handoffEmailError, identityNameError } from '/customize/registration-validation.mjs';
   import { normalizeStoredConfiguration, persistCheckoutHandoffMarker, persistSavedDesignHistory, restoreStoredLogo, savedDesignTarget, selectRestorableDesign, serializeLogoForStorage, validateLogoForCheckout } from '/customize/logo-persistence.mjs';
   import { MATERIAL_SURFACES, SurfaceMapCache, surfaceFor } from '/customize/material-surfaces.mjs';
+  import { verifyBytes } from '/customize/print-integrity.mjs';
   import { inspectionPoseForView, mobileInspectionPose, mobileStepScrollTop, nearestMobileInspectionView, snapMobilePose } from '/customize/mobile-inspection.mjs';
   const root = document.documentElement;
   const card = document.getElementById('iqCard');
@@ -796,8 +797,15 @@
       }
     }
     async loadSurfaceMap(surface){
-      const image=new Image();image.src=surface.url;let timeout;
-      try{await Promise.race([image.decode(),new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error('Material texture did not load. Please reload before printing.')),15000);})]);}finally{clearTimeout(timeout);}
+      const image=new Image(),controller=new AbortController();let objectUrl;
+      const timeout=setTimeout(()=>controller.abort(),15000);
+      try{
+        const response=await fetch(surface.url,{credentials:'same-origin',signal:controller.signal});
+        if(!response.ok)throw new Error('The selected material texture could not be loaded.');
+        const bytes=new Uint8Array(await response.arrayBuffer());await verifyBytes(bytes,surface.sha256);
+        objectUrl=URL.createObjectURL(new Blob([bytes],{type:'image/webp'}));image.src=objectUrl;
+        await Promise.race([image.decode(),new Promise((_,reject)=>{controller.signal.addEventListener('abort',()=>reject(new Error('Material texture did not load. Please reload before printing.')),{once:true});})]);
+      }finally{clearTimeout(timeout);if(objectUrl)URL.revokeObjectURL(objectUrl);}
       if(image.naturalWidth!==surface.width||image.naturalHeight!==surface.height)throw new Error('Material master dimensions do not match. Export is blocked.');
       const gl=this.gl,texture=gl.createTexture();gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.generateMipmap(gl.TEXTURE_2D);gl.activeTexture(gl.TEXTURE0);

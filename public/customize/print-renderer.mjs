@@ -1,5 +1,6 @@
 import { addContrastMeasurements, captureLogoSamples } from './print-analysis.mjs';
 import { printGeometry } from './print-files.mjs';
+import { surfaceFor } from './material-surfaces.mjs';
 
 export function inspectBounds(boxes,g) {
   const errors=[],warnings=[];
@@ -27,15 +28,19 @@ function observeCanvas(canvas,side,boxes){
   ctx.drawImage=(img,x,y,w,h,...rest)=>{boxes.push({side,label:'custom logo',x,y,width:w,height:h,alpha:ctx.globalAlpha,logoSamples:captureLogoSamples(img),rasterWidth:img.src?.startsWith('data:image/svg+xml')?undefined:img.naturalWidth});return image(img,x,y,w,h,...rest);};
 }
 export async function renderPrintArtwork(renderer,configuration,settings={}) {
+  configuration=structuredClone(configuration);
   const g=printGeometry(settings);
   if(!renderer?.ready||!renderer.gl||renderer.gl.isContextLost())throw new Error('The Atelier renderer is unavailable. Use a browser with WebGL2 enabled. No substitute artwork has been generated.');
+  const generation=renderer.printGeneration=(renderer.printGeneration||0)+1;
+  renderer.update({...configuration,step:'final'});
   await renderer.materialReady;
   await document.fonts.ready;
   if(configuration.logo.mode==='custom'){
     const img=new Image();img.src=configuration.logo.dataUrl;
-    await Promise.race([img.decode(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('The saved logo did not load. Export is blocked.')),10000))]);
+    let timeout;try{await Promise.race([img.decode(),new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error('The saved logo did not load. Export is blocked.')),10000);})]);}finally{clearTimeout(timeout);}
     if(!img.naturalWidth)throw new Error('The saved logo is empty.');renderer.customLogoImageCache.set(configuration.logo.dataUrl,img);
   }
+  if(renderer.printGeneration!==generation||renderer.surfaceKey!==(surfaceFor(configuration)?.key||null)||renderer.lastConfig.customColor!==configuration.customColor||renderer.lastConfig.material!==configuration.material||renderer.lastConfig.core!==configuration.core)throw new Error('The selected artwork changed during preparation. Apply print settings again.');
   // Existing drawing functions retain the original 1600 × 1000 design coordinate system.
   const oldFront=renderer.frontDecalCanvas,oldBack=renderer.backDecalCanvas,front=document.createElement('canvas'),back=document.createElement('canvas'),boxes=[];
   front.width=back.width=3200;front.height=back.height=2000;
