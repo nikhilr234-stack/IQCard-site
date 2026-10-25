@@ -41,7 +41,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
   }
 
   return <main className={`cover-profile-shell cover-profile--${cover.alignment} profile-design-root`} data-template="cover" data-cover-background={String(Boolean(coverUrl))} data-layout-variant={presentation.templateSettings.cover.variant} style={style} {...getProfileDesignDataAttributes(presentation.design)}>
-    <div className={`cover-profile-wallpaper${coverUrl ? '' : ' is-fallback'}`} aria-hidden="true" data-profile-cover-background={coverUrl ? '' : undefined}>
+    <div className={`cover-profile-wallpaper${coverUrl ? '' : ' is-fallback'}`} aria-hidden="true" data-profile-cover-background={coverUrl ? '' : undefined} style={cover.overlay === 0 ? { opacity: 1 } : undefined}>
       {coverUrl ? <Image
         src={coverUrl}
         alt=""
@@ -52,7 +52,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
         style={{ objectFit: 'cover', objectPosition: `center ${cover.focalY}%` }}
       /> : null}
     </div>
-    <div className="cover-profile-overlay" aria-hidden="true" />
+    {cover.overlay > 0 ? <div className="cover-profile-overlay" aria-hidden="true" /> : null}
 
     <div className="cover-profile-page">
       {preview ? <div className="cover-preview-badge">Private preview</div> : null}

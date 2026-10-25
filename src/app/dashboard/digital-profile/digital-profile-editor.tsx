@@ -420,7 +420,7 @@ export function DigitalProfileEditor({
             /></label>
             <div className="digital-profile-range">
               <label htmlFor="digital-profile-overlay"><span>Darken background</span><output>{Math.round(draft.cover.overlay * 100)}%</output></label>
-              <input id="digital-profile-overlay" type="range" min="0.15" max="0.7" step="0.01" value={draft.cover.overlay} onChange={(event) => updateCover('overlay', Number(event.target.value))} />
+              <input id="digital-profile-overlay" type="range" min="0" max="0.7" step="0.01" value={draft.cover.overlay} onChange={(event) => updateCover('overlay', Number(event.target.value))} />
             </div>
             <div className="digital-profile-range">
               <label htmlFor="digital-profile-focal"><span>Vertical image position</span><output>{draft.cover.focalY}%</output></label>

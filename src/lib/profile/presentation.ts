@@ -63,7 +63,7 @@ function normalizeSettings(input: unknown): NormalizedCoverPresentation {
     cover: {
       coverPath: optionalPath(cover.coverPath),
       backgroundEnabled: typeof cover.backgroundEnabled === 'boolean' ? cover.backgroundEnabled : template === 'cover',
-      overlay: clampNumber(cover.overlay, 0.38, 0.15, 0.7),
+      overlay: clampNumber(cover.overlay, 0.38, 0, 0.7),
       focalY: clampNumber(cover.focalY, 50, 0, 100),
       alignment: cover.alignment === 'center' ? 'center' : 'lower-left',
       photoPathOverride: optionalPath(cover.photoPathOverride),

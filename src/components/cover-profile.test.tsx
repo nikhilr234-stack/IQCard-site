@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
+import { DEFAULT_PROFILE_DESIGN } from '@/lib/profile/design'
 import { PublicProfile } from './public-profile'
 import type { CoverPresentation, Profile } from '@/lib/profile/types'
 
@@ -42,6 +43,13 @@ const cover: CoverPresentation = {
 }
 
 describe('PublicProfile', () => {
+  it('renders an unfaded wallpaper without the dark gradient when overlay is zero', () => {
+    const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={{ ...cover, cover: { ...cover.cover, overlay: 0 }, design: { ...DEFAULT_PROFILE_DESIGN, theme: 'dark', background: { color: '#030907', text: '#D8FFE4', accent: '#39FF88' } } }} />)
+    expect(html).toContain('--cover-overlay:0')
+    expect(html).toContain('style="opacity:1"')
+    expect(html).not.toContain('class="cover-profile-overlay"')
+  })
+
   it('renders the published Cover presentation and keeps Save Contact inert in preview', () => {
     const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={cover} preview />)
 

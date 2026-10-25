@@ -3,6 +3,12 @@ import { DEFAULT_PRESENTATION, normalizePresentation, resolvePresentation } from
 import type { ProfilePresentation } from './types'
 
 describe('profile presentation normalization', () => {
+  it('preserves zero fade and clamps negative overlays to zero', () => {
+    const result = normalizePresentation({ draft: { cover: { overlay: 0 } }, published: { cover: { overlay: -1 } } })
+    expect(result.draft.cover.overlay).toBe(0)
+    expect(result.published.cover.overlay).toBe(0)
+  })
+
   it('clamps Cover controls without discarding a saved Cover when Minimal is selected', () => {
     const value = normalizePresentation({
       draft: { template: 'minimal', cover: { overlay: 9, focalY: -2, alignment: 'center', coverPath: 'cover.jpg' } },
