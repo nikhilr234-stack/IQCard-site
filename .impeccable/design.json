@@ -2,9 +2,30 @@
   "surface": "/",
   "mode": "persuade",
   "approved": "2026-10-27",
-  "colors": { "paper": "#f6f4f0", "ink": "#191919", "muted": "#62605b", "line": "#dad6cf", "walnut": "#795b44", "profile": "#21241f" },
-  "typography": { "family": "IQ Geist", "body": 16, "trackingFloor": -0.04 },
-  "layout": { "containerMax": 1440, "gutterDesktop": 56, "gutterMobile": 20, "mobileBreakpoint": 760 },
-  "controls": { "radius": 6, "minimumTarget": 44 },
-  "source": "User-approved visual homepage concept; user explicitly requested full-page development."
+  "colors": {
+    "paper": "#ffffff",
+    "ink": "#1d1d1f",
+    "muted": "#6e6e73",
+    "line": "#e5e5e7",
+    "walnut": "#7a6653",
+    "profile": "#111410",
+    "soft": "#f5f5f7"
+  },
+  "typography": {
+    "family": "IQ Geist",
+    "body": 16,
+    "trackingFloor": -0.04,
+    "displayWeight": 550
+  },
+  "layout": {
+    "containerMax": 1320,
+    "gutterDesktop": 64,
+    "gutterMobile": 20,
+    "mobileBreakpoint": 760
+  },
+  "controls": {
+    "radius": 999,
+    "minimumTarget": 44
+  },
+  "source": "User requested an Apple/Porsche-inspired refinement preserving all approved content and imagery; original preview retained."
 }
