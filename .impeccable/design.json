@@ -1,0 +1,10 @@
+{
+  "surface": "/",
+  "mode": "persuade",
+  "approved": "2026-10-27",
+  "colors": { "paper": "#f6f4f0", "ink": "#191919", "muted": "#62605b", "line": "#dad6cf", "walnut": "#795b44", "profile": "#21241f" },
+  "typography": { "family": "IQ Geist", "body": 16, "trackingFloor": -0.04 },
+  "layout": { "containerMax": 1440, "gutterDesktop": 56, "gutterMobile": 20, "mobileBreakpoint": 760 },
+  "controls": { "radius": 6, "minimumTarget": 44 },
+  "source": "User-approved visual homepage concept; user explicitly requested full-page development."
+}

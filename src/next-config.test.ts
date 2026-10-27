@@ -10,10 +10,12 @@ describe('Server Action upload configuration', () => {
     expect(nextConfig).not.toHaveProperty('serverActions')
   })
 
-  it('allows only profile media URLs through the local image optimizer with a short cache lifetime', () => {
+  it('limits the local image optimizer to profile media and public homepage assets', () => {
     expect(nextConfig.images?.localPatterns).toEqual([
       { pathname: '/api/profile-photo' },
       { pathname: '/api/profile-cover' },
+      { pathname: '/homepage/**' },
+      { pathname: '/customize/surfaces/v2/**' },
     ])
     expect(nextConfig.images?.minimumCacheTTL).toBe(300)
   })
