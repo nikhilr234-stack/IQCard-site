@@ -90,7 +90,7 @@ export function CoverProfile({ profile, presentation, preview = false }: CoverPr
         </div>
       </section>
 
-      <footer className="cover-profile-footer">{presentation.design.footer.showMadeWithIq ? <span>Made with <strong>iq</strong></span> : null}<span className="cover-profile-footer-actions"><Link href="/customize">Design yours →</Link>{presentation.design.footer.showProfessionalLabel ? <span>Professional</span> : null}</span></footer>
+      <footer className="cover-profile-footer">{presentation.design.footer.showMadeWithIq ? <span>Made with <strong>iq</strong></span> : null}<span className="cover-profile-footer-actions"><Link href="/customize">Design yours →</Link></span></footer>
     </div>
   </main>
 }
