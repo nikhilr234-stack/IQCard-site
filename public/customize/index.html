@@ -1140,6 +1140,7 @@
   const mobileInspectionQuery = window.matchMedia('(max-width:620px)');
   let pointerX = 0, pointerY = 0, scrollP = 0;
   let mobilePose = inspectionPoseForView('front');
+  let manualInspectionPose = null;
   let mobileDrag = null;
   let finalMode = false;
   let lastEditingStep = 'craft';
@@ -1531,7 +1532,7 @@
     const mobile = mobileInspectionQuery.matches;
     const max=scrollTrack.scrollHeight-scrollTrack.clientHeight;
     scrollP=mobile?Math.min(1,Math.max(0,(mobilePose.y+12)/192)):(max>0?Math.min(1,Math.max(0,scrollTrack.scrollTop/max)):0);
-    const a=previewMode?sceneAngles(STEP_POSES.final):mobile?{...mobilePose,z:0,zoom:1}:sceneAngles(scrollP);
+    const a=previewMode?sceneAngles(STEP_POSES.final):mobile?{...mobilePose,z:0,zoom:1}:manualInspectionPose ? {...manualInspectionPose,z:0,zoom:1}:sceneAngles(scrollP);
     const inspectX=mobile?0:pointerY*7, inspectY=mobile?0:pointerX*9;
     const currentY = a.y + inspectY;
     rig.style.transform=`scale(${a.zoom}) rotateX(${a.x+inspectX}deg) rotateY(${currentY}deg) rotateZ(${a.z}deg)`;
@@ -1547,9 +1548,10 @@
     else phaseLabel.textContent='Back / final read';
   }
 
-  scrollTrack.addEventListener('scroll',updateScene,{passive:true});
+  scrollTrack.addEventListener('scroll',()=>{ manualInspectionPose=null; updateScene(); },{passive:true});
   stageWrap.addEventListener('pointermove',e=>{
     if(mobileInspectionQuery.matches) return;
+    manualInspectionPose=null;
     const r=stageWrap.getBoundingClientRect();pointerX=((e.clientX-r.left)/r.width-.5);pointerY=((e.clientY-r.top)/r.height-.5);
     const mx = Math.max(10,Math.min(90,50+pointerX*70));
     const my = Math.max(10,Math.min(90,38+pointerY*70));
@@ -1565,8 +1567,9 @@
   }
 
   function selectMobileInspectionView(view){
-    if(!mobileInspectionQuery.matches) return;
-    mobilePose=inspectionPoseForView(view);
+    const pose = inspectionPoseForView(view);
+    if(mobileInspectionQuery.matches) mobilePose=pose;
+    else manualInspectionPose=pose;
     renderMobileInspectionView(view);
   }
 
