@@ -1,3 +1,4 @@
+import { validateProfilePhoto } from '@/lib/profile/photo'
 import type { LinkInput } from '@/lib/profile/links'
 import { onboardingPath, onboardingSteps } from './steps'
 import type { OnboardingStep } from './types'
@@ -20,6 +21,7 @@ export type OnboardingActionState = {
 export interface OnboardingActionServices {
   getAccount(): Promise<{ id: string; email: string }>
   updateProfile(ownerId: string, values: Record<string, unknown>): Promise<void>
+  uploadPhoto(file: File): Promise<void>
   replaceLinks(ownerId: string, links: LinkInput[]): Promise<void>
   isSlugAvailable(ownerId: string, slug: string): Promise<boolean>
   getProfile(ownerId: string): Promise<{ full_name: string; slug: string }>
@@ -60,11 +62,22 @@ export async function runOnboardingStep(
         bio: field(formData, 'bio'),
       })
       if (!validation.ok) return invalid(validation.fieldErrors)
+      const photo = formData.get('photo')
+      const hasPhoto = photo instanceof File && Boolean(photo.name)
+      if (hasPhoto) {
+        const photoValidation = validateProfilePhoto(photo)
+        if (!photoValidation.ok) return invalid({ photo: photoValidation.error })
+      }
       await services.updateProfile(account.id, {
         full_name: validation.value.fullName,
         headline: validation.value.headline,
         bio: validation.value.bio,
       })
+      if (hasPhoto) {
+        try { await services.uploadPhoto(photo) } catch {
+          return invalid({ photo: 'We could not upload your photo. Choose the image again and retry, or continue without a new photo.' })
+        }
+      }
     } else if (step === 'contact') {
       const validation = validateContactStep({
         publicEmail: field(formData, 'publicEmail'),

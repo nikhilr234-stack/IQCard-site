@@ -11,6 +11,7 @@ function services(): OnboardingActionServices & Record<string, ReturnType<typeof
   return {
     getAccount: vi.fn().mockResolvedValue({ id: 'owner-1', email: 'owner@example.com' }),
     updateProfile: vi.fn().mockResolvedValue(undefined),
+    uploadPhoto: vi.fn().mockResolvedValue(undefined),
     replaceLinks: vi.fn().mockResolvedValue(undefined),
     isSlugAvailable: vi.fn().mockResolvedValue(true),
     getProfile: vi.fn().mockResolvedValue({ full_name: 'Nikhil Rakesh', slug: 'nikhil-rakesh' }),
@@ -52,6 +53,42 @@ describe('onboarding server action runner', () => {
     })
     expect(api.completeStep).toHaveBeenCalledWith('owner-1', 'identity')
     expect(state).toEqual({ ok: true, fieldErrors: {}, next: '/onboarding/contact' })
+  })
+
+  it('uploads a selected photo before advancing identity', async () => {
+    const api = services()
+    const form = new FormData()
+    form.set('firstName', 'Ada')
+    form.set('lastName', 'Lovelace')
+    form.set('photo', new File(['photo'], 'portrait.png', { type: 'image/png' }))
+    const state = await runOnboardingStep('identity', form, api)
+    expect(state.ok).toBe(true)
+    expect(api.uploadPhoto).toHaveBeenCalledWith(expect.any(File))
+    expect(vi.mocked(api.uploadPhoto).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(api.completeStep).mock.invocationCallOrder[0])
+  })
+
+  it('rejects an unsupported photo before saving identity', async () => {
+    const api = services()
+    const form = new FormData()
+    form.set('firstName', 'Ada')
+    form.set('lastName', 'Lovelace')
+    form.set('photo', new File(['photo'], 'portrait.gif', { type: 'image/gif' }))
+    const state = await runOnboardingStep('identity', form, api)
+    expect(state).toMatchObject({ ok: false, fieldErrors: { photo: 'Use a JPEG, PNG, or WebP image.' } })
+    expect(api.updateProfile).not.toHaveBeenCalled()
+    expect(api.completeStep).not.toHaveBeenCalled()
+  })
+
+  it('does not advance when photo storage fails', async () => {
+    const api = services()
+    vi.mocked(api.uploadPhoto).mockRejectedValue(new Error('storage unavailable'))
+    const form = new FormData()
+    form.set('firstName', 'Ada')
+    form.set('lastName', 'Lovelace')
+    form.set('photo', new File(['photo'], 'portrait.png', { type: 'image/png' }))
+    const state = await runOnboardingStep('identity', form, api)
+    expect(state.ok).toBe(false)
+    expect(api.completeStep).not.toHaveBeenCalled()
   })
 
   it('returns deterministic alternatives when a public address is unavailable', async () => {

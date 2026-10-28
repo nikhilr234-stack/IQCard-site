@@ -41,3 +41,16 @@ describe('onboarding review and address display', () => {
     expect(html).not.toContain('iqcard.in/')
   })
 })
+
+
+describe('identity photo prompt', () => {
+  it('offers a labelled optional image upload with format and size guidance', () => {
+    document.body.innerHTML = renderStep('identity')
+    const input = document.querySelector<HTMLInputElement>('input[name="photo"]')
+    expect(input?.type).toBe('file')
+    expect(input?.accept).toBe('image/jpeg,image/png,image/webp')
+    expect(input?.required).toBe(false)
+    expect(document.querySelector('label[for="onboarding-photo"]')?.textContent).toContain('Profile photo')
+    expect(document.body.textContent).toContain('5 MB')
+  })
+})

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useActionState, useEffect, useState } from 'react'
 import {
@@ -55,6 +56,8 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteU
   const displayUrl = publicProfileUrl(siteUrl, profile.slug).replace(/^https?:\/\//, '')
   const addressPrefix = `${new URL(siteUrl).host}/`
   const [state, formAction, pending] = useActionState(actions[step], initialState)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  useEffect(() => () => { if (photoPreview) URL.revokeObjectURL(photoPreview) }, [photoPreview])
   const [links, setLinks] = useState(profile.profile_links.map(({ label, url }) => ({ label, url })))
   const { firstName, lastName } = splitName(profile.full_name)
   const index = onboardingSteps.indexOf(step)
@@ -83,8 +86,18 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteU
     <form action={formAction} className="onboarding-form" noValidate>
       {step === 'identity' && <>
         <div className="onboarding-grid">
-          <label htmlFor="onboarding-first-name"><span>First name <em>Required</em></span><input id="onboarding-first-name" name="firstName" defaultValue={firstName} required aria-invalid={Boolean(state.fieldErrors.firstName)} aria-describedby="firstName-error" /><ErrorText id="firstName-error" message={state.fieldErrors.firstName} /></label>
-          <label htmlFor="onboarding-last-name"><span>Last name <em>Required</em></span><input id="onboarding-last-name" name="lastName" defaultValue={lastName} required aria-invalid={Boolean(state.fieldErrors.lastName)} aria-describedby="lastName-error" /><ErrorText id="lastName-error" message={state.fieldErrors.lastName} /></label>
+          <div className="onboarding-photo-field wide">
+            <label htmlFor="onboarding-photo"><span>Profile photo <small>Optional</small></span></label>
+            {(photoPreview || profile.photo_url) ? <Image src={photoPreview || profile.photo_url!} alt="Your profile photo" width={80} height={80} unoptimized className="onboarding-photo-preview" /> : null}
+            <input id="onboarding-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" aria-invalid={Boolean(state.fieldErrors.photo)} aria-describedby="photo-help photo-error" onChange={event => {
+              const file = event.target.files?.[0]
+              setPhotoPreview(file && ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ? URL.createObjectURL(file) : null)
+            }} />
+            <small id="photo-help">JPEG, PNG or WebP · up to 5 MB. Choose a portrait, or add one later.</small>
+            <ErrorText id="photo-error" message={state.fieldErrors.photo} />
+          </div>
+          <label htmlFor="onboarding-first-name"><span>First name <em>Required</em></span><input id="onboarding-first-name" name="firstName" autoComplete="given-name" defaultValue={firstName} required aria-invalid={Boolean(state.fieldErrors.firstName)} aria-describedby="firstName-error" /><ErrorText id="firstName-error" message={state.fieldErrors.firstName} /></label>
+          <label htmlFor="onboarding-last-name"><span>Last name <em>Required</em></span><input id="onboarding-last-name" name="lastName" autoComplete="family-name" defaultValue={lastName} required aria-invalid={Boolean(state.fieldErrors.lastName)} aria-describedby="lastName-error" /><ErrorText id="lastName-error" message={state.fieldErrors.lastName} /></label>
           <label className="wide" htmlFor="onboarding-headline"><span>Role or title <small>Optional</small></span><input id="onboarding-headline" name="headline" defaultValue={profile.headline} aria-invalid={Boolean(state.fieldErrors.headline)} aria-describedby="headline-error" /><ErrorText id="headline-error" message={state.fieldErrors.headline} /></label>
           <label className="wide" htmlFor="onboarding-bio"><span>Short biography <small>Optional</small></span><textarea id="onboarding-bio" name="bio" defaultValue={profile.bio} rows={5} aria-invalid={Boolean(state.fieldErrors.bio)} aria-describedby="bio-error" /><ErrorText id="bio-error" message={state.fieldErrors.bio} /></label>
         </div>

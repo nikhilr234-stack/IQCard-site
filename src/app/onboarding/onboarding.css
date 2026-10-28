@@ -7,6 +7,7 @@ main.onboarding-shell {
   min-height: 100svh;
   margin: 0;
   padding: 0;
+  color: #111113;
   color-scheme: light;
 }
 .onboarding-shell :is(a, button, input, textarea):focus-visible { outline: 2px solid #111113; outline-offset: 4px; }
@@ -122,3 +123,19 @@ main.onboarding-shell {
   .onboarding-shell .onboarding-actions > div { width: 100%; }
   .onboarding-shell .onboarding-actions button { width: 100%; }
 }
+
+/* Keep onboarding controls out of the embedded profile's visual system. */
+.onboarding-shell .onboarding-copy h1, .onboarding-shell .onboarding-card-note strong { color: #111113; }
+.onboarding-shell .onboarding-photo-field { display: grid; gap: 10px; grid-column: 1 / -1; }
+.onboarding-shell .onboarding-photo-field label > span { font-size: 13px; font-weight: 600; }
+.onboarding-shell .onboarding-photo-preview { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; }
+.onboarding-shell input[type=file] { padding: 10px; font-size: 14px; }
+.onboarding-shell input[type=file]::file-selector-button { border: 0; border-radius: 6px; padding: 9px 12px; margin-right: 10px; background: #eeeeef; color: #111113; font: inherit; cursor: pointer; }
+.onboarding-preview-real .cover-profile-identity { align-items: flex-start; flex-direction: column; }
+.onboarding-preview-real .cover-profile-nameplate { display: block; width: 100%; }
+.onboarding-preview-real .cover-profile-role { margin-top: 16px; line-height: 1.4; }
+.onboarding-preview-real .cover-profile-save { min-width: 180px; min-height: 48px; font-size: 14px; }
+.onboarding-preview-real .cover-profile-save.is-disabled { opacity: 1; }
+.onboarding-preview-real .cover-profile-links a { min-height: 44px; font-size: 13px; }
+.onboarding-preview-real .cover-profile-links .profile-link-label { padding: 0; border: 0; border-radius: 0; }
+.onboarding-preview-real .cover-profile-links .profile-link-arrow { padding: 0; border: 0; border-radius: 0; }

@@ -1,3 +1,4 @@
+import { uploadProfilePhoto } from '@/app/actions/profile-photo'
 import { revalidatePath } from 'next/cache'
 import { requireAuthenticatedAccount } from '@/lib/auth/account'
 import { completeOnboardingStep } from '@/lib/onboarding/progress'
@@ -13,6 +14,11 @@ export function createOnboardingActionServices(): OnboardingActionServices {
     async updateProfile(ownerId, values) {
       const { error } = await (await createServerClient()).from('profiles').update(values).eq('owner_id', ownerId)
       if (error) throw new Error('Unable to update profile')
+    },
+    async uploadPhoto(file) {
+      const form = new FormData()
+      form.set('photo', file)
+      await uploadProfilePhoto(form)
     },
     async replaceLinks(_ownerId, links: LinkInput[]) {
       const supabase = await createServerClient()
