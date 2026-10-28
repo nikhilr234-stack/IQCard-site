@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import './onboarding.css'
 import { SignOutButton } from '@/components/sign-out-button'
 import { requireAuthenticatedAccount } from '@/lib/auth/account'
 import { getOnboardingProgress, onboardingPath, onboardingSteps } from '@/lib/onboarding/progress'
