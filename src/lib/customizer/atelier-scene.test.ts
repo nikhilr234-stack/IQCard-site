@@ -10,6 +10,8 @@ import * as registration from '../../../public/customize/registration-validation
 import * as inspection from '../../../public/customize/mobile-inspection.mjs'
 // @ts-expect-error Browser modules served directly.
 import * as savedDesign from '../../../public/customize/saved-design.mjs'
+// @ts-expect-error Browser modules served directly.
+import * as materialSurfaces from '../../../public/customize/material-surfaces.mjs'
 const html = readFileSync('public/customize/index.html', 'utf8')
 const config = { core: 'black', material: 'Ivory Marble', craft: 'engrave', customColor: null, backLayout: 'identity', identity: { name: 'Rohan Biligi', tone: 'light', composition: 'signature', fineTune: { align: 'right', nameScale: 1.2, x: 8, y: -4 } }, logo: { mode: 'iq', dataUrl: null, filename: null, mimeType: null, align: 'right', scale: 0.8, x: 12, y: 5 } }
 async function scene(mode: string, success = true, saved = config, history: unknown[] = [], marker: string | null = null) {
@@ -17,7 +19,7 @@ async function scene(mode: string, success = true, saved = config, history: unkn
   const window = dom.window
   window.localStorage.setItem('iqcard.savedDesigns.v1', JSON.stringify(history))
   if (marker !== null) window.localStorage.setItem('iqcard.checkoutHandoff.v1', marker)
-  Object.assign(window, persistence, registration, inspection, savedDesign)
+  Object.assign(window, persistence, registration, inspection, savedDesign, materialSurfaces)
   window.matchMedia = () => ({ matches: false, addEventListener() {} }) as unknown as MediaQueryList
   window.HTMLElement.prototype.scrollIntoView = () => {}
   window.HTMLElement.prototype.scrollTo = () => {}

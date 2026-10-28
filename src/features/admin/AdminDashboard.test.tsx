@@ -72,6 +72,18 @@ describe('AdminDashboard', () => {
     expect(personalDashboard?.getAttribute('href')).toBe('/dashboard')
   })
 
+  it('connects the administrator to the fulfillment queue', () => {
+    expect(host.querySelector('.topbar-actions a[href="/admin/orders"]')?.textContent).toBe('Orders')
+  })
+
+  it('lets the administrator sign out to switch accounts', () => {
+    const signOut = button(host, /^sign out$/i)
+    expect(signOut.type).toBe('submit')
+    expect(signOut.form?.getAttribute('action')).toBe('/auth/sign-out')
+    expect(signOut.form?.method).toBe('post')
+    expect(host.querySelector('.topbar-actions a[href="/admin/gifts/new"]')).not.toBeNull()
+  })
+
   it('delegates publishing to the injected action without mutating the client list', async () => {
     await act(async () => button(host, /publish ada lovelace/i).click())
 
@@ -88,7 +100,7 @@ describe('AdminDashboard', () => {
       setValue(host.querySelector<HTMLInputElement>('[aria-label="Client name"]')!, 'Ada Lovelace')
       setValue(host.querySelector<HTMLSelectElement>('[aria-label="Client segment"]')!, 'Technology')
     })
-    await act(async () => host.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })))
+    await act(async () => host.querySelector<HTMLInputElement>('[aria-label="Client email"]')!.form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })))
 
     expect(host.querySelector<HTMLInputElement>('[aria-label="Client email"]')!.value).toBe('ada@example.com')
     expect(host.querySelector<HTMLInputElement>('[aria-label="Client name"]')!.value).toBe('Ada Lovelace')
@@ -104,7 +116,7 @@ describe('AdminDashboard', () => {
     expect(getComputedStyle(submit).gridColumn).toBe('1 / -1')
   })
 
-  it('renders eight data-derived overview cards and lets admins choose rows per page', async () => {
+  it('renders nine data-derived overview cards and lets admins choose rows per page', async () => {
     const tableClients = Array.from({ length: 6 }, (_, index): Client => ({
       ...clients[0],
       id: `client-${index}`,
@@ -114,11 +126,19 @@ describe('AdminDashboard', () => {
     }))
     await act(async () => root.render(<AdminDashboard clients={tableClients} actions={actions} />))
 
-    expect(host.querySelectorAll('.kpi-card')).toHaveLength(8)
+    expect(host.querySelectorAll('.kpi-card')).toHaveLength(9)
     const rowsPerPage = host.querySelector<HTMLSelectElement>('[aria-label="Rows per page"]')
     expect(rowsPerPage).not.toBeNull()
     await act(async () => setValue(rowsPerPage!, '10'))
     expect(host.textContent).toContain('Showing 1–6 of 6 clients')
+  })
+
+  it('shows completed profiles as an approval action and does not offer invite resend', async () => {
+    const reviewClient: Client = { ...clients[0], status: 'Review', completion: 100, completedProfile: true }
+    await act(async () => root.render(<AdminDashboard clients={[reviewClient]} actions={actions} />))
+
+    expect(button(host, /approve and publish ada lovelace/i).textContent).toBe('Approve')
+    expect(host.querySelector('[aria-label="Resend invite to Ada Lovelace"]')).toBeNull()
   })
 
   it('filters the directory from an analytical selection and clears the active view', async () => {

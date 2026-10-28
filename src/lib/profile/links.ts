@@ -1,10 +1,10 @@
-import { validateLinkInput } from './validation'
+import { normalizeProfileLinkUrl, validateLinkInput } from './validation'
 
 export type LinkInput = { label: string; url: string }
 
 export function normalizeLinks(links: LinkInput[]): LinkInput[] {
   return links
-    .map((link) => ({ label: link.label.trim(), url: link.url.trim() }))
+    .map((link) => ({ label: link.label.trim(), url: normalizeProfileLinkUrl(link.url) }))
     .filter((link) => link.label || link.url)
     .slice(0, 12)
 }

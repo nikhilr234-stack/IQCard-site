@@ -24,6 +24,11 @@ describe('createGiftProfile', () => {
 
   beforeEach(() => vi.clearAllMocks())
 
+  it('does not allocate a gift to an original founder URL when normalization removes the last name', async () => {
+    await expect(createGiftProfile({ ...input, fullName: 'Ashwin 张' })).rejects.toThrow('That profile URL is reserved.')
+    expect(createAdminClient).not.toHaveBeenCalled()
+  })
+
   it('writes gift profile, private claim details, presentation, and links through one RPC', async () => {
     const rpc = vi.fn().mockResolvedValue({
       data: [{ profile_id: 'profile-123', slug: 'yatish-p' }],

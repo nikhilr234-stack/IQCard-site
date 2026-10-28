@@ -48,6 +48,14 @@ describe('Gift Factory server actions', () => {
     expect(createGiftProfile).not.toHaveBeenCalled()
   })
 
+  it('protects original founder URLs before uploading media for a new gift', async () => {
+    const form = validGiftForm()
+    form.set('fullName', 'Ashwin 张')
+    await expect(createGift(form)).resolves.toMatchObject({ ok: false, error: 'That profile URL is reserved. Enter a name that creates a different address.' })
+    expect(uploadGiftMedia).not.toHaveBeenCalled()
+    expect(createGiftProfile).not.toHaveBeenCalled()
+  })
+
   it('maps valid inputs and returns the generated live URL', async () => {
     const result = await createGift(validGiftForm())
 

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { SignOutButton } from '@/components/sign-out-button'
 import { requireAuthenticatedAccount } from '@/lib/auth/account'
 import { getOnboardingProgress, onboardingPath, onboardingSteps } from '@/lib/onboarding/progress'
 import { onboardingStepLabels } from './onboarding-styles'
@@ -12,8 +13,11 @@ export default async function OnboardingLayout({ children }: { children: React.R
   return <main className="onboarding-shell">
     <header className="onboarding-topbar">
       <Link href="/" className="onboarding-logo" data-iq-brand="primary" aria-label="IQ Card home">iq</Link>
-      <div><strong>Set up your IQ</strong><span>Private until you publish</span></div>
-      <Link href="/dashboard" className="onboarding-exit">Save &amp; exit</Link>
+      <div><strong>Set up your IQ</strong><span>Private until approved</span></div>
+      <nav className="onboarding-account-actions" aria-label="Account controls">
+        <Link href="/dashboard" className="onboarding-exit">Save &amp; exit</Link>
+        <SignOutButton />
+      </nav>
     </header>
     <nav className="onboarding-progress" aria-label="Onboarding progress">
       {onboardingSteps.map((step, index) => {

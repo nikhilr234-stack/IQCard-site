@@ -1,7 +1,31 @@
 import { describe, expect, it } from 'vitest'
 import { normalizeLinks, validateLinks } from './links'
+import { validateLinkInput } from './validation'
 
 describe('profile links', () => {
+  it.each([
+    ['example.com', 'https://example.com'],
+    ['example.in', 'https://example.in'],
+    ['www.something.something', 'https://www.something.something'],
+    [' example.co.in/work?project=one#details ', 'https://example.co.in/work?project=one#details'],
+    ['www.example.com:8443/portfolio', 'https://www.example.com:8443/portfolio'],
+  ])('accepts and saves a bare website address: %s', (input, expected) => {
+    expect(validateLinkInput('Website', input)).toBeNull()
+    expect(validateLinks([{ label: 'Website', url: input }])).toBeNull()
+    expect(normalizeLinks([{ label: ' Website ', url: input }])).toEqual([{ label: 'Website', url: expected }])
+  })
+
+  it.each(['example..com', 'example-.in', 'www.example.com:0', 'example.com:65536', '/example.com', '//example.com', 'user@example.com', 'some words.com', 'website', 'javascript:example.com', 'ftp://example.com'])('rejects malformed bare addresses: %s', (url) => {
+    expect(validateLinkInput('Website', url)).not.toBeNull()
+    expect(validateLinks([{ label: 'Website', url }])).not.toBeNull()
+  })
+
+  it('checks the saved URL length including the added HTTPS prefix', () => {
+    const url = `example.com/${'a'.repeat(2030)}`
+    expect(validateLinkInput('Website', url)).not.toBeNull()
+    expect(validateLinks([{ label: 'Website', url }])).not.toBeNull()
+  })
+
   it('trims labels and URLs and drops completely empty rows', () => {
     expect(normalizeLinks([{ label: ' Website ', url: ' https://example.com ' }, { label: ' ', url: ' ' }])).toEqual([{ label: 'Website', url: 'https://example.com' }])
   })

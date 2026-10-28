@@ -25,16 +25,16 @@ describe('onboarding server action runner', () => {
     vi.clearAllMocks()
   })
 
-  it('allows a single-name identity without blocking progress', async () => {
+  it('asks the customer for both name fields before allowing them to continue', async () => {
     const api = services()
     const form = new FormData()
     form.set('firstName', 'Nikhil')
 
     const state = await runOnboardingStep('identity', form, api)
 
-    expect(state).toMatchObject({ ok: true, fieldErrors: {}, next: '/onboarding/contact' })
-    expect(api.updateProfile).toHaveBeenCalledWith('owner-1', { full_name: 'Nikhil', headline: '', bio: '' })
-    expect(api.completeStep).toHaveBeenCalledWith('owner-1', 'identity')
+    expect(state).toEqual({ ok: false, fieldErrors: { lastName: 'Enter your last name.' } })
+    expect(api.updateProfile).not.toHaveBeenCalled()
+    expect(api.completeStep).not.toHaveBeenCalled()
   })
 
   it('saves valid identity data and progress before returning the next path', async () => {
@@ -70,11 +70,11 @@ describe('onboarding server action runner', () => {
     expect(api.updateProfile).not.toHaveBeenCalled()
   })
 
-  it('publishes and completes progress in one atomic call when the saved profile is ready', async () => {
+  it('submits the ready profile privately for administrator review', async () => {
     const api = services()
     const state = await runOnboardingStep('publish', new FormData(), api)
 
-    expect(api.completePublish).toHaveBeenCalledWith('owner-1', true)
+    expect(api.completePublish).toHaveBeenCalledWith('owner-1', false)
     expect(api.completeStep).not.toHaveBeenCalled()
     expect(state).toEqual({ ok: true, fieldErrors: {}, next: '/dashboard' })
   })

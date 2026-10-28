@@ -1,0 +1,11 @@
+# Twelve fixed material surfaces — 20 October 2026
+
+Replaces the procedural surface patterns with 12 clean generated material maps. Each map covers the full card face once, using the same UV crop and orientation in the Atelier, studio collection and unlit print export. Studio lighting affects presentation only. Existing name/logo/craft configuration is untouched. Maps are generated visual artwork, not scans of physical supplier samples. Legacy configurations stored a material name without a texture version; these v2 proofs must not be described as verified historical pixels.
+
+Source metadata (version, native width/height, SHA-256) is in `public/customize/material-surfaces.mjs` and travels in production notes. Native dimensions are approximately 1,600 × 1,000; a 600 DPI output canvas does not imply native 600 DPI source detail. Full maps use high-quality WebP; selection swatches use separate small previews (~136 KB for all12), loading a full map only when selected.
+
+The image generation briefs requested uniform unlit full-bleed material colour, no text/logos/edges/perspective, fine realistic card-scale detail. Variants: warm white soft-touch, deep black soft-touch, honed graphite, burnt terracotta clay, ochre mustard, burgundy oxblood, fine walnut veneer, pale natural oak, banded porous travertine, fine cloudy concrete, ivory marble with branching fine veins, brushed steel with restrained oxide.
+
+Verification: the pre-fix browser regression rejects the old marble surface against its master (mean channel error4.015). After integration, all12 master comparisons pass (mean channel error0.141–0.292/255, browser resampling); bleed invariance errors remain below0.001/255. All12 rounded studio cards visually inspected at desktop; flat view at desktop/mobile fits without horizontal overflow. A missing image fails closed before print. Full print matrix240 combinations passes rendering/asset checks, correctly blocks30 low-contrast combinations, and preserves empty names/uploaded logos/dirty-setting export guards. Unit suite1,086 tests across147 files passes; lint, TypeScript and production build pass. Independent review found no P0/P1/P2 issues.
+
+Recovery Preview only. No database, production, font, payment or customer-record change.

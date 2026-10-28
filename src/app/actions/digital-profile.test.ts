@@ -74,6 +74,18 @@ describe('digital profile save action', () => {
     expect(rpc).toHaveBeenCalledWith('save_own_digital_profile', expect.any(Object))
   })
 
+  it('sends a complete HTTPS address to the database when a customer enters a bare domain', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: true, error: null })
+    vi.mocked(createServerClient).mockResolvedValue(client(rpc) as never)
+    const form = formData()
+    form.set('links', JSON.stringify([{ label: 'Website', url: 'www.example.in/portfolio?x=1#work' }]))
+
+    await expect(saveDigitalProfile(form)).resolves.toEqual({ success: true, live: true })
+    expect(rpc).toHaveBeenCalledWith('save_own_digital_profile', expect.objectContaining({
+      p_links: [{ label: 'Website', url: 'https://www.example.in/portfolio?x=1#work' }],
+    }))
+  })
+
   it('rejects invalid links before writing any profile data', async () => {
     const rpc = vi.fn()
     vi.mocked(createServerClient).mockResolvedValue(client(rpc) as never)

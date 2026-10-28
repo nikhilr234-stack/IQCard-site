@@ -19,6 +19,7 @@ export default async function DigitalProfilePage() {
   return <DigitalProfileEditor
     profile={profile}
     presentation={presentation}
+    canPublish={account.role === 'admin'}
     saveDigitalProfileAction={saveDigitalProfile}
     publishAction={publishPresentation}
     uploadCoverAction={uploadProfileCover}

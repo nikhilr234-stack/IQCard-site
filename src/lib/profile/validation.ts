@@ -1,6 +1,7 @@
 import { normalizeHandoffEmail } from '@/lib/checkout/handoff'
+import { foundingProfileSlugs } from '@/lib/site-routing'
 
-const reserved = new Set(['admin', 'api', 'auth', 'dashboard', 'login', 'iq', 'register', 'onboarding', 'customize', 'claim-gift'])
+const reserved = new Set(['admin', 'api', 'auth', 'dashboard', 'login', 'iq', 'register', 'onboarding', 'customize', 'claim-gift', 'founding-profiles', ...foundingProfileSlugs.map((slug) => slug.toLowerCase())])
 
 export const PROFILE_NAME_PART_MAX_LENGTH = 80
 export const PROFILE_FULL_NAME_MAX_LENGTH = PROFILE_NAME_PART_MAX_LENGTH * 2 + 1
@@ -25,6 +26,15 @@ function isValidDomainOrIpv4Host(host: string): boolean {
     return octets.length === 4 && octets.every((octet) => ipv4OctetPattern.test(octet))
   }
   return host.split('.').every((label) => dnsLabelPattern.test(label))
+}
+
+export function normalizeProfileLinkUrl(input: string): string {
+  const value = input.trim()
+  const candidate = `https://${value}`
+  const match = webLinkPattern.exec(candidate)
+  // Only infer HTTPS for a complete domain or IPv4 address. Explicit schemes,
+  // relative paths and malformed hosts remain subject to normal validation.
+  return match && match[1].includes('.') && isValidDomainOrIpv4Host(match[1]) ? candidate : value
 }
 
 export function isValidProfileLinkUrl(input: string): boolean {
@@ -111,7 +121,7 @@ export function suggestSlug(name: string) {
   return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-export function isReservedSlug(slug: string) { return reserved.has(slug) }
+export function isReservedSlug(slug: string) { return reserved.has(slug.toLowerCase()) }
 
 export function normalizePublicEmail(value: string | null | undefined): string {
   return value?.trim().toLowerCase() ?? ''
@@ -184,7 +194,7 @@ export function validateEditableProfile(input: EditableProfileInput): EditablePr
 export function validateLinkInput(label: string, url: string): string | null {
   if (!label.trim()) return 'Add a label for this link.'
   if (label.trim().length > 60) return 'Link labels must be 60 characters or fewer.'
-  const value = url.trim()
+  const value = normalizeProfileLinkUrl(url)
   if (value.length > PROFILE_LINK_URL_MAX_LENGTH) return `Link URLs must be ${PROFILE_LINK_URL_MAX_LENGTH} characters or fewer.`
   if (isValidProfileLinkUrl(value)) return null
   return 'Use an HTTP(S) link or a contact link.'

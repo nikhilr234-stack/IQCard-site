@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { isReservedSlug, suggestSlug } from '@/lib/profile/validation'
 
 export type GiftProfileLinkInput = { label: string; url: string }
 
@@ -27,6 +28,7 @@ function parseCreatedGift(value: unknown): CreatedGiftProfile | null {
 }
 
 export async function createGiftProfile(input: CreateGiftProfileInput): Promise<CreatedGiftProfile> {
+  if (isReservedSlug(suggestSlug(input.fullName))) throw new Error('That profile URL is reserved.')
   const { data, error } = await createAdminClient().rpc('admin_create_and_publish_gift_profile', {
     p_profile_id: input.profileId,
     p_full_name: input.fullName,

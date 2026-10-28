@@ -1,0 +1,17 @@
+.surface {
+  min-height: 100vh;
+  background: #faf9f6;
+  color: #211f1c;
+  color-scheme: light;
+  --muted: #655f56;
+}
+
+:global(body):has(.surface) {
+  background: #faf9f6;
+  color-scheme: light;
+}
+
+.surface :is(a, button, input, select):focus-visible {
+  outline: 2px solid #514738;
+  outline-offset: 3px;
+}

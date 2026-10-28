@@ -6,8 +6,9 @@ type ProfileRow = { owner_id: string; slug: string; status: 'draft' | 'published
 type ProgressRow = { owner_id: string; current_step: string | null; completed_steps: string[] | null; started_at: string | null; completed_at: string | null }
 type MetadataRow = { owner_id: string; segment: string | null; invite_sent_at: string | null; invite_opened_at: string | null; last_active_at: string | null }
 
-function profileStatus(profile: ProfileRow | undefined, metadata: MetadataRow | undefined): ClientStatus {
+function profileStatus(profile: ProfileRow | undefined, metadata: MetadataRow | undefined, progress: ProgressRow | undefined): ClientStatus {
   if (profile?.status === 'published') return 'Live'
+  if (profile && progress?.completed_at) return 'Review'
   if (profile) return 'Draft'
   return metadata?.invite_sent_at ? 'Invited' : 'No profile'
 }
@@ -49,7 +50,7 @@ export async function listAdminClients(): Promise<Client[]> {
       id: account.id,
       name: displayName(account, profile),
       email: account.email,
-      status: profileStatus(profile, adminMetadata),
+      status: profileStatus(profile, adminMetadata, onboarding),
       profileUrl: profile?.slug ? `/${profile.slug}` : null,
       joinedAt: account.created_at,
       completion: Math.min(100, Math.max(0, (completedSteps.size / ONBOARDING_STEPS.size) * 100)),

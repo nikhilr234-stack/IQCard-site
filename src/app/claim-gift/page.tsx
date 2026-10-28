@@ -18,8 +18,8 @@ export default async function ClaimGiftPage() {
     <h1>An IQ has been made for you.</h1>
     <p>{gift.recipientName}, your published profile at <strong>iqcard.in/{gift.slug}</strong> is ready.</p>
     {conflict
-      ? <p role="status">This account already has a profile. The gift has been left untouched; contact IQ Card support to resolve the two profiles.</p>
+      ? <p role="status">This account already has a profile. Your current profile and this gift are both unchanged. Ask the person who sent this gift to help resolve the two profiles.</p>
       : <form action={claimGiftProfile}><button className="submit" type="submit">Claim this IQ</button></form>}
-    <p><Link href="/">Not now</Link></p>
+    <p><Link href={`/${gift.slug}`}>View the gift profile</Link></p><p><Link href="/dashboard">Back to your dashboard</Link></p>
   </main>
 }

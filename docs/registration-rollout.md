@@ -4,7 +4,7 @@ The new registration and onboarding system is opt-in. Deploy the application wit
 
 ## Prerequisites
 
-- Apply every unapplied Supabase migration in this exact filename order: `202608300001_create_user_accounts`, `202608300002_create_profiles`, `202609050001_create_checkout_handoffs`, `202609050002_create_registration_intents`, `202609050003_create_onboarding_progress`, `202609050004_add_onboarding_profile_fields`, `202609050005_create_registration_rate_limits`, `202609060001_fix_claim_registration_intent_status_ambiguity`, `202609060002_secure_profiles_and_atomic_writes`, `202609080001_harden_publication_boundary`, and `202609080002_close_publication_boundary_bypasses`. The two `20260908` migrations are mandatory additive security hardening migrations; `202609060002` alone is not sufficient. Do not enable registration v2 or run the legacy importer before the final migration succeeds.
+- Apply every unapplied Supabase migration in this exact filename order: `202608300001_create_user_accounts`, `202608300002_create_profiles`, `202609050001_create_checkout_handoffs`, `202609050002_create_registration_intents`, `202609050003_create_onboarding_progress`, `202609050004_add_onboarding_profile_fields`, `202609050005_create_registration_rate_limits`, `202609060001_fix_claim_registration_intent_status_ambiguity`, `202609060002_secure_profiles_and_atomic_writes`, `202609080001_harden_publication_boundary`, `202609080002_close_publication_boundary_bypasses`, and `20261005085331_require_admin_profile_approval`. The two `20260908` migrations are mandatory additive security hardening migrations; `202609060002` alone is not sufficient. The October approval migration keeps customer profiles private until an administrator publishes them. Do not enable registration v2 or run the legacy importer before the final migration succeeds.
 - Configure a random, server-only `IQCARD_RATE_LIMIT_SECRET` containing at least 32 random bytes.
 - Keep `SUPABASE_SERVICE_ROLE_KEY` server-only.
 - Set the Supabase production Site URL to `https://iqcard.in`.
@@ -34,7 +34,7 @@ Keep imported profiles in `draft` until their text, contact visibility, links, a
 2. Deploy the application with the feature flag disabled.
 3. Smoke-test `/customize`, legacy email confirmation, `/login`, and existing dashboards.
 4. Enable `IQCARD_ONBOARDING_V2=true` in a preview environment.
-5. With a dedicated test mailbox, complete design → email → confirmation → every onboarding step → private draft → publish.
+5. With a dedicated customer test mailbox, complete design → email → confirmation → every onboarding step → private submission. Sign in separately as an administrator, approve the profile, and verify the public card while signed out.
 6. Repeat with the email opened in another browser, an expired link, a replayed link, and a mismatched signed-in address.
 7. Confirm a stopped wizard resumes at the first incomplete step on another device.
 8. Enable production and monitor `registration_intent_created`, `registration_email_sent`, `registration_email_failed`, `registration_claimed`, `registration_claim_failed`, `registration_rate_limited`, `onboarding_step_saved`, and `onboarding_completed`.

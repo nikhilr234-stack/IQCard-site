@@ -16,3 +16,41 @@
   .digital-profile-identity-fields { grid-template-columns:1fr; }
   .digital-profile-identity-fields>label:nth-child(3),.digital-profile-visibility,.digital-profile-public-url { grid-column:1; }
 }
+
+/* Working controls remain legible and reachable throughout an editing session. */
+.digital-profile-shell { padding-bottom:140px; }
+.digital-profile-topbar nav button { min-height:44px; padding:10px 16px; border:1px solid var(--digital-line); border-radius:12px; background:white; color:var(--digital-ink); font:inherit; cursor:pointer; }
+.digital-profile-section-nav { display:flex; flex-wrap:wrap; align-items:center; gap:8px 16px; margin-bottom:24px; }
+.digital-profile-section-nav a { min-height:44px; display:inline-flex; align-items:center; font-size:14px; text-underline-offset:4px; }
+.digital-profile-section-nav button { display:none; }
+.digital-profile-savebar { position:fixed; bottom:0; left:0; right:0; z-index:40; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 20px; padding:14px max(20px,calc((100vw - 1440px)/2)); padding-bottom:calc(14px + env(safe-area-inset-bottom)); background:#fff; border-top:1px solid var(--digital-line); color:var(--digital-ink); }
+.digital-profile-savebar form { display:flex; gap:10px; }
+.digital-profile-savebar>span { font-size:14px; }
+.digital-profile-savebar>p { flex-basis:100%; margin:0; font-size:14px; }
+.digital-profile-savebar>p:empty { display:none; }
+.digital-profile-controls input:not([type=checkbox]):not([type=range]):not([type=color]),.digital-profile-controls textarea { font-size:16px; min-height:44px; }
+.digital-profile-controls label,.digital-profile-controls legend,.digital-profile-controls .digital-profile-link-fields label,.digital-profile-controls .digital-profile-identity-fields>label { font-size:12px; }
+.digital-profile-controls button { min-height:44px; font-size:13px; }
+.digital-profile-controls .digital-profile-panel-head p,.digital-profile-controls .digital-profile-design-heading p,.digital-profile-controls .digital-profile-capability-note { font-size:14px; line-height:1.5; }
+.digital-profile-controls section[id],.digital-profile-controls [id] { scroll-margin-top:110px; }
+.digital-draft-preview { position:fixed; inset:0; z-index:60; overflow:auto; background:#fff; }
+.digital-draft-preview>header { position:sticky; top:0; z-index:10; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; background:#fff; color:#171717; border-bottom:1px solid #ddd; }
+.digital-draft-preview>header button { min-height:44px; padding:10px 16px; background:#171717; color:white; border:0; border-radius:12px; cursor:pointer; }
+.digital-profile-shell :focus-visible { outline:3px solid #3456c8; outline-offset:3px; }
+@media(max-width:1050px) {
+  .digital-profile-workspace[data-mobile-view=edit] .digital-profile-preview-column { display:none; }
+  .digital-profile-workspace[data-mobile-view=preview] .digital-profile-controls { display:none; }
+  .digital-profile-section-nav { position:sticky; top:68px; z-index:20; padding:8px 0; background:#fff; }
+  .digital-profile-section-nav button { display:block; min-height:44px; padding:8px 16px; border:1px solid #ccc; border-radius:12px; background:white; font:inherit; }
+  .digital-profile-section-nav button[aria-pressed=true] { background:#171717; color:white; }
+  .digital-profile-templates { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .digital-profile-templates button { min-height:100px; }
+  .digital-profile-savebar { padding-inline:16px; }
+  .digital-profile-savebar form { margin-left:auto; }
+  .digital-profile-savebar button { min-height:44px; }
+}
+@media(max-width:380px) {
+  .digital-profile-savebar>span { flex-basis:100%; }
+  .digital-profile-savebar form { width:100%; }
+  .digital-profile-savebar form button { flex:1; }
+}

@@ -3,7 +3,7 @@
 import { randomUUID } from 'node:crypto'
 import { requireAdminAccount } from '@/lib/auth/account'
 import { validateLinks, normalizeLinks } from '@/lib/profile/links'
-import { validateProfileNameParts, isValidPublicEmail, isValidContactNumber } from '@/lib/profile/validation'
+import { validateProfileNameParts, isValidPublicEmail, isValidContactNumber, isReservedSlug, suggestSlug } from '@/lib/profile/validation'
 import { getPublicEnv } from '@/lib/env'
 import { publicProfileUrl } from '@/lib/site-routing'
 import { uploadGiftMedia, cleanupGiftMedia } from '@/lib/gifts/media'
@@ -37,6 +37,7 @@ export async function createGift(form: FormData) {
   const whatsapp = text(form, 'whatsapp')
   const location = text(form, 'location')
   if (!firstName || !lastNames.length || name.fieldErrors.firstName || name.fieldErrors.lastName) return { ok: false as const, error: 'Enter the recipient’s full name.' }
+  if (isReservedSlug(suggestSlug(name.value.fullName))) return { ok: false as const, error: 'That profile URL is reserved. Enter a name that creates a different address.' }
   if (!email || email.length > 320 || !isValidPublicEmail(email)) return { ok: false as const, error: 'Enter a valid recipient email.' }
   if (!role || role.length > 120) return { ok: false as const, error: 'Enter a role (up to 120 characters).' }
   if (tagline.length > 500 || location.length > 120 || !isValidContactNumber(phone) || !isValidContactNumber(whatsapp)) return { ok: false as const, error: 'Check the optional details and try again.' }
