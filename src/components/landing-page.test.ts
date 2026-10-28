@@ -36,4 +36,12 @@ describe('LandingPage', () => {
     expect(doc.querySelector('main')?.textContent).toContain('NFC-enabled')
     expect(doc.querySelector('main')?.textContent).not.toContain('QR')
   })
+
+  it('preserves every destination from the previous live homepage', () => {
+    const doc = new DOMParser().parseFromString(renderToStaticMarkup(createElement(LandingPage)), 'text/html')
+    const destinations = [...doc.querySelectorAll('a[href]')].map(link => link.getAttribute('href'))
+    expect(destinations).toEqual(expect.arrayContaining(['/', '/login', '/customize', '#iq-identity-receive', '#iq-sharing', '#iq-customize-tease']))
+    const footerDestinations = [...doc.querySelectorAll('footer a[href]')].map(link => link.getAttribute('href'))
+    expect(footerDestinations).toEqual(expect.arrayContaining(['#iq-identity-receive', '#iq-sharing', '#iq-customize-tease', '/login']))
+  })
 })

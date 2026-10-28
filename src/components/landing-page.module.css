@@ -170,7 +170,7 @@
 .footerInner { display:flex; align-items:center; gap:30px; flex-wrap:wrap; }
 .footer .brand { font-size:38px; }
 .footer p { font-size:12px; }
-.footer nav { margin-left:auto; display:flex; align-items:center; gap:24px; }
+.footer nav { margin-left:auto; display:flex; flex-wrap:wrap; align-items:center; gap:4px 24px; }
 .footer nav a { display:flex; align-items:center; gap:7px; font-size:12px; min-height:44px; }
 .footer nav svg { width:14px; height:14px; }
 .footer small { width:100%; padding-top:22px; border-top:1px solid var(--line); color:var(--muted); text-align:right; text-transform:uppercase; font-size:9px; letter-spacing:.1em; }

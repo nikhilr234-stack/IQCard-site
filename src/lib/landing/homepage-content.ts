@@ -4,12 +4,14 @@ export const HOME_SECTION_IDS = [
   'how-it-works',
   'iq-customize-tease',
   'iq-identity-receive',
+  'iq-sharing',
 ] as const
 
 export const HOME_NAV_ITEMS = [
   { label: 'How it works', href: '#how-it-works' },
   { label: 'The card', href: '#iq-customize-tease' },
   { label: 'Your profile', href: '#iq-identity-receive' },
+  { label: 'Share', href: '#iq-sharing' },
 ] as const
 
 export const HOME_MATERIALS = [

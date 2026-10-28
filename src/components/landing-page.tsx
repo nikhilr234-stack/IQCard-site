@@ -98,7 +98,7 @@ export function LandingPage() {
         </section>
         <section id="iq-final-cta" className={styles.closing} aria-labelledby="closing-heading"><div className={styles.container}><p>Your next introduction, considered.</p><h2 id="closing-heading">Make it<br /><span>unmistakably yours.</span></h2><div className={styles.closingActions}><DesignLink light /><span>{price} <i aria-hidden="true">·</i> Your card + digital profile</span></div></div><span className={styles.closingMark} aria-hidden="true">iq</span></section>
       </main>
-      <footer className={styles.footer}><div className={`${styles.container} ${styles.footerInner}`}><Link href="/" className={styles.brand} aria-label="IQ Card home">iq</Link><p>A better way to stay connected.</p><nav aria-label="Footer navigation"><a href="#how-it-works">How it works</a><a href="#iq-customize-tease">The card</a><Link href="/login">Log in <FiArrowRight aria-hidden="true" /></Link></nav><small>Designed by NRG STUDIO</small></div></footer>
+      <footer className={styles.footer}><div className={`${styles.container} ${styles.footerInner}`}><Link href="/" className={styles.brand} aria-label="IQ Card home">iq</Link><p>A better way to stay connected.</p><nav aria-label="Footer navigation">{HOME_NAV_ITEMS.map(item => <a key={item.href} href={item.href}>{item.label}</a>)}<Link href="/login">Log in <FiArrowRight aria-hidden="true" /></Link></nav><small>Designed by NRG STUDIO</small></div></footer>
     </div>
   )
 }
