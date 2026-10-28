@@ -14,7 +14,8 @@ import {
 import type { OnboardingActionState } from '@/lib/onboarding/action-runner'
 import { onboardingPath, onboardingSteps } from '@/lib/onboarding/steps'
 import type { OnboardingStep } from '@/lib/onboarding/types'
-import type { Profile } from '@/lib/profile/types'
+import { PublicProfile } from '@/components/public-profile'
+import type { CoverPresentation, Profile } from '@/lib/profile/types'
 import { onboardingStepLabels } from './onboarding-styles'
 import { publicProfileUrl } from '@/lib/site-routing'
 
@@ -49,7 +50,7 @@ function splitName(name: string) {
   return { firstName: parts[0] ?? '', lastName: parts.slice(1).join(' ') }
 }
 
-export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteUrl }: { step: OnboardingStep; profile: Profile; verifiedEmail: string; designId: string | null; siteUrl: string }) {
+export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteUrl, presentation }: { presentation: CoverPresentation; step: OnboardingStep; profile: Profile; verifiedEmail: string; designId: string | null; siteUrl: string }) {
   const router = useRouter()
   const displayUrl = publicProfileUrl(siteUrl, profile.slug).replace(/^https?:\/\//, '')
   const addressPrefix = `${new URL(siteUrl).host}/`
@@ -102,7 +103,7 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteU
           const visibilityId = `${inputId}-visible`
           return <div className="onboarding-contact-field" key={fieldName}>
             <label htmlFor={inputId}><span>{String(label)} <small>Optional</small></span></label>
-            <input id={inputId} name={fieldName} defaultValue={String(value ?? '')} aria-invalid={Boolean(state.fieldErrors[fieldName])} aria-describedby={`${fieldName}-error`} />
+            <input id={inputId} type={fieldName === 'publicEmail' ? 'email' : fieldName === 'location' ? 'text' : 'tel'} autoComplete={fieldName === 'publicEmail' ? 'email' : fieldName === 'location' ? 'address-level2' : 'tel'} name={fieldName} defaultValue={String(value ?? '')} aria-invalid={Boolean(state.fieldErrors[fieldName])} aria-describedby={`${fieldName}-error`} />
             <ErrorText id={`${fieldName}-error`} message={state.fieldErrors[fieldName]} />
             <label className="onboarding-visibility" htmlFor={visibilityId}>
               <input id={visibilityId} type="checkbox" name={`${fieldName}Visible`} defaultChecked={Boolean(visible)} />
@@ -120,12 +121,12 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteU
           <button type="button" onClick={() => removeLink(linkIndex)} aria-label={`Remove link ${linkIndex + 1}`}>Remove</button>
         </div>)}
         <ErrorText id="links-error" message={state.fieldErrors.links} />
-        <button type="button" className="onboarding-add" onClick={addLink}>＋ Add link</button>
+        <p aria-live="polite">{links.length}/12 links{links.length >= 12 ? ' · Link limit reached. Remove one to add another.' : ''}</p><button type="button" className="onboarding-add" disabled={links.length >= 12} onClick={addLink}>＋ Add link</button>
       </div>}
 
       {step === 'address' && <div className="onboarding-address"><label htmlFor="onboarding-slug"><span>Public profile URL <em>Required</em></span><div><b>{addressPrefix}</b><input id="onboarding-slug" name="slug" defaultValue={profile.slug} required aria-invalid={Boolean(state.fieldErrors.slug)} aria-describedby="slug-error" /></div><ErrorText id="slug-error" message={state.fieldErrors.slug} /></label>{state.alternatives?.length ? <p>Try: {state.alternatives.join(' or ')}</p> : null}</div>}
 
-      {step === 'preview' && <div className="onboarding-preview"><span>PRIVATE PREVIEW</span><h2>{profile.full_name || 'Your name'}</h2><p>{profile.headline || 'Your role or title'}</p><small>{profile.bio || 'Your short biography will appear here.'}</small><div>{profile.profile_links.map((link) => <span key={link.id}>{link.label}</span>)}</div><strong>{displayUrl}</strong></div>}
+      {step === 'preview' && <div className="onboarding-preview onboarding-preview-real"><p>Private preview · this is your actual profile layout</p><p>{displayUrl}</p><PublicProfile profile={profile} presentation={presentation} preview /></div>}
 
       {step === 'publish' && <div className="onboarding-publish"><div><span>PRIVATE UNTIL APPROVED</span><strong>Your profile is ready for Nikki to review.</strong><p>We’ll send it to the IQ Card admin queue. Your profile at {displayUrl} will remain private until it is approved.</p><small>Only IQ Card can publish</small></div><ErrorText id="publish-name-error" message={state.fieldErrors.fullName} /><ErrorText id="publish-email-error" message={state.fieldErrors.verifiedEmail} /><ErrorText id="publish-slug-error" message={state.fieldErrors.slug} /></div>}
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>IQ Card — Classic Atelier V8</title>
+<title>Design your IQ Card</title>
 <style>
   :root{
     --ink:#131315;--muted:#74747a;--line:#e5e5e8;--soft:#f5f5f7;--panel:#fff;
@@ -85,7 +85,7 @@
 
   .controls{background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column;min-width:0}.control-head{padding:26px 24px 18px;border-bottom:1px solid var(--line)}.control-head .tiny{font-size:10px;color:#8a8a90;letter-spacing:.12em;text-transform:uppercase}.control-head h3{font-size:24px;letter-spacing:-.045em;margin:9px 0 4px}.control-head p{font-size:12px;line-height:1.45;color:#777;margin:0}
   .tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}.tab{border:0;background:#fff;padding:16px 4px 13px;font-size:11px;color:#8a8a90;cursor:pointer;position:relative}.tab[aria-selected="true"]{color:#111;font-weight:600}.tab[aria-selected="true"]:after{content:"";position:absolute;left:18px;right:18px;bottom:-1px;height:2px;background:#111}
-  .panel{display:none;padding:22px 20px 28px;overflow:auto}.panel.active{display:block}.panel.is-entering{animation:panelEnter .42s cubic-bezier(.22,.8,.18,1)}@keyframes panelEnter{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}.section-label{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#8a8a90;letter-spacing:.08em;text-transform:uppercase;margin:0 0 11px}.section-label span:last-child{letter-spacing:0;text-transform:none;color:#b0b0b4}.selected-material{border:1px solid var(--line);border-radius:20px;padding:15px;display:flex;align-items:center;gap:12px;margin-bottom:18px;background:linear-gradient(180deg,#fcfcfc,#f6f6f7)}.selected-swatch{width:52px;height:52px;border-radius:15px;background:var(--material-base);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 10px 18px rgba(0,0,0,.05);position:relative;overflow:hidden}.selected-swatch:after{content:"";position:absolute;inset:0;background:var(--grain-pattern);opacity:.65;mix-blend-mode:multiply}.selected-copy strong{display:block;font-size:13px}.selected-copy span{font-size:10px;color:#777;line-height:1.3;display:block;margin-top:4px}.material-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.material{border:1px solid var(--line);background:linear-gradient(180deg,#fff,#fbfbfc);padding:10px;border-radius:18px;text-align:left;font-size:10px;color:#777;cursor:pointer;box-shadow:0 6px 12px rgba(0,0,0,.02)}.material-copy strong{display:block;font-size:11px;color:#111;margin-bottom:3px}.material-copy span{display:block;font-size:9px;line-height:1.35;color:#85858b}.swatch{height:74px;border-radius:16px;margin-bottom:9px;background:var(--swatch);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 9px 18px rgba(0,0,0,.05);position:relative;overflow:hidden}.swatch:before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.3),transparent 44%,rgba(255,255,255,.08) 82%);pointer-events:none}.swatch:after{content:"";position:absolute;inset:0;background:var(--grain);opacity:.7;mix-blend-mode:multiply}.material[aria-pressed="true"]{font-weight:700;color:#111;border-color:#111;box-shadow:0 10px 22px rgba(0,0,0,.06)}.material[aria-pressed="true"] .swatch{outline:2px solid #111;outline-offset:2px}.custom-color-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.custom-color{border:1px solid var(--line);background:#fff;border-radius:13px;padding:8px 4px 7px;display:grid;justify-items:center;gap:6px;cursor:pointer;color:#777;font-size:9px;line-height:1.1}.custom-color:hover{border-color:#9d9da3}.custom-color[aria-pressed="true"]{border-color:#111;color:#111;box-shadow:0 7px 14px rgba(0,0,0,.08)}.custom-color[aria-pressed="true"] .custom-color-swatch{outline:2px solid #111;outline-offset:2px}.custom-color-swatch{display:block;width:30px;height:30px;border-radius:50%;background:var(--color);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.08)}.custom-color-reset{border:0;background:transparent;padding:10px 0 0;color:#777;font-size:10px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.custom-color-reset:hover{color:#111}
+  .panel{display:none;padding:22px 20px 28px;overflow:auto}.panel.active{display:block}.panel.is-entering{animation:panelEnter .42s cubic-bezier(.22,.8,.18,1)}@keyframes panelEnter{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}.section-label{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#8a8a90;letter-spacing:.08em;text-transform:uppercase;margin:0 0 11px}.section-label span:last-child{letter-spacing:0;text-transform:none;color:#b0b0b4}.selected-material{border:1px solid var(--line);border-radius:20px;padding:15px;display:flex;align-items:center;gap:12px;margin-bottom:18px;background:linear-gradient(180deg,#fcfcfc,#f6f6f7)}.selected-swatch{width:52px;height:52px;border-radius:15px;background:var(--material-base);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 10px 18px rgba(0,0,0,.05);position:relative;overflow:hidden}.selected-swatch:after{content:"";position:absolute;inset:0;background:var(--grain-pattern);opacity:.65;mix-blend-mode:multiply}.selected-copy strong{display:block;font-size:13px}.selected-copy span{font-size:10px;color:#777;line-height:1.3;display:block;margin-top:4px}.material-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.material{border:1px solid var(--line);background:linear-gradient(180deg,#fff,#fbfbfc);padding:10px;border-radius:18px;text-align:left;font-size:10px;color:#777;cursor:pointer;box-shadow:0 6px 12px rgba(0,0,0,.02)}.material-copy strong{display:block;font-size:11px;color:#111;margin-bottom:3px}.material-copy span{display:block;font-size:9px;line-height:1.35;color:#85858b}.swatch{height:74px;border-radius:16px;margin-bottom:9px;background:var(--swatch);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 9px 18px rgba(0,0,0,.05);position:relative;overflow:hidden}.swatch:before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.3),transparent 44%,rgba(255,255,255,.08) 82%);pointer-events:none}.swatch:after{content:"";position:absolute;inset:0;background:var(--grain);opacity:.7;mix-blend-mode:multiply}.material[aria-checked="true"]{font-weight:700;color:#111;border-color:#111;box-shadow:0 10px 22px rgba(0,0,0,.06)}.material[aria-checked="true"] .swatch{outline:2px solid #111;outline-offset:2px}.custom-color-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.custom-color{border:1px solid var(--line);background:#fff;border-radius:13px;padding:8px 4px 7px;display:grid;justify-items:center;gap:6px;cursor:pointer;color:#777;font-size:9px;line-height:1.1}.custom-color:hover{border-color:#9d9da3}.custom-color[aria-pressed="true"]{border-color:#111;color:#111;box-shadow:0 7px 14px rgba(0,0,0,.08)}.custom-color[aria-pressed="true"] .custom-color-swatch{outline:2px solid #111;outline-offset:2px}.custom-color-swatch{display:block;width:30px;height:30px;border-radius:50%;background:var(--color);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12),0 4px 8px rgba(0,0,0,.08)}.custom-color-reset{border:0;background:transparent;padding:10px 0 0;color:#777;font-size:10px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.custom-color-reset:hover{color:#111}
   .control-group{padding:18px 0;border-top:1px solid var(--line)}.control-group:first-of-type{border-top:0;padding-top:0}.segmented{display:flex;flex-wrap:wrap;gap:7px}.choice{border:1px solid #dedee1;border-radius:99px;background:#fff;padding:9px 12px;font-size:11px;cursor:pointer}.choice[aria-pressed="true"]{background:#111;color:#fff;border-color:#111}.field label{font-size:10px;color:#89898e;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}.field input{width:100%;border:0;border-bottom:1px solid #d9d9dd;padding:9px 0 11px;outline:0;font-size:17px;background:transparent;color:#111}.field input[aria-invalid="true"]{border-bottom-color:#b83e32}.required-mark{color:#b83e32;font-size:8px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}.fine-note{display:block;margin-top:10px;color:#888;font-size:10px;line-height:1.45}.field-error{display:none;margin-top:8px;color:#9d352b;font-size:10px;line-height:1.45}.field-error.is-visible{display:block}.range-wrap{display:flex;align-items:center;gap:11px}.range-wrap input{width:100%;accent-color:#111}.range-value{font-size:10px;color:#777;width:34px;text-align:right;font-variant-numeric:tabular-nums}
   .craft-card{border:1px solid var(--line);padding:13px 14px;border-radius:15px;margin-top:11px}.craft-card strong{display:block;font-size:12px}.craft-card span{display:block;margin-top:4px;font-size:10px;color:#7b7b80;line-height:1.4}
   .control-foot{margin-top:auto;padding:18px 20px;border-top:1px solid var(--line);display:flex;gap:8px}.mobile-running-total{display:none}.secondary,.primary{border-radius:13px;padding:12px 14px;font-size:11px;cursor:pointer}.secondary{border:1px solid #dedee1;background:#fff;flex:0 0 42%}.primary{border:1px solid #111;background:#111;color:#fff;flex:1;box-shadow:0 12px 20px rgba(17,17,17,.12)}.primary:hover{background:#27272a}
@@ -94,7 +94,7 @@
 
   .step-rail{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;padding:15px 20px;border-bottom:1px solid var(--line)}
   .step-rail i{height:2px;border-radius:9px;background:#e5e5e8;transition:background .2s ease}.step-rail i.is-complete,.step-rail i.is-active{background:#111}
-  .core-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.core-choice{min-width:0;border:1px solid var(--line);border-radius:19px;background:#fff;padding:11px;text-align:left;cursor:pointer}.core-choice[aria-pressed="true"]{border-color:#111;box-shadow:0 10px 24px rgba(0,0,0,.05)}.core-choice strong{display:block;font-size:12px;margin-top:10px}.core-choice span{display:block;color:#888;font-size:9px;line-height:1.35;margin-top:4px}.core-sample{display:block;height:92px;border-radius:17px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 9px 20px rgba(0,0,0,.06)}.core-black{background:linear-gradient(135deg,#050506,#222327 52%,#0c0c0e)}.core-white{background:linear-gradient(135deg,#fff,#efefec 52%,#deded9)}.construction-note{margin-top:18px;padding-top:17px;border-top:1px solid var(--line)}.construction-note strong{display:block;font-size:11px}.construction-note span{display:block;margin-top:5px;color:#85858a;font-size:10px;line-height:1.45}.guided-nav #stepBack:disabled{opacity:.3;cursor:default}
+  .core-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.core-choice{min-width:0;border:1px solid var(--line);border-radius:19px;background:#fff;padding:11px;text-align:left;cursor:pointer}.core-choice[aria-checked="true"]{border-color:#111;box-shadow:0 10px 24px rgba(0,0,0,.05)}.core-choice strong{display:block;font-size:12px;margin-top:10px}.core-choice span{display:block;color:#888;font-size:9px;line-height:1.35;margin-top:4px}.core-sample{display:block;height:92px;border-radius:17px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 9px 20px rgba(0,0,0,.06)}.core-black{background:linear-gradient(135deg,#050506,#222327 52%,#0c0c0e)}.core-white{background:linear-gradient(135deg,#fff,#efefec 52%,#deded9)}.construction-note{margin-top:18px;padding-top:17px;border-top:1px solid var(--line)}.construction-note strong{display:block;font-size:11px}.construction-note span{display:block;margin-top:5px;color:#85858a;font-size:10px;line-height:1.45}.guided-nav #stepBack:disabled{opacity:.3;cursor:default}
   .identity-moment{margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#fbfbfc,#f5f5f7)}
   .identity-moment span{display:block;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#96969b}.identity-moment strong{display:block;margin-top:8px;font-size:24px;letter-spacing:-.055em;line-height:.95}.identity-moment em{display:block;margin-top:8px;font-style:normal;font-size:10px;color:#888}
   .composition-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.composition-choice{border:1px solid var(--line);background:#fff;border-radius:18px;padding:10px;text-align:left;cursor:pointer}.composition-choice[aria-pressed="true"]{border-color:#111;box-shadow:0 10px 22px rgba(0,0,0,.055)}.composition-choice strong{display:block;font-size:11px;margin-top:9px}.composition-choice em{display:block;font-size:9px;color:#85858b;font-style:normal;margin-top:3px}.composition-wide{grid-column:1/-1}
@@ -104,7 +104,7 @@
   .fine-tune{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}.fine-tune summary{cursor:pointer;font-size:11px;font-weight:600;list-style:none;padding:8px 0}.fine-tune summary::-webkit-details-marker{display:none}.fine-tune summary:after{content:"+";float:right;color:#8b8b90}.fine-tune[open] summary:after{content:"−"}.fine-tune input[type="range"]{width:100%;accent-color:#111}
   .upload-card{margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:17px;background:#fafafa}.upload-card label{display:block;font-size:11px;font-weight:600;margin-bottom:9px}.upload-card input{display:block;width:100%;font-size:10px}.upload-card span{display:block;margin-top:8px;font-size:9px;color:#8a8a90;line-height:1.4}.custom-logo-preview{position:absolute;left:34px;top:30px;width:68px;height:68px;object-fit:contain;object-position:left top;display:none;transform:translate(var(--logo-user-x,0px),var(--logo-user-y,0px)) scale(var(--logo-user-scale,1));transform-origin:left top;filter:var(--logo-filter,none)}
   .back-name,.back-iq,.back-custom-logo{position:absolute;display:none}.back-name{left:33px;top:31px;font-size:17px;font-weight:700;letter-spacing:-.045em}.back-iq{right:32px;top:29px;font-size:32px;font-weight:700;letter-spacing:-.12em}.back-custom-logo{right:30px;top:28px;width:66px;height:66px;object-fit:contain;object-position:right top}.back-layout-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.back-layout-choice{border:1px solid var(--line);border-radius:15px;background:#fff;padding:12px;text-align:left;cursor:pointer}.back-layout-choice[aria-pressed="true"]{border-color:#111;background:#fafafa}.back-layout-choice strong{display:block;font-size:11px}.back-layout-choice span{display:block;font-size:9px;color:#888;margin-top:4px;line-height:1.35}.side-switch{margin-bottom:2px}
-  .craft-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.craft-choice{border:1px solid var(--line);border-radius:15px;background:#fff;padding:12px;text-align:left;cursor:pointer}.craft-choice[aria-pressed="true"]{border-color:#111;background:#fafafa}.craft-choice strong{display:block;font-size:11px}.craft-choice span{display:block;font-size:9px;color:#85858b;line-height:1.35;margin-top:4px}.craft-wide{grid-column:1/-1}
+  .craft-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.craft-choice{border:1px solid var(--line);border-radius:15px;background:#fff;padding:12px;text-align:left;cursor:pointer}.craft-choice[aria-checked="true"]{border-color:#111;background:#fafafa}.craft-choice strong{display:block;font-size:11px}.craft-choice span{display:block;font-size:9px;color:#85858b;line-height:1.35;margin-top:4px}.craft-wide{grid-column:1/-1}
   .final-caption .final-spec{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:baseline}.final-caption .final-spec i{font-style:normal;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#999}.final-caption .final-spec b{font-size:11px;font-weight:600;color:#202024;text-transform:capitalize}.final-mode .final-caption{min-width:220px}
   .final-mode .final-caption{display:none}
   .commercial-panel{display:none;position:absolute;right:28px;top:28px;z-index:7;width:min(318px,calc(100% - 56px));padding:20px;border-radius:22px;background:rgba(255,255,255,.82);backdrop-filter:blur(22px);border:1px solid rgba(0,0,0,.07);box-shadow:0 22px 54px rgba(0,0,0,.10);color:#171719}
@@ -138,13 +138,14 @@
   .saved-preview .scroll-space{height:200%}
   .saved-preview .sticky-stage{position:sticky;top:0;height:50vh;min-height:100vh;padding:16px}
   .saved-preview .card-rig{width:min(78vw,560px)}
+.angle-readout{display:none}.inspection-nav{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:7}.inspection-view{min-height:44px;padding:10px 16px;border:1px solid #ddd;border-radius:12px;background:#fff;cursor:pointer}.inspection-view[aria-pressed="true"]{background:#111;color:#fff}.top-status .atelier-price{font-size:12px}.check-email-recovery button{min-height:44px}@media(max-width:620px){.top-status .atelier-price{display:inline!important;font-size:10px}.top-status>span:last-child{display:none}}
 </style>
 </head>
 <body>
 <main id="iq-atelier">
   <header class="topbar">
     <a class="brand" data-iq-brand="primary" href="/" aria-label="IQ Card home">iq</a>
-    <div class="top-status"><span><i class="status-dot"></i>Live object</span><span>01 / Configure</span></div>
+    <div class="top-status"><span class="atelier-price">₹799 card · delivery &amp; tax at checkout</span><span><i class="status-dot"></i>Live object</span><span>01 / Configure</span></div>
   </header>
 
   <section class="hero">
@@ -153,7 +154,7 @@
       <h1>Design an<br>introduction.</h1>
       <p>Not a template. A material object tuned to the way you want to be remembered.</p>
     </div>
-    <div class="hero-meta"><strong>IQ / Classic Atelier 07</strong>Scroll the object. Inspect the edge.<br>Then make it yours.</div>
+    <div class="hero-meta"><strong>IQ Card Atelier</strong>Scroll the object. Inspect the edge.<br>Then make it yours.</div>
   </section>
 
   <section class="atelier-shell">
@@ -205,15 +206,15 @@
         <div class="final-spec"><i>Craft</i><b id="finalCraft">Engrave</b></div>
       </div>
       <aside class="commercial-panel" id="commercialPanel" aria-label="Classic IQ Card commercial summary">
-        <div class="commercial-eyebrow">Commission summary</div>
+        <div class="commercial-eyebrow">Your design</div>
         <h3>Classic IQ Card</h3>
         <div class="commercial-meta">
           <i>Core</i><b id="commercialCore">Black NFC</b>
           <i>Material</i><b id="commercialMaterial">Walnut</b>
           <i>Craft</i><b id="commercialCraft">Engraved</b>
         </div>
-        <div class="commercial-total"><span>Provisional total</span><strong id="commercialTotal">₹799</strong></div>
-        <div class="order-summary" aria-label="Provisional price breakdown">
+        <div class="commercial-total"><span>Card price</span><strong id="commercialTotal">₹799</strong></div>
+        <div class="order-summary" aria-label="Card price breakdown">
           <div class="order-summary-row"><span>Base card</span><strong id="priceBase">₹799</strong></div>
           <div class="order-summary-row"><span>Material</span><strong id="priceMaterial">Included</strong></div>
           <div class="order-summary-row"><span>Craft</span><strong id="priceCraft">Included</strong></div>
@@ -224,10 +225,10 @@
         <button type="button" class="restore-last" id="restoreLastBtn">Restore last saved</button>
         <div class="commercial-actions"><button type="button" class="save-design" id="saveDesignBtn">Save this design</button><button type="button" class="continue-checkout" id="continueCheckoutBtn">Continue →</button></div>
       </aside>
-      <aside class="order-review-panel" id="orderReviewPanel" aria-label="Order Review">
-        <div class="commercial-eyebrow">Order Review</div>
+      <aside class="order-review-panel" id="orderReviewPanel" aria-label="Save your design">
+        <div class="commercial-eyebrow">Save your design</div>
         <h3>Review your Classic IQ Card</h3>
-        <div class="handoff-copy">Save this design to your IQ account. We’ll send a secure sign-in link — no payment required.</div>
+        <div class="handoff-copy">Save this design to your IQ account. We’ll send a secure sign-in link — no payment required. Delivery and payment come later.</div>
         <div class="order-summary">
           <div class="order-summary-row"><span>Product</span><strong>Classic IQ Card</strong></div>
           <div class="order-summary-row"><span>Configuration</span><strong id="orderConfigurationSummary">Black NFC · Walnut</strong></div>
@@ -238,7 +239,7 @@
         <label class="handoff-field" for="handoffEmail"><span class="handoff-field-label"><span>Email address</span><span class="required-mark">Required</span></span><input id="handoffEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" aria-describedby="handoffEmailError" required /></label>
         <div class="field-error" id="handoffEmailError" role="alert" aria-live="polite"></div>
         <div class="handoff-message" id="handoffMessage" role="status" aria-live="polite"></div>
-        <div class="order-actions"><button type="button" class="order-back" id="orderBackBtn">Back to final object</button><button type="button" class="order-confirm" id="confirmBuildBtn">Confirm build</button></div>
+        <div class="order-actions"><button type="button" class="order-back" id="orderBackBtn">Back to design</button><button type="button" class="order-confirm" id="confirmBuildBtn">Save design &amp; email my link</button></div>
       </aside>
       <div class="scroll-labels"><span id="phaseLabel">Front / material read</span><div class="progress"><i id="progressBar"></i></div><span class="angle-readout" id="angleReadout">18° / 8°</span></div>
     </div>
@@ -256,10 +257,10 @@
       <section class="panel active" data-step="core" aria-label="Core">
         <div class="section-label"><span>NFC core</span><span>physical base</span></div>
         <div class="core-grid">
-          <button type="button" class="core-choice" data-core="black" aria-pressed="true">
+          <button type="button" class="core-choice" data-core="black" aria-checked="true">
             <i class="core-sample core-black"></i><strong>Black NFC</strong><span>Stealth edge · strong contrast</span>
           </button>
-          <button type="button" class="core-choice" data-core="white" aria-pressed="false">
+          <button type="button" class="core-choice" data-core="white" aria-checked="false">
             <i class="core-sample core-white"></i><strong>White NFC</strong><span>Clean edge · bright construction</span>
           </button>
         </div>
@@ -275,7 +276,7 @@
       <section class="panel" data-step="identity" aria-label="Identity">
         <div class="control-group">
           <div class="section-label"><span>Your name</span><span>first + last</span></div>
-          <div class="field"><label for="nameInput"><span>First and last name</span><span class="required-mark">Required</span></label><input id="nameInput" value="YOUR NAME" maxlength="26" autocomplete="name" placeholder="First Last" aria-describedby="nameHelp nameError" required><small class="fine-note" id="nameHelp">Use two words so your card can show your full name.</small><small class="field-error" id="nameError" role="alert" aria-live="polite"></small></div>
+          <div class="field"><label for="nameInput"><span>Name on your card</span><span class="required-mark">Required</span></label><input id="nameInput" value="YOUR NAME" maxlength="26" autocomplete="name" placeholder="Your printed name" aria-describedby="nameHelp nameError" required><small class="fine-note" id="nameHelp">Enter your first and last name as you want them printed. Your profile currently requires both.</small><small class="field-error" id="nameError" role="alert" aria-live="polite"></small></div>
         </div>
         <div class="control-group">
         </div>
@@ -290,7 +291,7 @@
           <span>PNG, JPG, WebP or SVG · up to 1 MB · saved with this design</span>
         </div>
         <details class="fine-tune" id="fineTuneLogo">
-          <summary>Logo placement</summary>
+          <summary>Additional logo placement</summary>
           <div class="control-group"><div class="section-label"><span>Scale</span><span id="logoScaleValue">1.00×</span></div><input id="logoScaleRange" type="range" min="0.5" max="2" step="0.01" value="1"></div>
           <div class="control-group"><div class="section-label"><span>Horizontal position</span><span id="logoXValue">0</span></div><input id="logoXRange" type="range" min="-50" max="50" step="1" value="0"></div>
           <div class="control-group"><div class="section-label"><span>Vertical position</span><span id="logoYValue">0</span></div><input id="logoYRange" type="range" min="-40" max="40" step="1" value="0"></div>
@@ -300,11 +301,11 @@
       <section class="panel" data-step="craft" aria-label="Craft">
         <div class="section-label"><span>Manufacturing treatment</span><span>identity surface</span></div>
         <div class="craft-grid">
-          <button type="button" class="craft-choice" data-craft="engrave" aria-pressed="true"><strong>Engraved</strong><span>Low-gloss, cut into the surface</span></button>
-          <button type="button" class="craft-choice" data-craft="emboss" aria-pressed="false"><strong>Embossed</strong><span>Raised and light-catching</span></button>
-          <button type="button" class="craft-choice" data-craft="deboss" aria-pressed="false"><strong>Debossed</strong><span>Pressed into the material</span></button>
-          <button type="button" class="craft-choice" data-craft="foil" aria-pressed="false"><strong>Foil</strong><span>Reflective metallic identity</span></button>
-          <button type="button" class="craft-choice craft-wide" data-craft="printed" aria-pressed="false"><strong>Printed</strong><span>Crisp surface ink with no physical depth</span></button>
+          <button type="button" class="craft-choice" data-craft="engrave" aria-checked="true"><strong>Engraved</strong><span>Low-gloss, cut into the surface</span></button>
+          <button type="button" class="craft-choice" data-craft="emboss" aria-checked="false"><strong>Embossed</strong><span>Raised and light-catching</span></button>
+          <button type="button" class="craft-choice" data-craft="deboss" aria-checked="false"><strong>Debossed</strong><span>Pressed into the material</span></button>
+          <button type="button" class="craft-choice" data-craft="foil" aria-checked="false"><strong>Foil</strong><span>Reflective metallic identity</span></button>
+          <button type="button" class="craft-choice craft-wide" data-craft="printed" aria-checked="false"><strong>Printed</strong><span>Crisp surface ink with no physical depth</span></button>
         </div>
         <div class="craft-card"><strong id="craftTitle">Laser engraving</strong><span id="craftCopy">Low-gloss lettering reads as part of the material rather than ink sitting on top.</span></div>
         <div class="construction-note"><strong>Watch the light.</strong><span>Every treatment triggers a short raking-light sweep so depth and reflectivity can be read on the actual object.</span></div>
@@ -966,7 +967,7 @@
     selectedSwatch.style.setProperty('--grain-pattern', color ? 'linear-gradient(145deg,rgba(255,255,255,.24),transparent 52%)' : material.grain);
     selectedName.textContent = color ? `${material.name} · ${color.name}` : material.name;
     selectedFeel.textContent = color ? `Custom color · ${color.name} surface` : material.feel;
-    document.querySelectorAll('.material').forEach(button=>button.setAttribute('aria-pressed',button.dataset.material===material.name?'true':'false'));
+    document.querySelectorAll('.material').forEach(button=>button.setAttribute('aria-checked',button.dataset.material===material.name?'true':'false'));
     document.querySelectorAll('[data-custom-color]').forEach(button=>button.setAttribute('aria-pressed',button.dataset.customColor===config.customColor?'true':'false'));
   }
 
@@ -1049,6 +1050,7 @@
   }
 
   function renderControls(config) {
+    document.getElementById('fineTuneLogo').hidden = config.logo.mode !== 'custom';
     syncSurfaceSummary(config);
     renderFinalSummary(config);
     renderCommercialSummary(config);
@@ -1058,7 +1060,7 @@
       dot.classList.toggle('is-active', i === index);
       dot.classList.toggle('is-complete', i < index);
     });
-    document.querySelectorAll('[data-core]').forEach(button => button.setAttribute('aria-pressed', button.dataset.core === config.core ? 'true' : 'false'));
+    document.querySelectorAll('[data-core]').forEach(button => button.setAttribute('aria-checked', button.dataset.core === config.core ? 'true' : 'false'));
     document.querySelectorAll('[data-name-tone]').forEach(button => button.setAttribute('aria-pressed', button.dataset.nameTone === config.identity.tone ? 'true' : 'false'));
     const nameField = document.getElementById('nameInput');
     if(nameField && nameField.value !== config.identity.name) nameField.value = config.identity.name;
@@ -1068,7 +1070,7 @@
     document.querySelectorAll('[data-logo-align]').forEach(button => button.setAttribute('aria-pressed', button.dataset.logoAlign === config.logo.align ? 'true' : 'false'));
     document.querySelectorAll('[data-side]').forEach(button => button.setAttribute('aria-pressed', button.dataset.side === config.side ? 'true' : 'false'));
     document.querySelectorAll('[data-back-layout]').forEach(button => button.setAttribute('aria-pressed', button.dataset.backLayout === config.backLayout ? 'true' : 'false'));
-    document.querySelectorAll('[data-craft]').forEach(button => button.setAttribute('aria-pressed', button.dataset.craft === config.craft ? 'true' : 'false'));
+    document.querySelectorAll('[data-craft]').forEach(button => button.setAttribute('aria-checked', button.dataset.craft === config.craft ? 'true' : 'false'));
     const craftText = craftCopy[config.craft];
     if(craftText){ const title=document.getElementById('craftTitle');const copy=document.getElementById('craftCopy');if(title)title.textContent=craftText[0];if(copy)copy.textContent=craftText[1]; }
     [['logoScaleRange',config.logo.scale,'logoScaleValue',`${Number(config.logo.scale).toFixed(2)}×`],['logoXRange',config.logo.x,'logoXValue',`${config.logo.x}`],['logoYRange',config.logo.y,'logoYValue',`${config.logo.y}`]].forEach(([id,value,outId,label])=>{const input=document.getElementById(id);if(input)input.value=value;const out=document.getElementById(outId);if(out)out.textContent=label;});
@@ -1415,7 +1417,7 @@
 
   materials.forEach((m,i)=>{
     const b=document.createElement('button');
-    b.className='material';b.dataset.material=m.name;b.setAttribute('aria-pressed',i===0?'true':'false');
+    b.className='material';b.dataset.material=m.name;b.setAttribute('aria-checked',i===0?'true':'false');
     b.innerHTML=`<i class="swatch" style="--swatch:url(/customize/surfaces/v2/thumbs/${MATERIAL_SURFACES[m.name].key}.webp) center / 100% 100% no-repeat;--grain:none"></i><span class="material-copy"><strong>${m.name}</strong><span>${m.feel}</span></span>`;
     b.addEventListener('click',()=>setMaterial(m));
     materialGrid.appendChild(b);
@@ -1667,6 +1669,12 @@
     setMaterial(materials.find(m=>m.name==='Walnut'));setStep('core',{scroll:false});updateScene();
   }
   autosaveReady = !previewMode && document.getElementById('iqCard') !== null;
+</script>
+<script type="module">
+import { setupRadioChoices } from '/customize/radio-choices.mjs';
+setupRadioChoices(document.querySelector('.core-grid'), 'NFC core');
+setupRadioChoices(document.getElementById('materialGrid'), 'Card material');
+setupRadioChoices(document.querySelector('.craft-grid'), 'Craft treatment');
 </script>
 </body>
 </html>

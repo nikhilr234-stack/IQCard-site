@@ -25,7 +25,7 @@ type Props = {
  * separate route so publishing state can never switch a person back to the
  * retired setup dashboard.
  */
-export function ProfileEditor({ profile, presentation, savedDesign, siteUrl }: Props) {
+export function ProfileEditor({ profile, presentation, savedDesign, siteUrl, unpublishAction }: Props) {
   useEffect(() => {
     document.body.classList.add('v6-live-mode')
     return () => document.body.classList.remove('v6-live-mode')
@@ -36,6 +36,7 @@ export function ProfileEditor({ profile, presentation, savedDesign, siteUrl }: P
     presentation={presentation}
     savedDesign={savedDesign}
     siteUrl={siteUrl}
+    unpublishAction={() => unpublishAction(new FormData())}
     // This component is also rendered in server-only feedback tests, where
     // Next's client router is intentionally unavailable.
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination

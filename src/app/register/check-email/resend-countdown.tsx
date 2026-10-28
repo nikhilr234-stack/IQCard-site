@@ -1,11 +1,21 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export function ResendCountdown() {
   const [seconds, setSeconds] = useState(60)
   const [sending, setSending] = useState(false)
   const [message, setMessage] = useState('')
+  const [destination, setDestination] = useState('')
+  useEffect(() => {
+    let active = true
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('iq-registration-resend') || 'null')
+      if (typeof saved?.email === 'string') { const [local, domain] = saved.email.split('@'); queueMicrotask(() => { if (active) setDestination(`${local.slice(0,1)}•••@${domain}`) }) }
+    } catch { /* Saved-card recovery remains available. */ }
+    return () => { active = false }
+  }, [])
   useEffect(() => {
     if (seconds <= 0) return
     const timer = window.setTimeout(() => setSeconds((value) => value - 1), 1000)
@@ -37,7 +47,9 @@ export function ResendCountdown() {
     } finally { setSending(false) }
   }
 
-  return <div>
+  return <div className="check-email-recovery">
+    {destination ? <p>Sent to <strong>{destination}</strong>. Check spam or promotions too.</p> : null}
+    <Link href="/customize?restore=1" className="check-email-action secondary">Change email with your saved card</Link>
     {seconds > 0
       ? <p className="check-email-resend" aria-live="polite">You can request another link in {seconds} seconds.</p>
       : <button type="button" className="check-email-action secondary" disabled={sending} onClick={() => void resend()}>{sending ? 'Sending…' : 'Resend secure link'}</button>}

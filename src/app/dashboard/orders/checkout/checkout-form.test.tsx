@@ -35,6 +35,7 @@ describe('CheckoutForm payment confirmation', () => {
     paymentConstructor = vi.fn(() => ({ open: razorpayOpen }))
     Object.defineProperty(window, 'Razorpay', { configurable: true, value: paymentConstructor })
     fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === 'PATCH') return new Response(JSON.stringify({ ok: true, phone: order.phone, shippingAddress: order.shippingAddress }), { status: 200 })
       if (!init?.method) return new Response(JSON.stringify({ ok: false }), { status: 404 })
       return new Response(JSON.stringify({
         ok: true,
@@ -89,4 +90,33 @@ describe('CheckoutForm payment confirmation', () => {
     expect(host.textContent).toContain('graphite IQ Card')
     expect(host.textContent).not.toContain('Sample Person')
   })
+  it('requires saving delivery corrections before opening payment for the same order', async () => {
+    const form = host.querySelector('form')!
+    await act(async () => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })))
+    const correct = [...host.querySelectorAll('button')].find(button => button.textContent === 'Correct delivery details')!
+    await act(async () => correct.click())
+    expect(host.querySelector('fieldset')?.disabled).toBe(false)
+    expect(host.textContent).not.toContain('Pay ₹924.00 securely')
+    await act(async () => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })))
+    expect(fetchMock).toHaveBeenCalledWith('/api/orders/order-local-1', expect.objectContaining({ method: 'PATCH' }))
+    expect(host.querySelector('fieldset')?.disabled).toBe(true)
+    expect(host.textContent).toContain('Pay ₹924.00 securely')
+    expect(paymentConstructor).not.toHaveBeenCalled()
+  })
+
+  it('freezes delivery corrections until PATCH completes and displays the saved response', async () => {
+    const form = host.querySelector('form')!
+    await act(async () => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })))
+    await act(async () => [...host.querySelectorAll('button')].find(button => button.textContent === 'Correct delivery details')!.click())
+    let finish!: (value: Response) => void
+    fetchMock.mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve }))
+    await act(async () => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })))
+    expect(host.querySelector('fieldset')?.disabled).toBe(true)
+    const cancel = [...host.querySelectorAll('button')].find(button => button.textContent === 'Cancel correction')!
+    expect(cancel.disabled).toBe(true)
+    await act(async () => finish(new Response(JSON.stringify({ ok: true, phone: '+919111111111', shippingAddress: { ...order.shippingAddress, line1: '2 Corrected Road' } }), { status: 200 })))
+    expect([...host.querySelectorAll('input')].some(input => input.value === '2 Corrected Road')).toBe(true)
+    expect([...host.querySelectorAll('input')].some(input => input.value === '+919111111111')).toBe(true)
+  })
+
 })

@@ -47,4 +47,13 @@ describe('RefreshWhilePending', () => {
     act(() => vi.advanceTimersByTime(10_000))
     expect(routerRefresh).toHaveBeenCalledTimes(2)
   })
+  it('stops automatic polling after two minutes and offers a manual recovery', () => {
+    act(() => vi.advanceTimersByTime(125_000))
+    const count = routerRefresh.mock.calls.length
+    act(() => vi.advanceTimersByTime(20_000))
+    expect(routerRefresh).toHaveBeenCalledTimes(count)
+    expect(host.textContent).toContain('Do not pay again')
+    expect(host.querySelector('button')?.textContent).toContain('Check payment status')
+  })
+
 })

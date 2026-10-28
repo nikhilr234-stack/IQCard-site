@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Profile } from '@/lib/profile/types'
 import type { OnboardingStep } from '@/lib/onboarding/types'
 import { OnboardingWizard } from './onboarding-wizard'
+import { DEFAULT_PRESENTATION } from '@/lib/profile/presentation'
 import { onboardingStepLabels } from './onboarding-styles'
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
@@ -23,7 +24,7 @@ const profile: Profile = {
 
 function renderStep(step: OnboardingStep) {
   return renderToStaticMarkup(createElement(OnboardingWizard, {
-    step, profile, verifiedEmail: 'ada@example.com', designId: 'IQD-TEST', siteUrl: 'https://preview.example.com',
+    presentation: DEFAULT_PRESENTATION.draft, step, profile, verifiedEmail: 'ada@example.com', designId: 'IQD-TEST', siteUrl: 'https://preview.example.com',
   }))
 }
 

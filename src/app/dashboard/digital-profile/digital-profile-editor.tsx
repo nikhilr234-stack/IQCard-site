@@ -3,9 +3,12 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { SignOutButton } from '@/components/sign-out-button'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 
+import { recoverDraft } from './recover-draft'
+import { DraftPreview } from './draft-preview'
+import { useUnsavedChanges } from './use-unsaved-changes'
 import { PublicProfile } from '@/components/public-profile'
 import { PROFILE_PHOTO_MAX_BYTES } from '@/lib/profile/photo'
 import { normalizePresentation } from '@/lib/profile/presentation'
@@ -40,9 +43,9 @@ type DigitalProfileEditorProps = {
   deletePhotoAction: FormAction
 }
 
-function PendingButton({ idle, pending, className = '', name, value }: { idle: string; pending: string; className?: string; name?: string; value?: string }) {
+function PendingButton({ idle, pending, className = '', name, value, form }: { idle: string; pending: string; className?: string; name?: string; value?: string; form?: string }) {
   const { pending: isPending } = useFormStatus()
-  return <button className={className} type="submit" name={name} value={value} disabled={isPending}>{isPending ? pending : idle}</button>
+  return <button form={form} className={className} type="submit" name={name} value={value} disabled={isPending}>{isPending ? pending : idle}</button>
 }
 
 function errorMessage(error: unknown, fallback: string) {
@@ -288,7 +291,47 @@ export function DigitalProfileEditor({
   }))
   const [links, setLinks] = useState<EditableLink[]>(() => profile.profile_links.map((link, index) => ({ key: `saved-${link.id}-${index}`, label: link.label, url: link.url })))
   const [notice, setNotice] = useState('')
+  const [fullPreview, setFullPreview] = useState(false)
+  const [mobileView, setMobileView] = useState('edit')
+  const [publishedHere, setPublishedHere] = useState(false)
+  const status = publishedHere ? 'published' : profile.status
   const [error, setError] = useState('')
+
+  const snapshot = JSON.stringify({ profile: profileDraft, links: links.map(({ label, url }) => ({ label, url })), presentation: draft })
+  const [savedSnapshot, setSavedSnapshot] = useState(snapshot)
+  const dirty = snapshot !== savedSnapshot
+  useUnsavedChanges(dirty)
+  const initialSnapshot = useRef(snapshot)
+  const recoveryReady = useRef(false)
+  const recoveryKey = `iqcard:profile-draft:${profile.id}`
+  useEffect(() => {
+    let active = true
+    queueMicrotask(() => { if (active) recoveryReady.current = true })
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(recoveryKey) || 'null')
+      if (typeof saved?.baseline === 'string' && typeof saved.snapshot === 'string') {
+        const recovery = recoverDraft(JSON.parse(initialSnapshot.current), JSON.parse(saved.baseline), JSON.parse(saved.snapshot))
+        const recovered = recovery.value
+        if (recovered.profile && typeof recovered.profile.full_name === 'string' && Array.isArray(recovered.links) && recovered.links.length <= 12 && recovered.links.every((link: { label?: unknown; url?: unknown }) => typeof link.label === 'string' && typeof link.url === 'string')) {
+          queueMicrotask(() => {
+            if (!active) return
+            setProfileDraft(recovered.profile)
+            setLinks(recovered.links.map((link: { label: string; url: string }, index: number) => ({ ...link, key: `recovered-${index}` })))
+            setDraft(normalizePresentation({ draft: recovered.presentation }).draft)
+            setNotice(recovery.conflicts ? 'Recovered your unsaved edits. Some fields also changed on the server; review this draft carefully before saving.' : 'Recovered your unsaved edits from this tab. Review and save them when ready.')
+          })
+        }
+      }
+    } catch { /* Storage recovery is optional; the server copy remains authoritative. */ }
+    return () => { active = false }
+  }, [recoveryKey])
+  useEffect(() => {
+    try {
+      if (dirty) sessionStorage.setItem(recoveryKey, JSON.stringify({ baseline: savedSnapshot, snapshot }))
+      else if (recoveryReady.current) sessionStorage.removeItem(recoveryKey)
+    } catch { /* Navigation warnings still protect edits if storage is full. */ }
+  }, [dirty, recoveryKey, savedSnapshot, snapshot])
+  const submittedSnapshot = (data: FormData) => JSON.stringify({ profile: JSON.parse(String(data.get('profile'))), links: JSON.parse(String(data.get('links'))), presentation: JSON.parse(String(data.get('presentation'))) })
 
   const selectTemplate = (template: ProfileTemplate) => setDraft((current) => ({ ...current, template }))
   const selectVariant = (variant: string) => setDraft((current) => ({
@@ -328,7 +371,8 @@ export function DigitalProfileEditor({
         setError(result.error)
         return
       }
-      setNotice(result.live ? 'Changes saved. Your profile is live.' : 'Draft saved. Publish once when you are ready to make it public.')
+      setSavedSnapshot(submittedSnapshot(formData))
+      setNotice(result.live ? 'Changes saved. Your profile is live.' : (canPublish ? 'Draft saved. Publish once when you are ready to make it public.' : 'Draft saved. Your profile remains private until IQ Card approves publication.'))
     } catch (submissionError) {
       setError(errorMessage(submissionError, 'Unable to save your profile.'))
     }
@@ -343,8 +387,9 @@ export function DigitalProfileEditor({
         setError(saved.error)
         return
       }
+      setSavedSnapshot(submittedSnapshot(formData))
       if (formData.get('intent') === 'draft') {
-        setNotice('Draft saved. Publish once when you are ready to make it public.')
+        setNotice((canPublish ? 'Draft saved. Publish once when you are ready to make it public.' : 'Draft saved. Your profile remains private until IQ Card approves publication.'))
         return
       }
       const result = await publishAction()
@@ -352,6 +397,7 @@ export function DigitalProfileEditor({
         setError(result.error)
         return
       }
+      setPublishedHere(true)
       setNotice('Digital profile published.')
     } catch (submissionError) {
       setError(errorMessage(submissionError, 'Unable to publish presentation.'))
@@ -380,16 +426,17 @@ export function DigitalProfileEditor({
   return <div className="digital-profile-shell">
     <header className="digital-profile-topbar">
       <Link className="digital-profile-brand" href="/dashboard"><b>iq</b><span><strong>Your dashboard</strong><small>DIGITAL PROFILE</small></span></Link>
-      <nav aria-label="Digital Profile navigation"><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/preview">Full preview</Link><SignOutButton /></nav>
+      <nav aria-label="Digital Profile navigation"><Link href="/dashboard">Dashboard</Link><button type="button" onClick={() => setFullPreview(true)}>Full preview</button><SignOutButton /></nav>
     </header>
 
     <main className="digital-profile-page">
       <section className="digital-profile-intro">
         <div><span>YOUR DIGITAL PROFILE</span><h1>Choose how<br />people meet you.</h1></div>
-        <p>Edit your details, links, upcoming updates, and design together. {profile.status === 'published' ? 'Save once to update your live profile.' : canPublish ? 'Save a private draft, then publish when it is ready.' : 'Your profile stays private until IQ Card reviews and approves it.'}</p>
+        <p>Edit your details, links, upcoming updates, and design together. {status === 'published' ? 'Save once to update your live profile.' : canPublish ? 'Save a private draft, then publish when it is ready.' : 'Your profile stays private until IQ Card reviews and approves it.'}</p>
       </section>
 
-      <div className="digital-profile-workspace">
+      <nav className="digital-profile-section-nav" aria-label="Editor sections" onClick={(event) => { if (event.target instanceof Element && event.target.closest('a')) setMobileView('edit') }}><a href="#digital-profile-template-title">Template</a><a href="#digital-profile-photo-title">Photo</a><a href="#digital-profile-appearance-title">Background</a><a href="#identity">Details</a><a href="#links">Links</a><button type="button" aria-pressed={mobileView === 'edit'} onClick={() => setMobileView('edit')}>Edit</button><button type="button" aria-pressed={mobileView === 'preview'} onClick={() => setMobileView('preview')}>Preview</button></nav>
+      <div className="digital-profile-workspace" data-mobile-view={mobileView}>
         <div className="digital-profile-controls">
           <section className="digital-profile-panel" aria-labelledby="digital-profile-template-title">
             <div className="digital-profile-panel-head"><span>01 · TEMPLATE</span><h2 id="digital-profile-template-title">Your presentation.</h2><p>Switch any time without losing your shared details or background settings.</p></div>
@@ -459,16 +506,7 @@ export function DigitalProfileEditor({
           </section>
 
           <section className="digital-profile-publish" aria-labelledby="digital-profile-publish-title">
-            <div><span>{profile.status === 'published' ? 'LIVE PROFILE' : canPublish ? 'READY WHEN YOU ARE' : 'WAITING FOR APPROVAL'}</span><h2 id="digital-profile-publish-title">{profile.status === 'published' ? 'Save your profile.' : canPublish ? 'Keep it private, or make it live.' : 'Your profile is with IQ Card.'}</h2><p>{profile.status === 'published' ? `One save updates your details, links, and design at /${profile.slug}.` : canPublish ? `Your edits stay private until you publish at /${profile.slug}.` : `Your profile at /${profile.slug} stays private until it is approved. Only IQ Card can publish.`}</p></div>
-            <div className="digital-profile-publish-actions">
-              <form action={profile.status === 'published' ? saveProfile : publish}>
-                <input type="hidden" name="profile" value={serializedProfile} readOnly />
-                <input type="hidden" name="links" value={serializedLinks} readOnly />
-                <input type="hidden" name="presentation" value={serializedDraft} readOnly />
-                {profile.status === 'published' ? <PendingButton className="digital-profile-button digital-profile-button--dark" idle="Save Changes" pending="Saving changes…" /> : <><PendingButton name="intent" value="draft" className="digital-profile-button digital-profile-button--light" idle="Save Draft" pending="Saving…" />{canPublish ? <PendingButton name="intent" value="publish" className="digital-profile-button digital-profile-button--dark" idle="Publish" pending="Publishing…" /> : null}</>}
-              </form>
-            </div>
-            <p className="digital-profile-action-feedback" role={error ? 'alert' : 'status'} aria-live="polite">{error || notice}</p>
+            <div><span>{status === 'published' ? 'LIVE PROFILE' : canPublish ? 'READY WHEN YOU ARE' : 'WAITING FOR APPROVAL'}</span><h2 id="digital-profile-publish-title">{status === 'published' ? 'Save your profile.' : canPublish ? 'Keep it private, or make it live.' : 'Your profile is with IQ Card.'}</h2><p>{status === 'published' ? `One save updates your details, links, and design at /${profile.slug}.` : canPublish ? `Your edits stay private until you publish at /${profile.slug}.` : `Your profile at /${profile.slug} stays private until it is approved. Only IQ Card can publish.`}</p></div>
           </section>
         </div>
 
@@ -478,10 +516,17 @@ export function DigitalProfileEditor({
             <section className="digital-profile-phone" aria-label="Profile phone preview">
               <div className="digital-profile-phone-screen"><PublicProfile profile={previewProfile} presentation={draft} preview /></div>
             </section>
-            <p>{profile.status === 'published' ? 'This is a preview of the edits you will publish with Save Changes.' : 'This draft stays private. Visitors will see it after you publish.'}</p>
+            <p>{status === 'published' ? 'This is a preview of the edits you will publish with Save Changes.' : 'This draft stays private. Visitors will see it once publication is approved.'}</p>
           </div>
         </aside>
       </div>
     </main>
+    <div className="digital-profile-savebar"><span role="status">{dirty ? 'Unsaved changes' : 'All changes saved'}</span>              <form id="digital-profile-save" action={status === 'published' ? saveProfile : publish}>
+                <input type="hidden" name="profile" value={serializedProfile} readOnly />
+                <input type="hidden" name="links" value={serializedLinks} readOnly />
+                <input type="hidden" name="presentation" value={serializedDraft} readOnly />
+
+              {status === 'published' ? <PendingButton className="digital-profile-button digital-profile-button--dark" idle="Save Changes" pending="Saving changes…" /> : <><PendingButton name="intent" value="draft" className="digital-profile-button digital-profile-button--light" idle="Save Draft" pending="Saving…" />{canPublish ? <PendingButton name="intent" value="publish" className="digital-profile-button digital-profile-button--dark" idle="Publish" pending="Publishing…" /> : null}</>}</form><p className="digital-profile-action-feedback" role={error ? 'alert' : 'status'} aria-live="polite">{error || notice}</p></div>
+    {fullPreview ? <DraftPreview profile={previewProfile} presentation={draft} onClose={() => setFullPreview(false)} /> : null}
   </div>
 }

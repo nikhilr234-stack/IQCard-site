@@ -87,6 +87,7 @@ describe('DigitalProfileEditor', () => {
   afterEach(async () => {
     await act(async () => root.unmount())
     host.remove()
+    sessionStorage.clear()
     vi.clearAllMocks()
   })
 
@@ -107,6 +108,68 @@ describe('DigitalProfileEditor', () => {
     expect(host.querySelector('.digital-profile-phone-screen a[href="https://www.example.in/portfolio"]')).not.toBeNull()
     await act(async () => button(host, /Save Changes/i).click())
     expect(actions.saveDigitalProfileAction).toHaveBeenCalledOnce()
+  })
+
+  it('previews unsaved changes without saving or publishing', async () => {
+    await act(async () => button(host, /01 Minimal/i).click())
+    await act(async () => button(host, /^Full preview$/i).click())
+    expect(host.querySelector('[role="dialog"] [data-template="minimal"]')).not.toBeNull()
+    expect(actions.saveDigitalProfileAction).not.toHaveBeenCalled()
+    expect(actions.publishAction).not.toHaveBeenCalled()
+    await act(async () => button(host, /Close full preview/i).click())
+    expect(host.querySelector('[role="dialog"]')).toBeNull()
+    expect(host.textContent).toContain('Unsaved changes')
+  })
+
+  it('protects a changed draft from reload until successfully saved', async () => {
+    const clean = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(clean)
+    expect(clean.defaultPrevented).toBe(false)
+    await act(async () => button(host, /01 Minimal/i).click())
+    const dirty = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(dirty)
+    expect(dirty.defaultPrevented).toBe(true)
+    await act(async () => button(host, /^Save Changes$/i).click())
+    const saved = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(saved)
+    expect(saved.defaultPrevented).toBe(false)
+  })
+
+  it('recovers unsaved edits after returning to the editor in the same tab', async () => {
+    await act(async () => button(host, /01 Minimal/i).click())
+    await act(async () => root.unmount())
+    root = createRoot(host)
+    await act(async () => root.render(<DigitalProfileEditor profile={profile} presentation={coverPresentation} canPublish {...actions} />))
+    expect(host.querySelector('.digital-profile-phone-screen [data-template="minimal"]')).not.toBeNull()
+    expect(host.textContent).toContain('Recovered your unsaved edits')
+    expect(host.textContent).toContain('Unsaved changes')
+    expect(actions.saveDigitalProfileAction).not.toHaveBeenCalled()
+  })
+
+  it('retains dirty edits and their recovery copy when save fails', async () => {
+    await act(async () => button(host, /01 Minimal/i).click())
+    actions.saveDigitalProfileAction.mockRejectedValueOnce(new Error('Offline. Please retry.'))
+    await act(async () => button(host, /^Save Changes$/i).click())
+    expect(host.textContent).toContain('Unsaved changes')
+    expect(host.textContent).toContain('Offline. Please retry.')
+    expect(sessionStorage.getItem('iqcard:profile-draft:profile-1')).toContain('minimal')
+  })
+
+  it('does not recover an edit that was reverted before leaving', async () => {
+    await act(async () => button(host, /01 Minimal/i).click())
+    expect(sessionStorage.getItem('iqcard:profile-draft:profile-1')).not.toBeNull()
+    await act(async () => button(host, /02 Cover/i).click())
+    expect(sessionStorage.getItem('iqcard:profile-draft:profile-1')).toBeNull()
+  })
+
+  it('recovers local edits while keeping a separately saved cover', async () => {
+    await act(async () => button(host, /01 Minimal/i).click())
+    await act(async () => root.unmount())
+    root = createRoot(host)
+    await act(async () => root.render(<DigitalProfileEditor profile={profile} presentation={{ ...coverPresentation, cover: { ...coverPresentation.cover, coverPath: 'owner-1/new-cover.webp' } }} canPublish {...actions} />))
+    const saved = JSON.parse(host.querySelector<HTMLInputElement>('input[name="presentation"]')!.value)
+    expect(saved.template).toBe('minimal')
+    expect(saved.cover.coverPath).toBe('owner-1/new-cover.webp')
   })
 
   it('keeps shared Cover controls available after switching through Minimal', async () => {

@@ -176,3 +176,14 @@ export async function updateAdminOrder(input: {
 }
 
 export async function getRazorpayOrderLeaseToken() { return randomUUID() }
+
+/** Atomic conditional update: a concurrent capture makes this return null, never edits a paid order. */
+export async function updateUnpaidDelivery(orderId: string, ownerId: string, input: Pick<ValidOrderCheckoutRequest, 'phone' | 'shippingAddress'>) {
+  const { data, error } = await db().from('paid_orders')
+    .update({ phone: input.phone, shipping_address: input.shippingAddress, updated_at: new Date().toISOString() })
+    .eq('id', orderId).eq('owner_id', ownerId)
+    .in('payment_status', ['pending', 'failed']).eq('fulfillment_status', 'unfulfilled')
+    .select('phone,shipping_address').maybeSingle()
+  if (error) fail(error, 'Unable to correct delivery details')
+  return data as { phone: string; shipping_address: ValidOrderCheckoutRequest['shippingAddress'] } | null
+}

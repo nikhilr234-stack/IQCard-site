@@ -31,20 +31,20 @@ describe('live owner center', () => {
   })
   it('keeps private profiles out of live status and public sharing controls', () => {
     const host = renderOwner('draft')
-    expect(host.querySelector('.owner-live')?.textContent).toBe('PRIVATE')
+    expect(host.querySelector('.owner-live')?.textContent).toBe('Private draft')
     expect(host.textContent).not.toMatch(/\blive\b/i)
     expect(host.textContent).toContain('Your profile is private. You can still edit it.')
     expect(host.querySelector('.owner-profile-head')?.textContent).toContain('PRIVATE PREVIEW')
     expect(host.querySelector('a[href="/ada"]')).toBeNull()
     expect([...host.querySelectorAll('button')].map(button => button.textContent)).not.toContain('Share')
     expect(host.querySelector('.owner-share button')).toBeNull()
-    expect(host.querySelector('.owner-share')?.textContent).toContain('Sharing is available after publication.')
+    expect(host.querySelector('.owner-share')?.textContent).toContain('Sharing is available after publication is approved.')
     expect(host.querySelector('a[href="/dashboard/digital-profile"]')).not.toBeNull()
   })
 
   it('enables public profile access and sharing after publication', () => {
     const host = renderOwner('published')
-    expect(host.querySelector('.owner-live')?.textContent).toBe('LIVE')
+    expect(host.querySelector('.owner-live')?.textContent).toBe('Live')
     expect(host.querySelector('a[href="/ada"]')?.textContent).toBe('View public profile ↗')
     expect([...host.querySelectorAll('button')].map(button => button.textContent)).toContain('Share')
     expect(host.querySelector('.owner-share button')).not.toBeNull()

@@ -26,6 +26,7 @@ export function CheckoutForm({ designId, payload, checkoutEnabled, shippingPaise
   const [order, setOrder] = useState<CheckoutReply['order']>()
   const [paymentSession, setPaymentSession] = useState<CheckoutReply['payment']>()
   const [busy, setBusy] = useState(false)
+  const [editingDelivery, setEditingDelivery] = useState(false)
   const [message, setMessage] = useState('')
   const card = useMemo(() => parseSavedCardDesign({ design_id: designId, payload: order?.cardSnapshot ?? payload }), [designId, order?.cardSnapshot, payload])
 
@@ -58,6 +59,13 @@ export function CheckoutForm({ designId, payload, checkoutEnabled, shippingPaise
     setBusy(true)
     setMessage('Saving your order details…')
     try {
+      if (editingDelivery && order) {
+        const response = await fetch(`/api/orders/${encodeURIComponent(order.id)}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone, shippingAddress: address }) })
+        const result = await response.json() as { ok?: boolean; message?: string; phone: string; shippingAddress: Address }
+        if (!response.ok || !result.ok) throw new Error(result.message || 'Delivery details could not be saved.')
+        setOrder({ ...order, phone: result.phone, shippingAddress: result.shippingAddress }); setPhone(result.phone); setAddress(result.shippingAddress); setEditingDelivery(false)
+        setMessage('Delivery details corrected. Review them before paying.'); return
+      }
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -76,7 +84,7 @@ export function CheckoutForm({ designId, payload, checkoutEnabled, shippingPaise
   }
 
   function startPayment() {
-    if (!order || !paymentSession || busy) return
+    if (!order || !paymentSession || busy || editingDelivery) return
     const Razorpay = (window as RazorpayWindow).Razorpay
     if (!Razorpay) { setMessage('The payment window is still loading. Wait a moment and try again.'); return }
     const payment = new Razorpay({
@@ -96,14 +104,14 @@ export function CheckoutForm({ designId, payload, checkoutEnabled, shippingPaise
     payment.open()
   }
 
-  if (!card.available) return <section className={styles.checkoutPanel}><h2>Saved card unavailable</h2><p>Reopen the card atelier and save your design again before checkout.</p></section>
+  if (!card.available) return <section className={styles.checkoutPanel}><h2>Saved card unavailable</h2><p>Reopen the card atelier and save your design again before checkout.</p><Link href="/customize?restore=1">Recover your saved card</Link></section>
 
   const displayedOrder = order
   return <div className={styles.checkoutLayout}>
     {checkoutEnabled ? <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" /> : null}
     <form className={styles.checkoutPanel} onSubmit={submit}>
       <div><p className={styles.panelKicker}>DELIVERY DETAILS</p><h2>Where should we send it?</h2></div>
-      <fieldset disabled={Boolean(order)} className={styles.fieldsLocked}>
+      <fieldset disabled={busy || (Boolean(order) && !editingDelivery)} className={styles.fieldsLocked}>
       <label>Recipient name<input required maxLength={120} autoComplete="name" value={address.recipientName} onChange={(event) => updateAddress('recipientName', event.target.value)} /></label>
       <label>Address line 1<input required maxLength={180} autoComplete="address-line1" value={address.line1} onChange={(event) => updateAddress('line1', event.target.value)} /></label>
       <label>Address line 2 <span>(optional)</span><input maxLength={180} autoComplete="address-line2" value={address.line2} onChange={(event) => updateAddress('line2', event.target.value)} /></label>
@@ -117,10 +125,11 @@ export function CheckoutForm({ designId, payload, checkoutEnabled, shippingPaise
         <label>Mobile number<input required type="tel" inputMode="tel" autoComplete="tel" placeholder="10-digit Indian number" value={phone} onChange={(event) => setPhone(event.target.value)} /></label>
       </div>
       </fieldset>
-      {order ? <p className={styles.savedAddressNote}>These delivery details are saved with your order. Contact support if they need to change.</p> : null}
+      {order ? <p className={styles.savedAddressNote}>These delivery details are saved with your order. You can correct them before payment.</p> : null}
       <p className={styles.countryNote}>Delivery is available to India addresses for this launch.</p>
       {!checkoutEnabled ? <p className={styles.disabledNote}>Checkout is not enabled yet. Your saved card is safe. Delivery details are saved when checkout is enabled and you submit them.</p> : null}
-      {!displayedOrder || !paymentSession ? <button className={styles.payButton} disabled={!checkoutEnabled || busy || !requestKey || Boolean(displayedOrder && !['pending', 'failed'].includes(displayedOrder.paymentStatus))}>{busy ? 'Preparing checkout…' : displayedOrder?.paymentStatus === 'failed' ? 'Resume payment' : displayedOrder ? 'Resume checkout' : 'Save details and review total'}</button> : <button type="button" className={styles.payButton} disabled={!checkoutEnabled || busy} onClick={startPayment}>Pay {paise(paymentSession.amountPaise)} securely</button>}
+      {order && ['pending', 'failed'].includes(order.paymentStatus) && !editingDelivery ? <button type="button" className={styles.orderLink} onClick={() => setEditingDelivery(true)}>Correct delivery details</button> : null}
+      {editingDelivery ? <><button type="submit" className={styles.payButton} disabled={busy}>{busy ? 'Saving…' : 'Save corrected delivery details'}</button><button type="button" disabled={busy} onClick={() => { if (order) { setPhone(order.phone); setAddress(order.shippingAddress) }; setEditingDelivery(false) }}>Cancel correction</button></> : !displayedOrder || !paymentSession ? <button className={styles.payButton} disabled={!checkoutEnabled || busy || !requestKey || Boolean(displayedOrder && !['pending', 'failed'].includes(displayedOrder.paymentStatus))}>{busy ? 'Preparing checkout…' : displayedOrder?.paymentStatus === 'failed' ? 'Resume payment' : displayedOrder ? 'Resume checkout' : 'Save details and review total'}</button> : <button type="button" className={styles.payButton} disabled={!checkoutEnabled || busy} onClick={startPayment}>Pay {paise(paymentSession.amountPaise)} securely</button>}
       {displayedOrder && !['pending', 'failed'].includes(displayedOrder.paymentStatus) ? <Link href={`/dashboard/orders/${encodeURIComponent(displayedOrder.id)}`} className={styles.orderLink}>View order status</Link> : null}
       {message ? <p className={styles.formMessage} role="status">{message}</p> : null}
     </form>
@@ -131,7 +140,7 @@ export function CheckoutForm({ designId, payload, checkoutEnabled, shippingPaise
       <p>{card.finish} finish · {card.backLayout} back</p>
       <div className={styles.priceRows}><span>Card</span><strong>{paise(displayedOrder?.cardSubtotalPaise ?? 79_900)}</strong><span>Delivery</span><strong>{displayedOrder ? paise(displayedOrder.shippingPaise) : shippingPaise === null ? 'Shown before payment' : paise(shippingPaise)}</strong><span>Tax</span><strong>{displayedOrder ? paise(displayedOrder.taxPaise) : taxPaise === null ? 'Shown before payment' : paise(taxPaise)}</strong></div>
       {displayedOrder ? <div className={styles.totalRow}><span>Total</span><strong>{paise(displayedOrder.totalPaise)}</strong></div> : shippingPaise !== null && taxPaise !== null ? <div className={styles.totalRow}><span>Estimated total</span><strong>{paise(79_900 + shippingPaise + taxPaise)}</strong></div> : <p className={styles.priceNote}>Delivery and tax will be shown before checkout is enabled.</p>}
-      <p className={styles.orderSaveNote}>{order ? 'Your order details are saved to your account so you can safely resume checkout.' : 'Review your delivery details before saving them with your order.'}</p>
+<p>After payment, confirm your approved public profile as the NFC destination. Production starts after that confirmation.</p>      <p className={styles.orderSaveNote}>{order ? 'Your order details are saved to your account so you can safely resume checkout.' : 'Review your delivery details before saving them with your order.'}</p>
     </aside>
   </div>
 }
