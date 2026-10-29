@@ -370,8 +370,9 @@ body:has(.cover-profile-shell) { background: #111113; color: #fff; }
 @media (max-width: 760px) {
   .cover-profile-page { padding: 18px 22px 22px; }
   .cover-profile-topbar { height: 48px; }
-  .cover-profile-lower-third { width: 100%; padding-top: 164px; }
-  .cover-profile-identity { align-items: flex-end; gap: 14px; }
+  /* Keep the profile in the first phone viewport instead of spending it on empty wallpaper. */
+  .cover-profile-lower-third { width: 100%; margin-top: 0; padding-top: clamp(76px, 13svh, 112px); }
+  .cover-profile-identity { align-items: flex-start; gap: 14px; }
   .cover-profile-photo { width: 84px; border-radius: 21px; }
   .cover-profile-photo::before { width: 32px; height: 32px; }
   .cover-profile-photo span { font-size: 19px; }
