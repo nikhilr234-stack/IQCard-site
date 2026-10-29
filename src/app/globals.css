@@ -386,13 +386,11 @@ body:has(.cover-profile-shell) { background: #111113; color: #fff; }
   .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-save,
   .cover-profile-shell:not([data-layout-variant]) .cover-profile-save { min-width:228px; min-height:56px; background:#fff; color:#111; font-size:13px; }
   .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-links,
-  .cover-profile-shell:not([data-layout-variant]) .cover-profile-links { gap:0; margin-top:28px; }
+  .cover-profile-shell:not([data-layout-variant]) .cover-profile-links { gap:10px; margin-top:28px; }
   .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-links a,
-  .cover-profile-shell:not([data-layout-variant]) .cover-profile-links a { min-height:auto; padding:0 25px; border:0; border-radius:0; background:none; font-size:12px; }
+  .cover-profile-shell:not([data-layout-variant]) .cover-profile-links a { min-height:44px; padding:0 18px; border:1px solid rgba(255,255,255,.38); border-radius:999px; background:rgba(7,18,31,.22); font-size:11px; }
   .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-links a:first-child,
-  .cover-profile-shell:not([data-layout-variant]) .cover-profile-links a:first-child { padding-left:0; }
-  .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-links a + a,
-  .cover-profile-shell:not([data-layout-variant]) .cover-profile-links a + a { border-left:1px solid rgba(255,255,255,.38); }
+  .cover-profile-shell:not([data-layout-variant]) .cover-profile-links a:first-child { padding-left:18px; }
   .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-contact-actions,
   .cover-profile-shell:not([data-layout-variant]) .cover-profile-contact-actions { gap:0; margin-top:25px; }
   .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-contact-actions a,
