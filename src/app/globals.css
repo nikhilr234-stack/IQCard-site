@@ -331,6 +331,8 @@ body:has(.cover-profile-shell) { background: #111113; color: #fff; }
 .cover-profile-topbar { height: 52px; display: flex; align-items: center; justify-content: space-between; }
 .cover-profile-brand { color: #fff; font-size: 27px; font-weight: 700; letter-spacing: -.11em; line-height: 1; text-decoration: none; text-shadow: 0 2px 12px rgba(0,0,0,.22); }
 .cover-profile-lower-third { width: min(760px, 100%); margin-top: auto; padding-top: clamp(110px, 24vh, 230px); }
+.cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-lower-third,
+.cover-profile-shell:not([data-layout-variant]) .cover-profile-lower-third { margin-top:16px; padding-top:0; }
 .cover-profile--center .cover-profile-lower-third { margin-inline: auto; text-align: center; }
 .cover-profile--center .cover-profile-identity { justify-content: center; }
 .cover-profile--center .cover-profile-content { align-items: center; }
