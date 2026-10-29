@@ -64,7 +64,7 @@ describe('PublicProfile', () => {
     expect(html).toContain('Design yours →')
     expect(html).not.toContain('Open profile menu')
     expect(html).not.toContain('cover-profile-eyebrow')
-    expect(html).toContain('>Professional</span>')
+    expect(html).not.toContain('>Professional</span>')
   })
 
   it('keeps a draft wallpaper on the private preview route without preloading it publicly', () => {

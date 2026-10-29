@@ -371,7 +371,7 @@ body:has(.cover-profile-shell) { background: #111113; color: #fff; }
 @media (max-width: 760px) {
   .cover-profile-page { padding: 18px 22px 22px; }
   .cover-profile-topbar { height: 48px; }
-  .cover-profile-lower-third { width: 100%; padding-top: 164px; }
+  .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-lower-third { width:100%; margin-top:clamp(64px, 11svh, 104px); padding-top:0; }
   .cover-profile-identity { align-items: flex-end; gap: 14px; }
   .cover-profile-photo { width: 84px; border-radius: 21px; }
   .cover-profile-photo::before { width: 32px; height: 32px; }
@@ -379,11 +379,11 @@ body:has(.cover-profile-shell) { background: #111113; color: #fff; }
   .cover-profile-nameplate h1 { font-size: calc(clamp(43px, 14vw, 66px) * var(--profile-type-scale,1)); }
   .cover-profile-role { margin-top: 12px; font-size: 16px; }
   .cover-profile-tagline { font-size: 12px; }
-  .cover-profile-content { width: 100%; margin-top: 26px; }
+  .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-content { width:100%; margin-top:18px; }
   .cover-profile-bio { font-size: 12px; }
-  .cover-profile-actions { width: 100%; margin-top: 22px; }
+  .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-actions { width:100%; margin-top:16px; }
   .cover-profile-save { width: 100%; min-width: 0; min-height: 54px; font-size: 13px; }
-  .cover-profile-links { display: grid; grid-template-columns: 1fr; }
+  .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-links { display:grid; grid-template-columns:1fr; margin-top:16px; }
   .cover-profile-links a { min-height: 46px; font-size: 11px; }
   .cover-profile-contact-actions { gap: 16px; }
   .cover-profile-footer { margin-top: 36px; }
@@ -511,15 +511,15 @@ body:has(.digital-profile-shell) { background: #f5f5f3; color: #111113; }
 .digital-profile-phone-screen .public-profile-actions .public-profile-pill,.digital-profile-phone-screen .public-profile-links .public-profile-pill { width:100%; min-width:0; min-height:50px; }
 .digital-profile-phone-screen .public-profile-links { width:100%; max-width:none; }
 .digital-profile-phone-screen .public-profile-contact-actions { grid-template-columns:1fr; }
-.digital-profile-phone-screen .cover-profile-lower-third { width:100%; padding-top:150px; }
+.digital-profile-phone-screen .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-lower-third { width:100%; margin-top:64px; padding-top:0; }
 .digital-profile-phone-screen .cover-profile-identity { align-items:flex-end; gap:13px; }
 .digital-profile-phone-screen .cover-profile-photo { width:68px; border-radius:20px; }
 .digital-profile-phone-screen .cover-profile-nameplate h1 { font-size:48px; }
 .digital-profile-phone-screen .cover-profile-role { margin-top:11px; font-size:15px; }
-.digital-profile-phone-screen .cover-profile-content { width:100%; margin-top:23px; }
-.digital-profile-phone-screen .cover-profile-actions { width:100%; margin-top:20px; }
+.digital-profile-phone-screen .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-content { width:100%; margin-top:18px; }
+.digital-profile-phone-screen .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-actions { width:100%; margin-top:16px; }
 .digital-profile-phone-screen .cover-profile-save { width:100%; min-width:0; min-height:51px; }
-.digital-profile-phone-screen .cover-profile-links { display:grid; grid-template-columns:1fr; }
+.digital-profile-phone-screen .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-links { display:grid; grid-template-columns:1fr; margin-top:16px; }
 .digital-profile-phone-screen .cover-profile--center .cover-profile-identity { align-items:center; flex-direction:column; }
 .digital-profile-phone-screen .cover-preview-badge,.digital-profile-phone-screen .public-preview-badge { position:absolute; top:15px; }
 .digital-profile-preview-sticky>p { width:100%; margin:17px 0 0; color:var(--digital-muted); font-size:9px; line-height:1.55; }
