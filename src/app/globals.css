@@ -400,7 +400,7 @@ body:has(.cover-profile-shell) { background: #111113; color: #fff; }
   .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-contact-actions a + a,
   .cover-profile-shell:not([data-layout-variant]) .cover-profile-contact-actions a + a { border-left:1px solid rgba(255,255,255,.38); }
   .cover-profile-shell[data-layout-variant="editorial-left"] .cover-profile-footer,
-  .cover-profile-shell:not([data-layout-variant]) .cover-profile-footer { margin-top:auto; }
+  .cover-profile-shell:not([data-layout-variant]) .cover-profile-footer { margin-top:auto; margin-bottom:28px; }
 }
 
 @media (max-width: 760px) {
