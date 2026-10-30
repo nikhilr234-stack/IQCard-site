@@ -171,7 +171,7 @@
 .iq-admin-dashboard[data-theme="blue"] { --iq-accent: #4fc3ff; --iq-accent-ink: #07131c; }
 .iq-admin-dashboard[data-theme="magenta"] { --iq-accent: #ff4bb7; --iq-accent-ink: #1c0615; }
 .iq-admin-dashboard :focus-visible { outline-color: var(--iq-accent); }
-.iq-admin-dashboard .admin-shell { grid-template-columns: 232px minmax(640px, 1fr) 308px; background: transparent; }
+.iq-admin-dashboard .admin-shell { width: 100vw; max-width: none; padding-top: 0; grid-template-columns: 232px minmax(640px, 1fr) 308px; background: transparent; }
 .iq-admin-dashboard .admin-shell__sidebar { border-color: var(--iq-line-dark); background: rgba(8, 10, 13, .9); }
 .iq-admin-dashboard .admin-shell__topbar { border-color: var(--iq-line-dark); background: rgba(11, 13, 16, .82); backdrop-filter: blur(22px); }
 .iq-admin-dashboard .admin-shell__insights { border-color: var(--iq-line-dark); background: rgba(14, 17, 21, .88); }
