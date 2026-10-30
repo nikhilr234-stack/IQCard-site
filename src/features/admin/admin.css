@@ -156,3 +156,67 @@
   .iq-admin-dashboard .kpi-strip { grid-template-columns: repeat(8, minmax(126px, 1fr)); }
   .iq-admin-dashboard .analytics-grid { grid-template-columns: 1.35fr .95fr 1fr 1fr; }
 }
+
+/* Owner studio: intentionally admin-only. Public IQ Card pages keep their editorial palette. */
+.iq-admin-dashboard {
+  --iq-accent: #c6ff00;
+  --iq-accent-ink: #11150a;
+  --iq-night: #0b0d10;
+  --iq-night-2: #14181d;
+  --iq-panel-dark: rgba(23, 27, 33, .92);
+  --iq-line-dark: rgba(255, 255, 255, .11);
+  color: #f4f6f7;
+  background: radial-gradient(circle at 68% -12%, rgba(198, 255, 0, .16), transparent 31%), #0b0d10;
+}
+.iq-admin-dashboard[data-theme="blue"] { --iq-accent: #4fc3ff; --iq-accent-ink: #07131c; }
+.iq-admin-dashboard[data-theme="magenta"] { --iq-accent: #ff4bb7; --iq-accent-ink: #1c0615; }
+.iq-admin-dashboard :focus-visible { outline-color: var(--iq-accent); }
+.iq-admin-dashboard .admin-shell { grid-template-columns: 232px minmax(640px, 1fr) 308px; background: transparent; }
+.iq-admin-dashboard .admin-shell__sidebar { border-color: var(--iq-line-dark); background: rgba(8, 10, 13, .9); }
+.iq-admin-dashboard .admin-shell__topbar { border-color: var(--iq-line-dark); background: rgba(11, 13, 16, .82); backdrop-filter: blur(22px); }
+.iq-admin-dashboard .admin-shell__insights { border-color: var(--iq-line-dark); background: rgba(14, 17, 21, .88); }
+.iq-admin-dashboard .admin-shell__main { padding: 42px 44px 80px; }
+.iq-admin-dashboard .sidebar-inner { padding: 28px 16px; }
+.iq-admin-dashboard .iq-wordmark { color: var(--iq-accent); font-size: 36px; text-shadow: 0 0 28px color-mix(in srgb, var(--iq-accent) 40%, transparent); }
+.iq-admin-dashboard .sidebar-section-label, .iq-admin-dashboard .eyebrow { color: #7c858f; }
+.iq-admin-dashboard .admin-nav__item { color: #a2aab4; border-radius: 11px; padding: 12px; transition: background .18s ease, color .18s ease, transform .18s ease; }
+.iq-admin-dashboard .admin-nav__item:hover { transform: translateX(3px); background: rgba(255,255,255,.06); color: white; }
+.iq-admin-dashboard .admin-nav__item.is-active { background: var(--iq-accent); color: var(--iq-accent-ink); font-weight: 800; }
+.iq-admin-dashboard .sidebar-brand-card { border-color: var(--iq-line-dark); background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.02)); }
+.iq-admin-dashboard .sidebar-brand-card > div { border-color: var(--iq-accent); background: var(--iq-accent); color: var(--iq-accent-ink); }
+.iq-admin-dashboard .sidebar-brand-card small, .iq-admin-dashboard .sidebar-copyright { color: #7f8790; }
+.iq-admin-dashboard .topbar-inner { height: 72px; padding: 0 28px; }
+.iq-admin-dashboard .global-search, .iq-admin-dashboard .personal-dashboard-link, .iq-admin-dashboard .utility-select { border-color: var(--iq-line-dark); background: rgba(255,255,255,.045); color: #e9edf1; }
+.iq-admin-dashboard .global-search input, .iq-admin-dashboard .utility-select select { color: #f5f7f8; }
+.iq-admin-dashboard .utility-select select option { color: #111; }
+.iq-admin-dashboard kbd { border-color: var(--iq-line-dark); background: rgba(255,255,255,.08); color: #a9b1bb; }
+.iq-admin-dashboard .personal-dashboard-link:hover { border-color: color-mix(in srgb, var(--iq-accent) 50%, transparent); background: color-mix(in srgb, var(--iq-accent) 14%, transparent); }
+.iq-admin-dashboard .account-avatar, .iq-admin-dashboard .initial-avatar { background: var(--iq-accent); color: var(--iq-accent-ink); }
+.iq-admin-dashboard .notification-button, .iq-admin-dashboard .account-control { color: #eef0f2; }
+.iq-admin-dashboard .account-details small { color: #818b96; }
+.iq-admin-dashboard .admin-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 30px; padding-bottom: 30px; border-bottom: 1px solid var(--iq-line-dark); }
+.iq-admin-dashboard .clients-header { margin: 0; }
+.iq-admin-dashboard .clients-header h1 { color: white; font-size: clamp(64px, 6vw, 92px); }
+.iq-admin-dashboard .clients-header p { color: #a2abb5; font-size: 13px; }
+.iq-admin-dashboard .header-manifesto { border-color: var(--iq-line-dark); color: #dce2e6 !important; }
+.iq-admin-dashboard .palette-picker { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-bottom: 4px; }
+.iq-admin-dashboard .palette-picker > span { margin-right: 3px; color: #808994; font-size: 9px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.iq-admin-dashboard .palette-swatch { display: grid; grid-template-columns: 12px auto; align-items: center; gap: 7px; border: 1px solid transparent; border-radius: 999px; padding: 8px 10px; background: transparent; color: #9da5af; font-size: 9px; font-weight: 800; transition: .18s ease; }
+.iq-admin-dashboard .palette-swatch i { width: 11px; height: 11px; border-radius: 50%; background: var(--swatch); box-shadow: 0 0 14px var(--swatch); }
+.iq-admin-dashboard .palette-swatch--lime { --swatch: #c6ff00; }.iq-admin-dashboard .palette-swatch--blue { --swatch: #4fc3ff; }.iq-admin-dashboard .palette-swatch--magenta { --swatch: #ff4bb7; }
+.iq-admin-dashboard .palette-swatch:hover, .iq-admin-dashboard .palette-swatch.is-selected { border-color: var(--swatch); color: white; background: color-mix(in srgb, var(--swatch) 12%, transparent); }
+.iq-admin-dashboard .panel { border-color: var(--iq-line-dark); border-radius: 18px; background: var(--iq-panel-dark); box-shadow: 0 20px 60px rgba(0,0,0,.18); }
+.iq-admin-dashboard .onboarding-panel { grid-template-columns: minmax(0, 1fr) 250px; margin-bottom: 16px; }
+.iq-admin-dashboard .onboarding-panel__content { padding: 26px 28px 24px; }.iq-admin-dashboard .onboarding-panel h2 { color: white; font-size: 31px; }.iq-admin-dashboard .onboarding-panel p { color: #9ca6af; }
+.iq-admin-dashboard .onboarding-form { gap: 12px; }.iq-admin-dashboard .onboarding-form__submit { min-width: 150px; }
+.iq-admin-dashboard .onboarding-form label { color: #abb4be; }.iq-admin-dashboard .onboarding-form input, .iq-admin-dashboard .onboarding-form select { border-color: var(--iq-line-dark); background: rgba(255,255,255,.06); color: white; }.iq-admin-dashboard .onboarding-form select option { color: #111; }
+.iq-admin-dashboard .primary-button { border-color: var(--iq-accent); background: var(--iq-accent); color: var(--iq-accent-ink); }.iq-admin-dashboard .secondary-button { border-color: var(--iq-line-dark); background: rgba(255,255,255,.04); color: white; }
+.iq-admin-dashboard .onboarding-panel__brand { border-color: var(--iq-line-dark); background: linear-gradient(145deg, color-mix(in srgb, var(--iq-accent) 24%, #172029), #11161b); }.iq-admin-dashboard .brand-card-object { border-color: var(--iq-accent); background: var(--iq-accent); color: var(--iq-accent-ink); }.iq-admin-dashboard .onboarding-panel__brand strong { color: white; }
+.iq-admin-dashboard .admin-scope-note { color: #87919c; }
+.iq-admin-dashboard .kpi-strip { gap: 12px; margin: 18px 0; }.iq-admin-dashboard .kpi-card { min-height: 112px; border-color: var(--iq-line-dark); border-radius: 16px; background: rgba(255,255,255,.045); color: #f5f7f8; transition: transform .18s ease, border-color .18s ease, background .18s ease; }.iq-admin-dashboard .kpi-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--iq-accent) 58%, transparent); background: color-mix(in srgb, var(--iq-accent) 9%, rgba(255,255,255,.045)); }.iq-admin-dashboard .kpi-card > span { background: color-mix(in srgb, var(--iq-accent) 18%, transparent); color: var(--iq-accent); }.iq-admin-dashboard .kpi-card strong { font-size: 28px; }.iq-admin-dashboard .kpi-card small { color: #a7b0ba; font-size: 10px; }
+.iq-admin-dashboard .analytics-grid { gap: 12px; margin-bottom: 16px; }.iq-admin-dashboard .analytics-card { min-height: 265px; padding: 20px; }.iq-admin-dashboard .analytics-card header h2 { color: white; font-size: 14px; }.iq-admin-dashboard .analytics-card header p { color: #8e98a2; font-size: 9px; }.iq-admin-dashboard .analytics-card svg { height: 170px; }.iq-admin-dashboard .analytics-card svg line { stroke: rgba(255,255,255,.11); }.iq-admin-dashboard .analytics-card svg polyline { stroke: var(--iq-accent); }.iq-admin-dashboard .analytics-card svg circle { fill: #11161b; stroke: var(--iq-accent); }.iq-admin-dashboard .donut > span { background: #15191e; color: white; }.iq-admin-dashboard .donut small, .iq-admin-dashboard .distribution small { color: #909aa5; }.iq-admin-dashboard .donut-layout li { color: #dce2e6; }.iq-admin-dashboard .status-badge { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: #c9d0d7; }.iq-admin-dashboard .funnel-list li { color: #bdc5cd; }.iq-admin-dashboard .funnel-list i, .iq-admin-dashboard .progress { background: rgba(255,255,255,.09); }.iq-admin-dashboard .funnel-list i b, .iq-admin-dashboard .progress > span { background: var(--iq-accent); }.iq-admin-dashboard .distribution i b { background: var(--iq-accent); }
+.iq-admin-dashboard .client-table-panel { border-color: var(--iq-line-dark); }.iq-admin-dashboard .client-table-toolbar, .iq-admin-dashboard .table-footer { border-color: var(--iq-line-dark); }.iq-admin-dashboard .client-table-toolbar h2, .iq-admin-dashboard td, .iq-admin-dashboard th, .iq-admin-dashboard td a { color: #e7ebee; }.iq-admin-dashboard .client-table-toolbar p, .iq-admin-dashboard .table-footer { color: #909aa5; }.iq-admin-dashboard .table-search, .iq-admin-dashboard td select, .iq-admin-dashboard .rows-per-page select { border-color: var(--iq-line-dark); background: rgba(255,255,255,.05); color: white; }.iq-admin-dashboard td { border-color: rgba(255,255,255,.08); }.iq-admin-dashboard td select option, .iq-admin-dashboard .rows-per-page select option { color: #111; }.iq-admin-dashboard .row-actions button { color: var(--iq-accent); }.iq-admin-dashboard .pagination button.is-current { border-color: var(--iq-accent); background: var(--iq-accent); color: var(--iq-accent-ink); }
+.iq-admin-dashboard .insight-stack { gap: 14px; }.iq-admin-dashboard .insight-card, .iq-admin-dashboard .pro-tip { padding: 18px; }.iq-admin-dashboard .insight-card h2, .iq-admin-dashboard .pro-tip strong { color: white; font-size: 13px; }.iq-admin-dashboard .insight-card li { border-color: rgba(255,255,255,.09); color: #c9d0d7; }.iq-admin-dashboard .insight-card li strong { color: var(--iq-accent); }.iq-admin-dashboard .insight-card > p, .iq-admin-dashboard .pro-tip p { color: #909aa5; }.iq-admin-dashboard .active-view { border-color: var(--iq-accent); background: color-mix(in srgb, var(--iq-accent) 12%, transparent); color: white; }
+@media (max-width: 1439px) { .iq-admin-dashboard .admin-shell { grid-template-columns: 70px minmax(0, 1fr); }.iq-admin-dashboard .admin-shell__insights { background: rgba(14,17,21,.9); }.iq-admin-dashboard .admin-hero { align-items: flex-start; flex-direction: column; }.iq-admin-dashboard .palette-picker { justify-content: flex-start; } }
+@media (max-width: 1100px) { .iq-admin-dashboard .onboarding-form { grid-template-columns: 1fr 1fr; }.iq-admin-dashboard .onboarding-form__email, .iq-admin-dashboard .onboarding-form__submit { grid-column: 1 / -1; } }
+@media (max-width: 767px) { .iq-admin-dashboard .admin-shell__main { padding: 26px 16px 40px; }.iq-admin-dashboard .palette-picker { flex-wrap: wrap; }.iq-admin-dashboard .palette-picker > span { flex-basis: 100%; }.iq-admin-dashboard .onboarding-panel__brand { background: linear-gradient(145deg, color-mix(in srgb, var(--iq-accent) 24%, #172029), #11161b); }.iq-admin-dashboard .clients-header h1 { font-size: 58px; } }
