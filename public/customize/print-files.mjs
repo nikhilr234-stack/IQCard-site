@@ -4,13 +4,13 @@ const bytes = value => typeof value === 'string' ? enc.encode(value) : value;
 function join(parts) { const out = new Uint8Array(parts.reduce((n,p) => n + p.length, 0)); let i=0; for(const p of parts){out.set(p,i);i+=p.length;} return out; }
 export function crc32(data) { let crc=0xffffffff; for(const b of data){crc^=b;for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return (crc^0xffffffff)>>>0; }
 export function printGeometry(settings = {}) {
-  const s={ inset:0,bleed:3,safe:3,radius:3.18,dpi:600,...settings };
-  for(const [key,min,max] of [['inset',0,2],['bleed',0,5],['safe',0,8],['radius',0,6],['dpi',300,600]]) {
+  const s={ inset:0,bleed:0,safe:0,radius:3.18,dpi:600,...settings };
+  for(const [key,min,max] of [['inset',0,0],['bleed',0,0],['safe',0,0],['radius',0,6],['dpi',300,600]]) {
     if(typeof s[key]!=='number'||!Number.isFinite(s[key])||s[key]<min||s[key]>max)throw new Error(`Invalid ${key}.`);
   }
   if(![300,600].includes(s.dpi))throw new Error('Choose 300 or 600 DPI.');
-  const trimWidth=Number((85.6-2*s.inset).toFixed(3)),trimHeight=Number((54-2*s.inset).toFixed(3));
-  const artWidth=Number((trimWidth+2*s.bleed).toFixed(3)),artHeight=Number((trimHeight+2*s.bleed).toFixed(3));
+  const trimWidth=85.6,trimHeight=54;
+  const artWidth=trimWidth,artHeight=trimHeight;
   return {...s,trimWidth,trimHeight,artWidth,artHeight,pixelsWide:Math.round(artWidth/25.4*s.dpi),pixelsHigh:Math.round(artHeight/25.4*s.dpi)};
 }
 function u32(value,little=false){const b=new Uint8Array(4);new DataView(b.buffer).setUint32(0,value,little);return b;}
@@ -63,6 +63,14 @@ export function createPrintPdf(images,g,press=true) {
   return join(parts);
 }
 export function cutContourSvg(g){return `<svg xmlns="http://www.w3.org/2000/svg" width="${g.trimWidth}mm" height="${g.trimHeight}mm" viewBox="0 0 ${g.trimWidth} ${g.trimHeight}"><title>IQ Card cutting contour — no scaling — radius requires physical approval</title><rect x="0" y="0" width="${g.trimWidth}" height="${g.trimHeight}" rx="${Math.max(0,g.radius-g.inset)}" fill="none" stroke="#ff00ff" stroke-width="0.01"/></svg>`;}
+// PNG supports transparent corners, so this makes the delivered artwork match the physical rounded card exactly.
+export function roundedCardCanvas(source,g,createCanvas=()=>document.createElement('canvas')){
+  const canvas=createCanvas();canvas.width=source.width;canvas.height=source.height;
+  const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas export is unavailable.');
+  const radius=Math.round(Math.max(0,g.radius-g.inset)/g.trimWidth*canvas.width);
+  ctx.save();ctx.beginPath();ctx.roundRect(0,0,canvas.width,canvas.height,radius);ctx.clip();ctx.drawImage(source,0,0);ctx.restore();
+  return canvas;
+}
 export function createStoredZip(files) {
   const local=[],central=[];let offset=0;
   for(const file of files){
