@@ -161,5 +161,6 @@ describe('AdminDashboard', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/features/admin/admin.css'), 'utf8')
 
     expect(css).toContain('.iq-admin-dashboard .admin-shell__main { width: 100%; max-width: none; margin: 0;')
+    expect(css).toContain('.iq-admin-dashboard .admin-shell { width: 100vw; max-width: none; padding-top: 0;')
   })
 })
