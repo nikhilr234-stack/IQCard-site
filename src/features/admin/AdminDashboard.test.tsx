@@ -72,6 +72,14 @@ describe('AdminDashboard', () => {
     expect(personalDashboard?.getAttribute('href')).toBe('/dashboard')
   })
 
+  it('offers private studio palettes and applies the selected palette to the admin workspace', async () => {
+    const palette = host.querySelector<HTMLButtonElement>('[aria-label="Use Hot Magenta palette"]')
+
+    expect(palette).not.toBeNull()
+    await act(async () => palette!.click())
+    expect(host.querySelector('.iq-admin-dashboard')?.getAttribute('data-theme')).toBe('magenta')
+  })
+
   it('connects the administrator to the fulfillment queue', () => {
     expect(host.querySelector('.topbar-actions a[href="/admin/orders"]')?.textContent).toBe('Orders')
   })
