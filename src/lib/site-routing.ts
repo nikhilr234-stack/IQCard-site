@@ -3,10 +3,10 @@ export const legacyRouteRedirects = [
 ]
 
 // These original public cards predate the account-backed profile system.
-// Keep their exact NFC destinations while leaving all other slugs dynamic.
+// Rohan now uses his published account-backed profile at the same NFC URL.
 export const foundingProfileSlugs = [
   'infant', 'aadhya', 'prerna', 'hema', 'sharath', 'mithul', 'naveen',
-  'rajesh', 'rakesh', 'ravichandra', 'rohan', 'teju', 'Ashwin',
+  'rajesh', 'rakesh', 'ravichandra', 'teju', 'Ashwin',
 ] as const
 
 export const foundingProfileRewrites = foundingProfileSlugs.flatMap((slug) => [
