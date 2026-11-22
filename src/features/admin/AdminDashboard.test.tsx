@@ -31,8 +31,9 @@ function button(host: HTMLElement, name: RegExp) {
   return match
 }
 
-function setValue(element: HTMLInputElement | HTMLSelectElement, value: string) {
-  const descriptor = Object.getOwnPropertyDescriptor(element instanceof HTMLInputElement ? HTMLInputElement.prototype : HTMLSelectElement.prototype, 'value')
+function setValue(element: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement, value: string) {
+  const prototype = element instanceof HTMLInputElement ? HTMLInputElement.prototype : element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLSelectElement.prototype
+  const descriptor = Object.getOwnPropertyDescriptor(prototype, 'value')
   descriptor?.set?.call(element, value)
   element.dispatchEvent(new Event('input', { bubbles: true }))
   element.dispatchEvent(new Event('change', { bubbles: true }))
@@ -70,6 +71,22 @@ describe('AdminDashboard', () => {
     const personalDashboard = [...host.querySelectorAll<HTMLAnchorElement>('a')].find((link) => link.textContent?.trim() === 'Your dashboard')
 
     expect(personalDashboard?.getAttribute('href')).toBe('/dashboard')
+  })
+
+  it('offers private studio palettes and applies the selected palette to the admin workspace', async () => {
+    const palette = host.querySelector<HTMLButtonElement>('[aria-label="Use Hot Magenta palette"]')
+
+    expect(palette).not.toBeNull()
+    await act(async () => palette!.click())
+    expect(host.querySelector('.iq-admin-dashboard')?.getAttribute('data-theme')).toBe('magenta')
+  })
+
+  it('provides a persistent private notes column for the administrator', async () => {
+    const notes = host.querySelector<HTMLTextAreaElement>('[aria-label="Admin notes"]')
+
+    expect(notes).not.toBeNull()
+    await act(async () => setValue(notes!, 'Call printer about walnut cards'))
+    expect(window.localStorage.getItem('iq-admin-notes')).toBe('Call printer about walnut cards')
   })
 
   it('connects the administrator to the fulfillment queue', () => {
@@ -153,5 +170,6 @@ describe('AdminDashboard', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/features/admin/admin.css'), 'utf8')
 
     expect(css).toContain('.iq-admin-dashboard .admin-shell__main { width: 100%; max-width: none; margin: 0;')
+    expect(css).toContain('.iq-admin-dashboard .admin-shell { width: 100vw; max-width: none; padding-top: 0;')
   })
 })

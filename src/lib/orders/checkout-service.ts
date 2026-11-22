@@ -98,7 +98,7 @@ async function providerOrderFor(order: CheckoutOrder, dependencies: CheckoutDepe
 export async function createOrderCheckout(
   account: { id: string; email: string },
   request: ValidOrderCheckoutRequest,
-  config: { mode: 'test'; keyId: string; keySecret: string; shippingPaise: number; taxPaise: number },
+  config: { mode: 'test' | 'live'; keyId: string; keySecret: string; shippingPaise: number; taxPaise: number },
   dependencies: CheckoutDependencies,
 ) {
   // Idempotency is resolved before touching the editable design or address.

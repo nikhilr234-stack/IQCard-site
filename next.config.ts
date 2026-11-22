@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
     localPatterns: [
       { pathname: '/api/profile-photo' },
       { pathname: '/api/profile-cover' },
+      { pathname: '/homepage/**' },
+      { pathname: '/customize/surfaces/v2/**' },
+      { pathname: '/homepage/**' },
+      { pathname: '/customize/surfaces/v2/**' },
     ],
   },
   experimental: {

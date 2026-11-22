@@ -12,6 +12,14 @@ const sandbox = {
   VERCEL_ENV: 'preview',
 }
 
+const production = {
+  ...sandbox,
+  VERCEL_ENV: 'production',
+  IQCARD_COMMERCE_MODE: 'live',
+  IQCARD_LIVE_PAYMENTS_APPROVED: 'true',
+  RAZORPAY_KEY_ID: 'rzp_live_public',
+}
+
 describe('paid checkout configuration', () => {
   it('is disabled unless explicitly configured', () => {
     expect(getOrderCheckoutConfig({})).toMatchObject({ ready: false, reason: 'disabled' })
@@ -44,5 +52,29 @@ describe('paid checkout configuration', () => {
 
   it('does not accept a production webhook configuration', () => {
     expect(isRazorpayWebhookAvailable({ ...sandbox, VERCEL_ENV: 'production' })).toBe(false)
+  })
+
+  it('accepts explicitly approved live checkout only in production', () => {
+    expect(getOrderCheckoutConfig(production)).toMatchObject({ ready: true, config: { mode: 'live', keyId: 'rzp_live_public' } })
+    expect(isRazorpayWebhookAvailable(production)).toBe(true)
+  })
+
+  it.each([
+    ['missing approval', { ...production, IQCARD_LIVE_PAYMENTS_APPROVED: undefined }],
+    ['false approval', { ...production, IQCARD_LIVE_PAYMENTS_APPROVED: 'false' }],
+    ['preview', { ...production, VERCEL_ENV: 'preview' }],
+    ['local', { ...production, VERCEL_ENV: undefined }],
+    ['test key', { ...production, RAZORPAY_KEY_ID: sandbox.RAZORPAY_KEY_ID }],
+    ['missing key secret', { ...production, RAZORPAY_KEY_SECRET: '' }],
+    ['missing webhook secret', { ...production, RAZORPAY_WEBHOOK_SECRET: '' }],
+  ])('rejects live checkout and callbacks with %s', (_label, environment) => {
+    expect(getOrderCheckoutConfig(environment)).toMatchObject({ ready: false })
+    expect(isRazorpayWebhookAvailable(environment)).toBe(false)
+  })
+
+  it('keeps live callbacks available when new purchases are disabled', () => {
+    const paused = { ...production, IQCARD_COMMERCE_ENABLED: 'false' }
+    expect(getOrderCheckoutConfig(paused)).toMatchObject({ ready: false, reason: 'disabled' })
+    expect(isRazorpayWebhookAvailable(paused)).toBe(true)
   })
 })

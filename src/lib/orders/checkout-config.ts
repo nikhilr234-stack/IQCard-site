@@ -1,5 +1,5 @@
 export type OrderCheckoutConfig = Readonly<{
-  mode: 'test'
+  mode: 'test' | 'live'
   keyId: string
   keySecret: string
   webhookSecret: string
@@ -17,16 +17,19 @@ function paise(value: string | undefined): number | null {
   return Number.isSafeInteger(parsed) ? parsed : null
 }
 
-function isSandboxKey(value: string | undefined): value is string {
-  return typeof value === 'string' && /^rzp_test_[A-Za-z0-9]+$/.test(value.trim())
+function configuredMode(environment: Record<string, string | undefined>): 'test' | 'live' | null {
+  const mode = environment.IQCARD_COMMERCE_MODE
+  const key = environment.RAZORPAY_KEY_ID?.trim() ?? ''
+  if (mode === 'test' && environment.VERCEL_ENV !== 'production' && /^rzp_test_[A-Za-z0-9]+$/.test(key)) return 'test'
+  if (mode === 'live' && environment.VERCEL_ENV === 'production' &&
+    environment.IQCARD_LIVE_PAYMENTS_APPROVED === 'true' && /^rzp_live_[A-Za-z0-9]+$/.test(key)) return 'live'
+  return null
 }
 
 export function getOrderCheckoutConfig(environment: Record<string, string | undefined> = process.env): OrderCheckoutAvailability {
   if (environment.IQCARD_COMMERCE_ENABLED !== 'true') return { ready: false, reason: 'disabled' }
-  if (environment.VERCEL_ENV === 'production') return { ready: false, reason: 'preview-only' }
-  if (environment.IQCARD_COMMERCE_MODE !== 'test' || !isSandboxKey(environment.RAZORPAY_KEY_ID)) {
-    return { ready: false, reason: 'sandbox-only' }
-  }
+  const mode = configuredMode(environment)
+  if (!mode) return { ready: false, reason: environment.VERCEL_ENV === 'production' ? 'preview-only' : 'sandbox-only' }
   const keySecret = environment.RAZORPAY_KEY_SECRET?.trim()
   const webhookSecret = environment.RAZORPAY_WEBHOOK_SECRET?.trim()
   const shippingPaise = paise(environment.IQCARD_SHIPPING_PAISE)
@@ -35,13 +38,13 @@ export function getOrderCheckoutConfig(environment: Record<string, string | unde
     return { ready: false, reason: 'configuration' }
   }
   return { ready: true, config: {
-    mode: 'test', keyId: environment.RAZORPAY_KEY_ID.trim(), keySecret, webhookSecret, shippingPaise, taxPaise,
+    mode, keyId: environment.RAZORPAY_KEY_ID!.trim(), keySecret, webhookSecret, shippingPaise, taxPaise,
   } }
 }
 
 export function isRazorpayWebhookAvailable(environment: Record<string, string | undefined> = process.env): boolean {
-  return environment.IQCARD_COMMERCE_MODE === 'test' && environment.VERCEL_ENV !== 'production' &&
-    isSandboxKey(environment.RAZORPAY_KEY_ID) && Boolean(environment.RAZORPAY_KEY_SECRET?.trim()) &&
+  // Disabling new checkout must not discard callbacks for money already captured.
+  return configuredMode(environment) !== null && Boolean(environment.RAZORPAY_KEY_SECRET?.trim()) &&
     Boolean(environment.RAZORPAY_WEBHOOK_SECRET?.trim())
 }
 

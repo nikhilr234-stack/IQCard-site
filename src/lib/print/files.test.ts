@@ -1,22 +1,30 @@
 import { describe, it, expect } from 'vitest'
 // @ts-expect-error Browser module served directly.
-import { printGeometry, createPrintPdf, createStoredZip, withRasterDpi, cutContourSvg } from '../../../public/customize/print-files.mjs'
+import { printGeometry, createPrintPdf, createStoredZip, withRasterDpi, cutContourSvg, roundedCardCanvas } from '../../../public/customize/print-files.mjs'
 
 describe('physical print files', () => {
   it('embeds lossless RGB artwork in PDF without forcing JPEG recompression',()=>{const pdf=createPrintPdf([{bytes:new Uint8Array([1,2,3]),width:1,height:1,filter:'FlateDecode'},{bytes:new Uint8Array([4,5,6]),width:1,height:1,filter:'FlateDecode'}],printGeometry(),false);expect(new TextDecoder().decode(pdf)).toContain('/Filter /FlateDecode');expect(new TextDecoder().decode(pdf)).not.toContain('/Filter /DCTDecode')})
-  it('keeps confirmed card size exact, including separate bleed/inset', () => {
-    expect(printGeometry()).toMatchObject({ trimWidth: 85.6, trimHeight: 54, artWidth: 91.6, artHeight: 60, dpi: 600, pixelsWide: 2164, pixelsHigh: 1417 })
-    expect(printGeometry({ inset: .5 })).toMatchObject({ trimWidth: 84.6, trimHeight: 53 })
+  it('exports the physical card itself with no bleed or extra canvas', () => {
+    expect(printGeometry()).toMatchObject({ trimWidth: 85.6, trimHeight: 54, artWidth: 85.6, artHeight: 54, dpi: 600, pixelsWide: 2022, pixelsHigh: 1276 })
+    expect(printGeometry()).toMatchObject({ inset: 0, bleed: 0, safe: 0 })
   })
-  it.each([{ bleed: -1 }, { inset: NaN }, { dpi: 0 }, { dpi: 450 }, { radius: 50 }, { safe: 30 }])('rejects invalid geometry %j', settings => {
+  it('clips export artwork to the physical rounded card boundary', () => {
+    const calls:string[]=[]
+    const context={save:()=>calls.push('save'),beginPath:()=>calls.push('beginPath'),roundRect:(_x:number,_y:number,_width:number,_height:number,radius:number)=>calls.push(`roundRect:${radius}`),clip:()=>calls.push('clip'),drawImage:()=>calls.push('drawImage'),restore:()=>calls.push('restore')}
+    const result=roundedCardCanvas({width:2022,height:1276} as HTMLCanvasElement,printGeometry(),()=>({width:0,height:0,getContext:()=>context} as unknown as HTMLCanvasElement))
+    expect(result.width).toBe(2022)
+    expect(result.height).toBe(1276)
+    expect(calls).toEqual(['save','beginPath','roundRect:75','clip','drawImage','restore'])
+  })
+  it.each([{ bleed: 1 }, { inset: .5 }, { safe: 1 }, { dpi: 0 }, { dpi: 450 }, { radius: 50 }])('rejects non-cut-size geometry %j', settings => {
     expect(() => printGeometry(settings)).toThrow()
   })
   it('builds a two-page PDF with correct mm boxes and byte-exact cross references', () => {
-    const pdf = createPrintPdf([{ bytes: new Uint8Array([255,216,255,217]), width: 2164, height: 1417 }, { bytes: new Uint8Array([255,216,255,217]), width: 2164, height: 1417 }], printGeometry(), true)
+    const pdf = createPrintPdf([{ bytes: new Uint8Array([255,216,255,217]), width: 2022, height: 1276 }, { bytes: new Uint8Array([255,216,255,217]), width: 2022, height: 1276 }], printGeometry(), true)
     const body = new TextDecoder('latin1').decode(pdf)
     expect(body).toContain('/Count 2')
-    expect(body).toContain('/TrimBox [22.6772 22.6772 265.3228 175.7480]')
-    expect(body).toContain('/BleedBox [14.1732 14.1732 273.8268 184.2520]')
+    expect(body).toContain('/TrimBox [14.1732 14.1732 256.8189 167.2441]')
+    expect(body).toContain('/BleedBox [14.1732 14.1732 256.8189 167.2441]')
     const start = Number(body.match(/startxref\n(\d+)/)?.[1])
     expect(new TextDecoder().decode(pdf.slice(start, start + 4))).toBe('xref')
   })
