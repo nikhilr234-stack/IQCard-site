@@ -42,6 +42,17 @@ const cover: CoverPresentation = {
 }
 
 describe('PublicProfile', () => {
+  it.each(['minimal', 'cover', 'studio', 'executive', 'signal', 'index'] as const)('loads the visible portrait eagerly for %s', (template) => {
+    const html = renderToStaticMarkup(<PublicProfile
+      profile={{ ...profile, photo_url: '/api/profile-photo?path=owner-1%2Fportrait.webp' }}
+      presentation={{ ...cover, template }}
+    />)
+
+    const portrait = html.match(/<img[^>]*alt="Ada Lovelace profile photo"[^>]*>/)?.[0]
+    expect(portrait).toContain('loading="eager"')
+    expect(portrait).toContain('fetchPriority="high"')
+  })
+
   it('renders the published Cover presentation and keeps Save Contact inert in preview', () => {
     const html = renderToStaticMarkup(<PublicProfile profile={profile} presentation={cover} preview />)
 

@@ -55,7 +55,7 @@ function ProfilePhoto({ profile, className, sizes }: { profile: Profile; classNa
   const name = displayName(profile)
   const view = buildPublicProfileView(profile)
   return <div className={cx(styles.photo, 'profile-template-photo', className, !profile.photo_url && 'profile-template-photo-fallback')} role={profile.photo_url ? undefined : 'img'} aria-label={profile.photo_url ? undefined : `${name} initials`}>
-    {profile.photo_url ? <Image src={profile.photo_url} alt={`${name} profile photo`} fill sizes={sizes} /> : <span>{view.initials}</span>}
+    {profile.photo_url ? <Image src={profile.photo_url} alt={`${name} profile photo`} fill sizes={sizes} loading="eager" fetchPriority="high" /> : <span>{view.initials}</span>}
   </div>
 }
 
