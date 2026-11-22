@@ -1,12 +1,12 @@
 # Payment production repair
 
-Prepared 22 November 2026. This is a proposed release, not an activation record.
+Prepared 22 November 2026. Production database repair completed with explicit user authorization; live payments remain disabled. The application-code release and Razorpay activation are still pending.
 
 ## Confirmed production gap
 
 Read-only inspection of Supabase production `vscmmhpfuozyvangkmhq` returned null for both `public.paid_orders` and `public.paid_order_status_events`. The Orders page calls `listOrdersForOwner`, which queries `paid_orders` and throws on a database error. The payment source is already included in main; the production database has not received that setup.
 
-The project currently restricts writes to the recovery Preview branch and sandbox. No production migration, deployment, settings change, or real payment has been performed for this repair. The checkout sandbox was reported INACTIVE during inspection. Local verification does not establish hosted readiness.
+The project defaults to the recovery Preview branch and sandbox. The user explicitly authorized the four reviewed production database migrations on 22 November 2026. They have now been applied; no production application deployment, environment change, or real payment was performed. The checkout sandbox was reported INACTIVE during inspection.
 
 ## 1. Apply only the reviewed order migrations
 
@@ -67,3 +67,28 @@ Rollback of new purchases: set `IQCARD_COMMERCE_ENABLED=false` and redeploy, pre
 - No hosted end-to-end or real-money validation has been completed in this repair.
 
 Reference: [Razorpay Standard Checkout integration](https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps).
+
+## Production database execution — 22 November 2026
+
+The owner approved applying the four reviewed order migrations while keeping checkout disabled. A read-only preflight reconfirmed all five order tables and all order routines were absent. Existing helper ACLs and migration history were captured before applying DDL. Existing customer rows were not rewritten and no synthetic orders were inserted into production.
+
+| Reviewed source file | Recorded production version | Result |
+| --- | --- | --- |
+| `20261003091439_create_paid_orders.sql` | `20261122155002` | Applied as `create_paid_orders` |
+| `20261011053000_add_payment_reconciliation.sql` | `20261122155008` | Applied as `add_payment_reconciliation` |
+| `20261011054500_qualify_payment_recovery_audit.sql` | `20261122155013` | Applied as `qualify_payment_recovery_audit` |
+| `20261122154247_harden_paid_order_admin_helper.sql` | `20261122155018` | Applied as `harden_paid_order_admin_helper` |
+
+The management tool assigned execution timestamps in migration history. These are the same reviewed SQL bodies under the names above; do not replay the source filenames as missing migrations merely because their timestamps differ.
+
+Verified in production:
+
+- All five tables exist and have RLS enabled. Anonymous SELECT and authenticated INSERT/UPDATE/DELETE are denied; server SELECT is available.
+- All ten order/payment routines deny anonymous and authenticated execution and allow service-role execution. The admin helper denies anonymous execution while preserving authenticated and service access.
+- Owner read policy is `owner_id = auth.uid()`; admin read policies remain present.
+- No orders and no outbox messages exist after application: neither a payment nor an email was generated.
+- Signed-in `https://iqcard.in/dashboard/orders` renders “Your cards, in motion.” and “No orders yet”, replacing the previous error. No console errors were observed in that check.
+- `https://iqcard.in/dashboard/orders/checkout` renders delivery fields and explicitly says “Checkout is not enabled yet”; its submit button is disabled. No address was entered or submitted.
+- Security advisor rerun: no new critical order exposure. Three new no-policy informational findings are intentional for server-only payment-attempt, payment-event and email-outbox tables, whose client access is revoked. Existing view/auth findings remain outside this repair. See [Supabase no-policy advisor](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy).
+
+Next: review/release the prepared live-payment code, confirm the merchant account, enter live secrets securely, configure the live webhook, settle pricing/policies and complete a controlled purchase. Those steps were not included in the database approval.
