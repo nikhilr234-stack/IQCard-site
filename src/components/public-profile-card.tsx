@@ -49,7 +49,7 @@ export function PublicProfileCard({ profile, presentation, preview = false }: { 
 
         <div className="public-profile-portrait-wrap">
           <div className={`public-profile-portrait${profile.photo_url ? ' has-photo' : ''}`} role={profile.photo_url ? undefined : 'img'} aria-label={profile.photo_url ? undefined : `${displayName} initials`}>
-            {profile.photo_url ? <Image src={profile.photo_url} alt={`${displayName} profile photo`} fill sizes="(max-width: 680px) 116px, 238px" /> : <span>{view.initials}</span>}
+            {profile.photo_url ? <Image src={profile.photo_url} alt={`${displayName} profile photo`} fill sizes="(max-width: 680px) 116px, 238px" loading="eager" fetchPriority="high" /> : <span>{view.initials}</span>}
           </div>
           <div className="public-profile-portrait-note"><span>IQ Identity</span><span>{displayName}</span></div>
         </div>

@@ -95,7 +95,9 @@ export async function getOwnProfile(user: { id: string; email: string }, preferr
 export async function getPublishedProfile(slug: string): Promise<Profile | null> {
   return unstable_cache(async () => {
     const supabase = createPublicClient()
-    const { data } = await supabase.from('profiles').select('*, profile_links(*)').eq('slug', slug).eq('status', 'published').maybeSingle()
+    const { data, error } = await supabase.from('profiles').select('*, profile_links(*)').eq('slug', slug).eq('status', 'published').maybeSingle()
+    // A transient database failure must not become a cached missing profile.
+    if (error) throw error
     return data ? withPhotoUrl({ ...data, profile_links: data.profile_links ?? [] }) as Profile : null
   }, ['published-profile', slug], {
     revalidate: 60,

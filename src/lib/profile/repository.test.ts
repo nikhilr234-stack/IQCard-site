@@ -91,6 +91,16 @@ describe('profile photo delivery URLs', () => {
     expect(profile?.photo_url).toBe('/api/gift-media?slug=yatish-p&asset=portrait')
   })
 
+  it('rejects a database outage instead of caching a missing public profile', async () => {
+    const error = new Error('database unavailable')
+    const maybeSingle = vi.fn().mockResolvedValue({ data: null, error })
+    vi.mocked(createPublicClient).mockReturnValue({
+      from: () => ({ select: () => ({ eq: () => ({ eq: () => ({ maybeSingle }) }) }) }),
+    } as never)
+
+    await expect(getPublishedProfile('owner')).rejects.toThrow('database unavailable')
+  })
+
   it('creates a new owner draft only through the server-controlled draft RPC', async () => {
     const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null })
     const rpc = vi.fn().mockResolvedValue({ data: { ...storedProfile, status: 'draft' }, error: null })
