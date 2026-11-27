@@ -34,7 +34,7 @@ export function LandingPage() {
           </div>
           <figure className={styles.heroVisual}>
             <p className={styles.tapNote}><i aria-hidden="true" /> A tap opens your profile.</p>
-            <img src="/homepage/card-and-profile-demo.svg" alt="Illustration of a walnut-finish IQ Card and fictional digital profile for Karthik Rao" width={1254} height={1254} style={{ width: '100%', height: 'auto' }} />
+            <img src="/homepage/card-and-profile-demo.svg" alt="Illustration of a walnut-finish IQ Card and fictional digital profile for Adam Randy" width={1254} height={1254} style={{ width: '100%', height: 'auto' }} />
             <figcaption>Illustrative card &amp; profile</figcaption>
           </figure>
         </section>
@@ -52,7 +52,7 @@ export function LandingPage() {
           <div className={styles.sectionHeading}><h2 id="included-heading">A physical card.<br /><span>A profile that stays current.</span></h2><p>A considered object for the first hello. A digital home for everything that comes after.</p></div>
           <div className={styles.includedGrid}>
             <div className={styles.includedCard}>
-              <div className={styles.flatCard} aria-label="Example black IQ Card"><span className={styles.cardMark}>iq</span><strong>Karthik Rao</strong><FiRadio aria-hidden="true" /></div>
+              <div className={styles.flatCard} aria-label="Example black IQ Card"><span className={styles.cardMark}>iq</span><strong>Adam Randy</strong><FiRadio aria-hidden="true" /></div>
               <div className={styles.includedCaption}><span>In your pocket</span><h3>Your personalised NFC card</h3><p>Your name, your chosen finish, ready to share your profile when you meet someone.</p></div>
             </div>
             <div className={styles.includedProfile}>
@@ -73,7 +73,7 @@ export function LandingPage() {
             <div className={styles.profileStage}>
               <article className={styles.demoProfile} aria-label="Illustrative digital profile">
                 <div className={styles.demoCover}><span>iq</span><span>EXAMPLE PROFILE</span></div>
-                <div className={styles.demoIdentity}><span className={styles.initials} aria-hidden="true">KR</span><h3>Karthik Rao</h3><p>Creative Director</p><p>India</p></div>
+                <div className={styles.demoIdentity}><span className={styles.initials} aria-hidden="true">AR</span><h3>Adam Randy</h3><p>Creative Director</p><p>India</p></div>
                 <div className={styles.demoSave}><FiUserPlus aria-hidden="true" /> Save contact (example)</div>
                 <div className={styles.demoLinks}><span>Portfolio <FiArrowUpRight aria-hidden="true" /></span><span>WhatsApp <FiArrowUpRight aria-hidden="true" /></span><span>LinkedIn <FiArrowUpRight aria-hidden="true" /></span></div>
                 <p className={styles.demoUrl}>One link. A fuller introduction.</p>
@@ -97,7 +97,7 @@ export function LandingPage() {
         </section>
         <section id="iq-final-cta" className={styles.closing} aria-labelledby="closing-heading"><div className={styles.container}><p>Your next introduction, considered.</p><h2 id="closing-heading">Make it<br /><span>unmistakably yours.</span></h2><div className={styles.closingActions}><DesignLink light /><span>{price} <i aria-hidden="true">·</i> Your card + digital profile</span></div></div><span className={styles.closingMark} aria-hidden="true">iq</span></section>
       </main>
-      <footer className={styles.footer}><div className={`${styles.container} ${styles.footerInner}`}><Link href="/" className={styles.brand} aria-label="IQ Card home">iq</Link><p>A better way to stay connected.</p><nav aria-label="Footer navigation">{HOME_NAV_ITEMS.map(item => <a key={item.href} href={item.href}>{item.label}</a>)}<Link href="/login">Log in <FiArrowRight aria-hidden="true" /></Link></nav><small><span>Designed by Nikki · Directed by Ashwin</span><br />Designed by NRG STUDIO</small></div></footer>
+      <footer className={styles.footer}><div className={`${styles.container} ${styles.footerInner}`}><Link href="/" className={styles.brand} aria-label="IQ Card home">iq</Link><p>A better way to stay connected.</p><nav aria-label="Footer navigation">{HOME_NAV_ITEMS.map(item => <a key={item.href} href={item.href}>{item.label}</a>)}<Link href="/login">Log in <FiArrowRight aria-hidden="true" /></Link></nav><small><span>Designed by Nikki · Directed by Ashwin</span><br />A product vision by NRG STUDIO</small></div></footer>
     </div>
   )
 }
