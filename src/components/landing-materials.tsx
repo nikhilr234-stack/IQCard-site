@@ -7,7 +7,7 @@ import styles from './landing-page.module.css'
 
 export function LandingMaterials() {
   const [selected, setSelected] = useState<(typeof HOME_MATERIALS)[number]>(HOME_MATERIALS[6])
-  const [name, setName] = useState('Karthik Rao')
+  const [name, setName] = useState('Adam Randy')
 
   return <div className={styles.materialExplorer}>
     <div className={styles.materialPreview}>
