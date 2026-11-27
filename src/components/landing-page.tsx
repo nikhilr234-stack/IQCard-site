@@ -3,6 +3,7 @@ import { FiArrowDown, FiArrowRight, FiArrowUpRight, FiCheck, FiLink, FiPlus, FiR
 import { HOME_CTA_HREF, HOME_NAV_ITEMS, HOME_FAQS } from '@/lib/landing/homepage-content'
 import { CARD_BASE_PRICE } from '@/lib/customizer/card-configuration'
 import { LandingMaterials } from './landing-materials'
+import { LandingVibes } from './landing-vibes'
 import styles from './landing-page.module.css'
 
 const price = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(CARD_BASE_PRICE)
@@ -83,6 +84,7 @@ export function LandingPage() {
             <div className={styles.profileCopy}><h2 id="profile-heading">The card opens<br />the door.<br /><span>Your profile<br />does the rest.</span></h2><p>Give someone more than a name and a number. Let them see your work, find the right link and keep your details.</p><ul><li><FiCheck aria-hidden="true" /> Contact details they can save</li><li><FiCheck aria-hidden="true" /> Your portfolio, website and social links</li><li><FiCheck aria-hidden="true" /> A profile you can edit from your dashboard</li><li><FiCheck aria-hidden="true" /> Your own shareable IQ Card URL</li></ul></div>
           </div>
         </section>
+        <LandingVibes />
         <section id="iq-sharing" className={`${styles.container} ${styles.sharing}`} aria-labelledby="sharing-heading">
           <div className={styles.sharingHeading}><h2 id="sharing-heading">Good introductions<br /><span>travel in more ways.</span></h2><p>Across the table or across the internet. Your profile goes where the conversation does.</p></div>
           <div className={styles.sharingGrid}>
