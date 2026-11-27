@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { FiArrowDown, FiArrowRight, FiArrowUpRight, FiCheck, FiLink, FiPlus, FiRadio, FiUserPlus } from 'react-icons/fi'
 import { HOME_CTA_HREF, HOME_NAV_ITEMS, HOME_FAQS } from '@/lib/landing/homepage-content'
@@ -35,7 +34,7 @@ export function LandingPage() {
           </div>
           <figure className={styles.heroVisual}>
             <p className={styles.tapNote}><i aria-hidden="true" /> A tap opens your profile.</p>
-            <Image src="/homepage/card-and-profile.webp" alt="Illustration of a personalised walnut-finish IQ Card beside a phone showing contact details, a portfolio and social links" width={1254} height={1254} sizes="(max-width: 760px) 100vw, 52vw" preload />
+            <img src="/homepage/card-and-profile-demo.svg" alt="Illustration of a walnut-finish IQ Card and fictional digital profile for Arjun Sharma" width={1254} height={1254} style={{ width: '100%', height: 'auto' }} />
             <figcaption>Illustrative card &amp; profile</figcaption>
           </figure>
         </section>
@@ -53,7 +52,7 @@ export function LandingPage() {
           <div className={styles.sectionHeading}><h2 id="included-heading">A physical card.<br /><span>A profile that stays current.</span></h2><p>A considered object for the first hello. A digital home for everything that comes after.</p></div>
           <div className={styles.includedGrid}>
             <div className={styles.includedCard}>
-              <div className={styles.flatCard} aria-label="Example black IQ Card"><span className={styles.cardMark}>iq</span><strong>Nikhil Rakesh</strong><FiRadio aria-hidden="true" /></div>
+              <div className={styles.flatCard} aria-label="Example black IQ Card"><span className={styles.cardMark}>iq</span><strong>Arjun Sharma</strong><FiRadio aria-hidden="true" /></div>
               <div className={styles.includedCaption}><span>In your pocket</span><h3>Your personalised NFC card</h3><p>Your name, your chosen finish, ready to share your profile when you meet someone.</p></div>
             </div>
             <div className={styles.includedProfile}>
@@ -74,14 +73,14 @@ export function LandingPage() {
             <div className={styles.profileStage}>
               <article className={styles.demoProfile} aria-label="Illustrative digital profile">
                 <div className={styles.demoCover}><span>iq</span><span>EXAMPLE PROFILE</span></div>
-                <div className={styles.demoIdentity}><span className={styles.initials} aria-hidden="true">NR</span><h3>Nikhil Rakesh</h3><p>Architect · Urban Designer</p><p>Bengaluru, India</p></div>
-                <Link className={styles.demoSave} href="https://iqcard.in/nikhil"><FiUserPlus aria-hidden="true" /> Explore the live profile <FiArrowUpRight aria-hidden="true" /></Link>
+                <div className={styles.demoIdentity}><span className={styles.initials} aria-hidden="true">AS</span><h3>Arjun Sharma</h3><p>Creative Director</p><p>India</p></div>
+                <div className={styles.demoSave}><FiUserPlus aria-hidden="true" /> Save contact (example)</div>
                 <div className={styles.demoLinks}><span>Portfolio <FiArrowUpRight aria-hidden="true" /></span><span>WhatsApp <FiArrowUpRight aria-hidden="true" /></span><span>LinkedIn <FiArrowUpRight aria-hidden="true" /></span></div>
                 <p className={styles.demoUrl}>One link. A fuller introduction.</p>
               </article>
               <span className={styles.profileAnnotation}>This is where the conversation continues.</span>
             </div>
-            <div className={styles.profileCopy}><h2 id="profile-heading">The card opens<br />the door.<br /><span>Your profile<br />does the rest.</span></h2><p>Give someone more than a name and a number. Let them see your work, find the right link and keep your details.</p><ul><li><FiCheck aria-hidden="true" /> Contact details they can save</li><li><FiCheck aria-hidden="true" /> Your portfolio, website and social links</li><li><FiCheck aria-hidden="true" /> A profile you can edit from your dashboard</li><li><FiCheck aria-hidden="true" /> Your own shareable IQ Card URL</li></ul><Link className={styles.textLink} href="https://iqcard.in/nikhil">Explore a live profile <FiArrowUpRight aria-hidden="true" /></Link></div>
+            <div className={styles.profileCopy}><h2 id="profile-heading">The card opens<br />the door.<br /><span>Your profile<br />does the rest.</span></h2><p>Give someone more than a name and a number. Let them see your work, find the right link and keep your details.</p><ul><li><FiCheck aria-hidden="true" /> Contact details they can save</li><li><FiCheck aria-hidden="true" /> Your portfolio, website and social links</li><li><FiCheck aria-hidden="true" /> A profile you can edit from your dashboard</li><li><FiCheck aria-hidden="true" /> Your own shareable IQ Card URL</li></ul></div>
           </div>
         </section>
         <section id="iq-sharing" className={`${styles.container} ${styles.sharing}`} aria-labelledby="sharing-heading">
@@ -98,7 +97,7 @@ export function LandingPage() {
         </section>
         <section id="iq-final-cta" className={styles.closing} aria-labelledby="closing-heading"><div className={styles.container}><p>Your next introduction, considered.</p><h2 id="closing-heading">Make it<br /><span>unmistakably yours.</span></h2><div className={styles.closingActions}><DesignLink light /><span>{price} <i aria-hidden="true">·</i> Your card + digital profile</span></div></div><span className={styles.closingMark} aria-hidden="true">iq</span></section>
       </main>
-      <footer className={styles.footer}><div className={`${styles.container} ${styles.footerInner}`}><Link href="/" className={styles.brand} aria-label="IQ Card home">iq</Link><p>A better way to stay connected.</p><nav aria-label="Footer navigation">{HOME_NAV_ITEMS.map(item => <a key={item.href} href={item.href}>{item.label}</a>)}<Link href="/login">Log in <FiArrowRight aria-hidden="true" /></Link></nav><small>Designed by NRG STUDIO</small></div></footer>
+      <footer className={styles.footer}><div className={`${styles.container} ${styles.footerInner}`}><Link href="/" className={styles.brand} aria-label="IQ Card home">iq</Link><p>A better way to stay connected.</p><nav aria-label="Footer navigation">{HOME_NAV_ITEMS.map(item => <a key={item.href} href={item.href}>{item.label}</a>)}<Link href="/login">Log in <FiArrowRight aria-hidden="true" /></Link></nav><small>Designed by IQ Card</small></div></footer>
     </div>
   )
 }
