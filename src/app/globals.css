@@ -225,7 +225,7 @@ body:has(.check-email-page) { margin:0; background:#f5f5f3; color:#111113; font-
 .check-email-page { min-height:100svh; padding:32px clamp(22px,5vw,70px); display:flex; flex-direction:column; }.check-email-logo { color:#111113; font-size:30px; font-weight:800; letter-spacing:-.12em; text-decoration:none; }.check-email-page section { width:min(620px,100%); margin:auto; padding:clamp(30px,5vw,56px); border:1px solid rgba(17,17,19,.08); border-radius:34px; background:#fff; box-shadow:0 30px 100px rgba(17,17,19,.07); }.check-email-mark { width:52px; height:52px; display:grid; place-items:center; border-radius:50%; background:#e2f3e8; color:#2d7d50; font-size:20px; }.check-email-page section > p:not(.check-email-resend) { margin:30px 0 12px; color:#ff4f9a; font-size:9px; font-weight:800; letter-spacing:.16em; }.check-email-page h1 { margin:0; font-size:clamp(50px,8vw,82px); line-height:.9; letter-spacing:-.07em; }.check-email-page section > div { margin-top:22px; color:#717177; font-size:14px; line-height:1.6; }.check-email-page aside { margin:30px 0 20px; padding:18px; border-radius:18px; background:#f6f6f4; }.check-email-page aside strong,.check-email-page aside span { display:block; }.check-email-page aside strong { font-size:11px; }.check-email-page aside span { margin-top:6px; color:#7d7d83; font-size:9px; line-height:1.5; }.check-email-resend { color:#8b8b91; font-size:9px; }.check-email-action { margin-top:12px; min-height:46px; padding:0 18px; display:inline-flex; align-items:center; justify-content:center; border-radius:999px; background:#111113; color:#fff; font-size:9px; font-weight:800; text-decoration:none; }.check-email-action.secondary { background:#fff; color:#111113; border:1px solid rgba(17,17,19,.12); }
 
 /* Public profile: editorial layout from the approved profile reference. */
-body:has(.public-profile-shell) { background: #fff; color: #111113; }
+body:has(.public-profile-shell):not(:has(.onboarding-shell)) { background: #fff; color: #111113; }
 .public-profile-shell { width: 100%; max-width: none; min-height: 100svh; margin: 0; padding: 0; background: var(--profile-bg,#fff); color: var(--profile-text,#111113); font-family: var(--profile-font,Helvetica,Arial,sans-serif); }
 .public-profile-page { width: min(1060px, 100%); min-height: 100svh; margin: 0 auto; padding: 24px clamp(22px, 4vw, 58px) 34px; display: flex; flex-direction: column; }
 .public-profile-topbar { height: 52px; display: flex; align-items: center; justify-content: space-between; }
@@ -321,7 +321,7 @@ body:has(.public-profile-shell) { background: #fff; color: #111113; }
 }
 
 /* Cover public profile: page-level wallpaper with an editorial lower third. */
-body:has(.cover-profile-shell) { background: #111113; color: #fff; }
+body:has(.cover-profile-shell):not(:has(.onboarding-shell)) { background: #111113; color: #fff; }
 .cover-profile-shell { --cover-overlay: .38; --cover-focal-y: 50%; position: relative; isolation: isolate; width: 100%; min-height: 100svh; overflow: hidden; background: var(--profile-bg,#111113); color: var(--profile-text,#fff); font-family: var(--profile-font,Helvetica,Arial,sans-serif); }
 .cover-profile-wallpaper,.cover-profile-overlay { position: absolute; inset: 0; pointer-events: none; }
 .cover-profile-wallpaper { z-index: -2; background: #25252a center var(--cover-focal-y) / cover no-repeat; transform: scale(1.015); }

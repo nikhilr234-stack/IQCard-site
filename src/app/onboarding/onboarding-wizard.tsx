@@ -38,8 +38,8 @@ const stepCopy: Record<OnboardingStep, { eyebrow: string; title: string; lead: s
   contact: { eyebrow: '02 · CONTACT', title: 'Choose how people reach you.', lead: 'Everything here is optional and private unless you explicitly make it visible.' },
   content: { eyebrow: '03 · CONTENT', title: 'Give people somewhere useful to go.', lead: 'Add complete links now, or leave this step empty and return later.' },
   address: { eyebrow: '04 · ADDRESS', title: 'Choose your public address.', lead: 'This is the short IQ Card URL you can share everywhere.' },
-  preview: { eyebrow: '05 · PREVIEW', title: 'See it before anyone else does.', lead: 'This draft remains private until IQ Card approves it.' },
-  publish: { eyebrow: '06 · REVIEW', title: 'Send it for review.', lead: 'Your profile will stay private until IQ Card approves it.' },
+  preview: { eyebrow: '05 · PREVIEW', title: 'Your profile, coming to life.', lead: 'Take a look at your profile before sending it for review.' },
+  publish: { eyebrow: '06 · REVIEW', title: 'One last look.', lead: 'You are almost ready to share your world.' },
 }
 
 function ErrorText({ id, message }: { id: string; message?: string }) {
@@ -91,10 +91,10 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteU
   const updateLink = (linkIndex: number, key: 'label' | 'url', value: string) => setLinks((current) => current.map((link, currentIndex) => currentIndex === linkIndex ? { ...link, [key]: value } : link))
   const removeLink = (linkIndex: number) => setLinks((current) => current.filter((_, currentIndex) => currentIndex !== linkIndex))
 
-  return <section className="onboarding-stage" aria-labelledby="onboarding-title">
+  return <section className="onboarding-stage" data-step={step} aria-labelledby="onboarding-title">
     <div className="onboarding-copy">
       <p>{copy.eyebrow}</p><h1 id="onboarding-title">{copy.title}</h1><span>{copy.lead}</span>
-      <div className="onboarding-card-note"><i /><div><strong>Your saved card design is connected.</strong><small>{designId ? `${designId} · ` : ''}The saved design stays unchanged while you finish your profile.</small></div></div>
+      <div className="onboarding-card-note"><i /><div><strong>Your card is connected</strong><small>Your saved design stays with you as you create your profile.</small></div></div>
     </div>
 
     <form action={formAction} className="onboarding-form" noValidate>
@@ -159,9 +159,18 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteU
         {addressCheck?.suggestions.length ? <div className="onboarding-suggestions"><span>Available ideas</span><div>{addressCheck.suggestions.map((slug) => <button type="button" key={slug} onClick={() => setAddress(slug)}>{addressPrefix}{slug}</button>)}</div><small>Availability is confirmed when you save.</small></div> : null}
       </div>}
 
-      {step === 'preview' && <div className="onboarding-preview onboarding-preview-real"><p>Private preview · this is your actual profile layout</p><p>{displayUrl}</p><PublicProfile profile={profile} presentation={presentation} preview /></div>}
+      {step === 'preview' && <div className="onboarding-preview-panel">
+        <div className="onboarding-panel-head"><div><strong>Your profile</strong><p>Private preview · this is your actual profile layout</p></div><span>Preview</span></div>
+        <div className="onboarding-device-stage"><div className="onboarding-device"><div className="onboarding-device-screen digital-profile-phone-screen"><PublicProfile profile={profile} presentation={presentation} preview /></div></div></div>
+        <div className="onboarding-preview-caption"><span>Your profile address</span><strong>{displayUrl}</strong><p>Scroll inside the preview to explore your profile. This draft remains private until IQ Card approves it.</p></div>
+      </div>}
 
-      {step === 'publish' && <div className="onboarding-publish"><div><span>PRIVATE UNTIL APPROVED</span><strong>Your profile is ready for Nikki to review.</strong><p>We’ll send it to the IQ Card admin queue. Your profile at {displayUrl} will remain private until it is approved.</p><small>Only IQ Card can publish</small></div><ErrorText id="publish-name-error" message={state.fieldErrors.fullName} /><ErrorText id="publish-email-error" message={state.fieldErrors.verifiedEmail} /><ErrorText id="publish-slug-error" message={state.fieldErrors.slug} /></div>}
+      {step === 'publish' && <div className="onboarding-review">
+        <div className="onboarding-review-heading"><span>READY FOR REVIEW</span><h2>Everything in one place.</h2><p>We’ll review your profile before it goes live. You can continue to make it yours later.</p></div>
+        <dl><div><dt>Name</dt><dd>{profile.full_name}</dd></div><div><dt>Profile address</dt><dd>{displayUrl}</dd></div><div><dt>Visibility</dt><dd>Private until approved</dd></div></dl>
+        <div className="onboarding-review-note"><strong>What happens next?</strong><p>Submit your profile to the IQ Card admin queue. Only IQ Card can publish it after review.</p></div>
+        <ErrorText id="publish-name-error" message={state.fieldErrors.fullName} /><ErrorText id="publish-email-error" message={state.fieldErrors.verifiedEmail} /><ErrorText id="publish-slug-error" message={state.fieldErrors.slug} />
+      </div>}
 
       {state.formError && <p className="onboarding-form-error" role="alert" aria-live="polite">{state.formError}</p>}
       <footer className="onboarding-actions">
