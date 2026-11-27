@@ -46,6 +46,15 @@ function invalid(fieldErrors: Record<string, string>, alternatives?: string[]): 
   return { ok: false, fieldErrors, ...(alternatives ? { alternatives } : {}) }
 }
 
+async function availableAlternatives(services: OnboardingActionServices, ownerId: string, slug: string) {
+  const available: string[] = []
+  for (let suffix = 2; suffix <= 12 && available.length < 2; suffix++) {
+    const candidate = `${slug}-${suffix}`
+    if (await services.isSlugAvailable(ownerId, candidate)) available.push(candidate)
+  }
+  return available
+}
+
 export async function runOnboardingStep(
   step: OnboardingStep,
   formData: FormData,
@@ -118,10 +127,17 @@ export async function runOnboardingStep(
       if (!await services.isSlugAvailable(account.id, validation.value.slug)) {
         return invalid(
           { slug: 'That profile URL is already taken.' },
-          [`${validation.value.slug}-2`, `${validation.value.slug}-3`],
+          await availableAlternatives(services, account.id, validation.value.slug),
         )
       }
-      await services.updateProfile(account.id, { slug: validation.value.slug })
+      try {
+        await services.updateProfile(account.id, { slug: validation.value.slug })
+      } catch (error) {
+        if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23505') {
+          return invalid({ slug: 'That profile URL is already taken.' }, await availableAlternatives(services, account.id, validation.value.slug))
+        }
+        throw error
+      }
     } else if (step === 'publish') {
       const profile = await services.getProfile(account.id)
       const validation = validatePublicationReadiness({

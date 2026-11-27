@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useActionState, useEffect, useState } from 'react'
 import {
   completeOnboarding,
+  checkAddressOptions,
   saveAddressStep,
   saveContactStep,
   saveContentStep,
@@ -58,6 +59,19 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteU
   const [state, formAction, pending] = useActionState(actions[step], initialState)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   useEffect(() => () => { if (photoPreview) URL.revokeObjectURL(photoPreview) }, [photoPreview])
+  const [address, setAddress] = useState(profile.slug)
+  const [addressCheck, setAddressCheck] = useState<{ normalized: string; available: boolean | null; suggestions: string[] } | null>(null)
+  const [addressError, setAddressError] = useState(false)
+  useEffect(() => {
+    if (step !== 'address') return
+    let active = true
+    setAddressCheck(null)
+    setAddressError(false)
+    const timer = setTimeout(() => {
+      checkAddressOptions(address).then((result) => { if (active) setAddressCheck(result) }).catch(() => { if (active) setAddressError(true) })
+    }, 350)
+    return () => { active = false; clearTimeout(timer) }
+  }, [address, step])
   const [links, setLinks] = useState(profile.profile_links.map(({ label, url }) => ({ label, url })))
   const { firstName, lastName } = splitName(profile.full_name)
   const index = onboardingSteps.indexOf(step)
@@ -137,7 +151,13 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteU
         <p aria-live="polite">{links.length}/12 links{links.length >= 12 ? ' · Link limit reached. Remove one to add another.' : ''}</p><button type="button" className="onboarding-add" disabled={links.length >= 12} onClick={addLink}>＋ Add link</button>
       </div>}
 
-      {step === 'address' && <div className="onboarding-address"><label htmlFor="onboarding-slug"><span>Public profile URL <em>Required</em></span><div><b>{addressPrefix}</b><input id="onboarding-slug" name="slug" defaultValue={profile.slug} required aria-invalid={Boolean(state.fieldErrors.slug)} aria-describedby="slug-error" /></div><ErrorText id="slug-error" message={state.fieldErrors.slug} /></label>{state.alternatives?.length ? <p>Try: {state.alternatives.join(' or ')}</p> : null}</div>}
+      {step === 'address' && <div className="onboarding-address">
+        <label htmlFor="onboarding-slug"><span>Public profile URL <em>Required</em></span><div><b>{addressPrefix}</b><input id="onboarding-slug" name="slug" value={address} onChange={(event) => setAddress(event.target.value)} required autoCapitalize="none" aria-invalid={Boolean(state.fieldErrors.slug) || addressCheck?.available === false} aria-describedby="slug-help slug-status slug-error" /></div></label>
+        <p id="slug-help">Start with your first name. Keep it short and easy to share.</p>
+        <p id="slug-status" role="status">{addressError ? 'Availability could not be checked. You can still try saving.' : !addressCheck ? 'Checking availability…' : addressCheck.available === false ? 'This address is already taken.' : addressCheck.available === true ? `${addressCheck.normalized} is available.` : 'Enter an address to check availability.'}</p>
+        <ErrorText id="slug-error" message={state.fieldErrors.slug} />
+        {addressCheck?.suggestions.length ? <div className="onboarding-suggestions"><span>Available ideas</span><div>{addressCheck.suggestions.map((slug) => <button type="button" key={slug} onClick={() => setAddress(slug)}>{addressPrefix}{slug}</button>)}</div><small>Availability is confirmed when you save.</small></div> : null}
+      </div>}
 
       {step === 'preview' && <div className="onboarding-preview onboarding-preview-real"><p>Private preview · this is your actual profile layout</p><p>{displayUrl}</p><PublicProfile profile={profile} presentation={presentation} preview /></div>}
 
@@ -147,7 +167,7 @@ export function OnboardingWizard({ step, profile, verifiedEmail, designId, siteU
       <footer className="onboarding-actions">
         {previous ? <Link href={onboardingPath(previous)}>← Back</Link> : <Link href="/customize">← Back to card</Link>}
         <div>
-          {step === 'publish' ? <button type="submit" disabled={pending}>{pending ? 'Sending for review…' : 'Submit for review'}</button> : <button type="submit" disabled={pending}>{pending ? 'Saving…' : step === 'preview' ? 'Looks good — Continue' : 'Save & Continue'}</button>}
+          {step === 'publish' ? <button type="submit" disabled={pending}>{pending ? 'Sending for review…' : 'Submit for review'}</button> : <button type="submit" disabled={pending || (step === 'address' && addressCheck?.available === false)}>{pending ? 'Saving…' : step === 'preview' ? 'Looks good — Continue' : 'Save & Continue'}</button>}
         </div>
       </footer>
     </form>

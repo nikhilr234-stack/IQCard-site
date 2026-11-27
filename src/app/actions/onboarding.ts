@@ -28,3 +28,27 @@ export async function savePreviewStep(_previous: OnboardingActionState, formData
 export async function completeOnboarding(_previous: OnboardingActionState, formData: FormData) {
   return runOnboardingStep('publish', formData, services())
 }
+
+// Only return availability, never the identity or details of the current owner.
+export async function checkAddressOptions(input: string) {
+  const service = services()
+  const account = await service.getAccount()
+  const { full_name } = await service.getProfile(account.id)
+  const { suggestSlug, validateSlug } = await import('@/lib/profile/validation')
+  const [first = '', ...rest] = full_name.trim().split(/\s+/)
+  const firstSlug = suggestSlug(first)
+  const lastSlug = suggestSlug(rest.join(' '))
+  const normalized = suggestSlug(typeof input === 'string' ? input.slice(0, 100) : '')
+  const candidates = [...new Set([
+    firstSlug,
+    lastSlug ? `${firstSlug}-${lastSlug}` : '',
+    lastSlug ? `${firstSlug}-${lastSlug[0]}` : '',
+    `${firstSlug}-2`, `${firstSlug}-3`, `${firstSlug}-4`,
+  ])].filter((candidate) => candidate && candidate.length <= 80 && !validateSlug(candidate))
+  const check = async (candidate: string) => service.isSlugAvailable(account.id, candidate)
+  const [current, checks] = await Promise.all([
+    normalized && !validateSlug(normalized) ? check(normalized) : Promise.resolve(null),
+    Promise.all(candidates.map(check)),
+  ])
+  return { normalized, available: current, suggestions: candidates.filter((_, index) => checks[index]).slice(0, 3) }
+}

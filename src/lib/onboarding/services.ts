@@ -4,6 +4,7 @@ import { requireAuthenticatedAccount } from '@/lib/auth/account'
 import { completeOnboardingStep } from '@/lib/onboarding/progress'
 import type { LinkInput } from '@/lib/profile/links'
 import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { OnboardingActionServices } from './action-runner'
 import { randomUUID } from 'node:crypto'
 import { logRegistrationEvent } from '@/lib/registration/observability'
@@ -13,7 +14,10 @@ export function createOnboardingActionServices(): OnboardingActionServices {
     getAccount: requireAuthenticatedAccount,
     async updateProfile(ownerId, values) {
       const { error } = await (await createServerClient()).from('profiles').update(values).eq('owner_id', ownerId)
-      if (error) throw new Error('Unable to update profile')
+      if (error) {
+        if (error.code === '23505' && typeof values.slug === 'string') throw Object.assign(new Error('Address already taken'), { code: '23505' })
+        throw new Error('Unable to update profile')
+      }
     },
     async uploadPhoto(file) {
       const form = new FormData()
@@ -26,14 +30,13 @@ export function createOnboardingActionServices(): OnboardingActionServices {
       if (error) throw new Error('Unable to update links')
     },
     async isSlugAvailable(ownerId, slug) {
-      const { data, error } = await (await createServerClient())
+      const { data, error } = await createAdminClient()
         .from('profiles')
         .select('owner_id')
-        .eq('slug', slug)
-        .neq('owner_id', ownerId)
-        .maybeSingle()
+        .ilike('slug', slug)
+        .limit(2)
       if (error) throw new Error('Unable to check profile URL')
-      return !data
+      return !data?.some((profile) => profile.owner_id !== ownerId)
     },
     async getProfile(ownerId) {
       const { data, error } = await (await createServerClient())
