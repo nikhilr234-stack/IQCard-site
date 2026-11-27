@@ -192,7 +192,11 @@
 @media(prefers-reduced-motion:reduce) { .page * { scroll-behavior:auto; transition:none!important; animation:none!important; } }
 
 
- .vibesSection { background: #111210; padding-bottom: 18px; }
+.vibesSection { background: #111210; padding-bottom: 18px; }
+.vibesHeading { padding: 24px 0 44px; color: #f6f7f3; }
+.page .vibesHeading h2 { font-size: clamp(30px, 3.3vw, 50px); letter-spacing: -.045em; }
+.page .vibesHeading p { margin-top: 14px; color: #b5bea8; font-size: 16px; line-height: 1.5; }
+@media (max-width: 700px) { .vibesHeading { padding: 6px 0 28px; } .page .vibesHeading h2 { font-size: clamp(27px, 7vw, 36px); } .page .vibesHeading p { font-size: 15px; } }
 .vibesTrack { display: flex; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .vibesTrack::-webkit-scrollbar { display: none; }
 .vibesTrack:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }

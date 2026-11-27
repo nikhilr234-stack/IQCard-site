@@ -49,7 +49,11 @@ export function ProfileVibes() {
   }
 
   return (
-    <section className={styles.vibesSection} aria-label="Explore example profile designs" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={event => { if (!(event.target as HTMLElement).closest('[data-playback]')) setPlaying(false) }}>
+    <section className={styles.vibesSection} aria-labelledby="vibes-heading" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocusCapture={event => { if (!(event.target as HTMLElement).closest('[data-playback]')) setPlaying(false) }}>
+      <div className={`${styles.container} ${styles.vibesHeading}`}>
+        <h2 id="vibes-heading">One card. A world of you.</h2>
+        <p>Your profile, your personality, your way.</p>
+      </div>
       <div className={styles.vibesTrack} ref={track} tabIndex={0} aria-label="Swipe to explore six example profiles" onTouchStart={() => setPlaying(false)}
         onScroll={event => { const el = event.currentTarget; if (el.clientWidth) setActive(Math.round(el.scrollLeft / el.clientWidth)) }}>
         {profiles.map(name => <div className={styles.vibesSlide} key={name}>
