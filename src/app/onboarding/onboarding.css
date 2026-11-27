@@ -194,3 +194,5 @@ body:has(.onboarding-shell) { background: #f6f6f4; color: #181819; }
   .onboarding-shell .onboarding-device { height: 480px; }
   .onboarding-shell .onboarding-review dl div { flex-wrap: wrap; }
 }
+
+.onboarding-shell .onboarding-links > p { color: #626267; font-size: 13px; line-height: 1.5; }
