@@ -1,3 +1,4 @@
+import { ProfileVisitTracker } from '@/components/profile-visit-tracker'
 import { notFound } from 'next/navigation'
 import { PublicProfile } from '@/components/public-profile'
 import { getPublishedProfile, getPublishedProfilePresentationBySlug } from '@/lib/profile/repository'
@@ -18,5 +19,5 @@ export default async function ProfilePage({ params }: { params: Promise<{ slug: 
   ])
   if (!profile) notFound()
 
-  return <PublicProfile profile={profile} presentation={presentation} />
+  return <><PublicProfile profile={profile} presentation={presentation} /><ProfileVisitTracker slug={slug} links={(profile.profile_links ?? []).map(({ id, url }) => ({ id, url }))} /></>
 }
