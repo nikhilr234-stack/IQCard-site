@@ -34,7 +34,7 @@ function cardMarkup() {
       <div class="iq-object__content">
         <div class="iq-object__mark">iq</div>
         <div class="iq-object__micro">NFC / IQ 01</div>
-        <div class="iq-object__name" data-card-name>Arjun Sharma</div>
+        <div class="iq-object__name" data-card-name>Karthik Rao</div>
       </div>
     </div>
     <div class="iq-object__layer iq-object__front-adhesive" data-iq-card-layer="front-adhesive"></div>
@@ -44,7 +44,7 @@ function cardMarkup() {
     <div class="iq-object__layer iq-object__back-adhesive" data-iq-card-layer="back-adhesive"></div>
     <div class="iq-object__skin iq-object__back" data-iq-card-layer="back-skin">
       <div class="iq-object__content">
-        <div class="iq-object__back-name" data-card-back-name>Arjun Sharma</div>
+        <div class="iq-object__back-name" data-card-back-name>Karthik Rao</div>
         <div class="iq-object__back-label">TAP TO CONNECT</div>
       </div>
     </div>
@@ -95,7 +95,7 @@ function mountIqCard(host, options = {}) {
     },
   };
 
-  controller.setName(options.name || 'Arjun Sharma');
+  controller.setName(options.name || 'Karthik Rao');
   controller.setPose(options.pose || {});
   return controller;
 }
@@ -137,7 +137,7 @@ if (typeof document !== 'undefined') {
 
   const card = cardHost ? mountIqCard(cardHost, {
     material: 'walnut',
-    name: 'Arjun Sharma',
+    name: 'Karthik Rao',
     pose: { x: 610, y: -12, rotateX: 12, rotateY: 89, rotateZ: -10, scale: .94, opacity: .01 },
   }) : null;
 
@@ -371,7 +371,7 @@ if (typeof document !== 'undefined') {
           <p>YOUR IDENTITY</p>
         </div>
         <div class="iq-live-profile__person">
-          <strong>Arjun Sharma</strong>
+          <strong>Karthik Rao</strong>
           <span>Creative Director</span>
         </div>
         <div class="iq-live-profile__viewport" aria-live="polite">
@@ -406,7 +406,7 @@ if (typeof document !== 'undefined') {
         <div class="iq-share-stage iq-share-stage--tap">
           <div class="iq-share-card" data-share-card aria-hidden="true">
             <span class="iq-share-card__mark">iq</span>
-            <strong>Arjun Sharma</strong>
+            <strong>Karthik Rao</strong>
             <small>NFC / IQ</small>
           </div>
           <div class="iq-share-tap-pulse" data-share-tap-pulse aria-hidden="true"></div>
@@ -415,7 +415,7 @@ if (typeof document !== 'undefined') {
             <div class="iq-share-device__idle"><span>iq</span><small>READY</small></div>
             <div class="iq-share-profile-preview" data-share-profile-preview>
               <span>iq</span>
-              <strong>Arjun Sharma</strong>
+              <strong>Karthik Rao</strong>
               <small>Creative Director</small>
               <i></i><i></i><i></i>
             </div>
@@ -462,12 +462,12 @@ if (typeof document !== 'undefined') {
       <div class="iq-share-scene iq-share-scene--save" data-share-scene="save">
         <div class="iq-share-stage iq-share-stage--save">
           <div class="iq-share-profile-chip" data-share-profile-chip>
-            <span>iq</span><strong>Arjun Sharma</strong><small>Creative Director</small>
+            <span>iq</span><strong>Karthik Rao</strong><small>Creative Director</small>
           </div>
           <div class="iq-share-contact-book" data-share-contact-book aria-hidden="true">
             <span>CONTACTS</span>
-            <div class="iq-share-contact-row"><i>AS</i><div><strong>Arjun Sharma</strong><small>Mobile · Email · Website</small></div></div>
-            <div class="iq-share-contact-row iq-share-contact-row--ghost"><i>AS</i><div><strong>Arjun Shah</strong><small>Mobile</small></div></div>
+            <div class="iq-share-contact-row"><i>KR</i><div><strong>Karthik Rao</strong><small>Mobile · Email · Website</small></div></div>
+            <div class="iq-share-contact-row iq-share-contact-row--ghost"><i>KR</i><div><strong>Arjun Shah</strong><small>Mobile</small></div></div>
           </div>
         </div>
         <div class="iq-share-caption"><span>CONTACT</span><strong>From introduction to saved person.</strong><p>No transcription. No spelling your name. The useful details land together.</p></div>
@@ -535,7 +535,7 @@ if (typeof document !== 'undefined') {
   const materialGallery = document.querySelector('[data-material-gallery]');
   const revealCard = revealHost ? mountIqCard(revealHost, {
     material: 'walnut',
-    name: 'Arjun Sharma',
+    name: 'Karthik Rao',
     pose: { x: 0, y: 0, rotateX: 7, rotateY: -18, rotateZ: -4, scale: .98, opacity: 1 },
   }) : null;
 
@@ -598,7 +598,7 @@ if (typeof document !== 'undefined') {
       material,
       controller: cardHost ? mountIqCard(cardHost, {
         material,
-        name: 'Arjun Sharma',
+        name: 'Karthik Rao',
         pose: { x: 0, y: 0, rotateX, rotateY, rotateZ: 0, scale: 1, opacity: 1 },
       }) : null,
     };
