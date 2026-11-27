@@ -1,12 +1,10 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { FiArrowDown, FiArrowRight, FiArrowUpRight, FiCheck, FiLink, FiPlus, FiRadio, FiUserPlus } from 'react-icons/fi'
 import { HOME_CTA_HREF, HOME_NAV_ITEMS, HOME_FAQS } from '@/lib/landing/homepage-content'
 import { CARD_BASE_PRICE } from '@/lib/customizer/card-configuration'
 import { LandingMaterials } from './landing-materials'
+import { ProfileVibes } from './profile-vibes'
 import styles from './landing-page.module.css'
-
-const profileVibes = ['theo', 'leela', 'maya', 'jordan', 'sofia', 'aria'] as const
 
 const price = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(CARD_BASE_PRICE)
 
@@ -86,16 +84,7 @@ export function LandingPage() {
             <div className={styles.profileCopy}><h2 id="profile-heading">The card opens<br />the door.<br /><span>Your profile<br />does the rest.</span></h2><p>Give someone more than a name and a number. Let them see your work, find the right link and keep your details.</p><ul><li><FiCheck aria-hidden="true" /> Contact details they can save</li><li><FiCheck aria-hidden="true" /> Your portfolio, website and social links</li><li><FiCheck aria-hidden="true" /> A profile you can edit from your dashboard</li><li><FiCheck aria-hidden="true" /> Your own shareable IQ Card URL</li></ul></div>
           </div>
         </section>
-        <section className={styles.vibesSection} aria-label="Explore example profile designs">
-          <div className={styles.vibesTrack} tabIndex={0} aria-label="Swipe to explore six example profiles">
-            {profileVibes.map(name => <div className={styles.vibesSlide} id={`profile-vibe-${name}`} key={name}>
-              <Image src={`/homepage/vibes/${name}.webp`} alt={`Illustrative ${name} profile and its surrounding creative world`} width={2016} height={781} sizes="100vw" unoptimized />
-            </div>)}
-          </div>
-          <nav className={styles.vibesNavigation} aria-label="Choose a profile image">
-            {profileVibes.map((name, index) => <a key={name} href={`#profile-vibe-${name}`} aria-label={`View profile ${index + 1}: ${name}`} />)}
-          </nav>
-        </section>
+        <ProfileVibes />
         <section id="iq-sharing" className={`${styles.container} ${styles.sharing}`} aria-labelledby="sharing-heading">
           <div className={styles.sharingHeading}><h2 id="sharing-heading">Good introductions<br /><span>travel in more ways.</span></h2><p>Across the table or across the internet. Your profile goes where the conversation does.</p></div>
           <div className={styles.sharingGrid}>
