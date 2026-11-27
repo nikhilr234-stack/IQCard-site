@@ -2,10 +2,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { runOnboardingStep, type OnboardingActionServices } from '@/lib/onboarding/action-runner'
 import { createOnboardingActionServices } from '@/lib/onboarding/services'
 import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 vi.mock('@/lib/auth/account', () => ({ requireAuthenticatedAccount: vi.fn() }))
 vi.mock('@/lib/supabase/server', () => ({ createServerClient: vi.fn() }))
+vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: vi.fn() }))
 
 function services(): OnboardingActionServices & Record<string, ReturnType<typeof vi.fn>> {
   return {
@@ -56,7 +58,7 @@ describe('onboarding server action runner', () => {
 
   it('returns deterministic alternatives when a public address is unavailable', async () => {
     const api = services()
-    vi.mocked(api.isSlugAvailable).mockResolvedValue(false)
+    vi.mocked(api.isSlugAvailable).mockImplementation(async (_owner, slug) => !['nikhil-rakesh', 'nikhil-rakesh-2'].includes(slug))
     const form = new FormData()
     form.set('slug', 'Nikhil Rakesh')
 
@@ -65,9 +67,27 @@ describe('onboarding server action runner', () => {
     expect(state).toMatchObject({
       ok: false,
       fieldErrors: { slug: 'That profile URL is already taken.' },
-      alternatives: ['nikhil-rakesh-2', 'nikhil-rakesh-3'],
+      alternatives: ['nikhil-rakesh-3', 'nikhil-rakesh-4'],
     })
     expect(api.updateProfile).not.toHaveBeenCalled()
+  })
+
+  it('reports a taken address when another customer wins the race to save it', async () => {
+    const api = services()
+    vi.mocked(api.updateProfile).mockRejectedValue(Object.assign(new Error('duplicate'), { code: '23505' }))
+    const form = new FormData()
+    form.set('slug', 'ada')
+    const state = await runOnboardingStep('address', form, api)
+    expect(state.fieldErrors.slug).toBe('That profile URL is already taken.')
+    expect(api.completeStep).not.toHaveBeenCalled()
+  })
+
+  it('treats unclaimed or private profiles owned by others as taken', async () => {
+    const limit = vi.fn().mockResolvedValue({ data: [{ owner_id: null }], error: null })
+    vi.mocked(createAdminClient).mockReturnValue({ from: () => ({ select: () => ({ ilike: () => ({ limit }) }) }) } as never)
+    expect(await createOnboardingActionServices().isSlugAvailable('owner-1', 'ada')).toBe(false)
+    limit.mockResolvedValue({ data: [{ owner_id: 'owner-1' }], error: null })
+    expect(await createOnboardingActionServices().isSlugAvailable('owner-1', 'ada')).toBe(true)
   })
 
   it('submits the ready profile privately for administrator review', async () => {

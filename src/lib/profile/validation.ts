@@ -1,7 +1,7 @@
 import { normalizeHandoffEmail } from '@/lib/checkout/handoff'
 import { foundingProfileSlugs } from '@/lib/site-routing'
 
-const reserved = new Set(['admin', 'api', 'auth', 'dashboard', 'login', 'iq', 'register', 'onboarding', 'customize', 'claim-gift', 'founding-profiles', ...foundingProfileSlugs.map((slug) => slug.toLowerCase())])
+const reserved = new Set(['admin', 'api', 'auth', 'dashboard', 'login', 'iq', 'register', 'onboarding', 'customize', 'claim-gift', 'founding-profiles', 'rohan', ...foundingProfileSlugs.map((slug) => slug.toLowerCase())])
 
 export const PROFILE_NAME_PART_MAX_LENGTH = 80
 export const PROFILE_FULL_NAME_MAX_LENGTH = PROFILE_NAME_PART_MAX_LENGTH * 2 + 1
