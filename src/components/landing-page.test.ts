@@ -20,6 +20,7 @@ describe('LandingPage', () => {
       expect(html).toContain(`/homepage/vibes/${name}.webp`)
       expect(html).toContain(`aria-label="View profile ${['theo', 'leela', 'maya', 'jordan', 'sofia', 'aria'].indexOf(name) + 1}`)
     }
+    expect(html).toContain('aria-label="Pause automatic slideshow"')
     expect(html).toContain('aria-label="Next profile"')
     expect(html).toContain('aria-label="Previous profile"')
     expect(html).toContain('aria-current="true"')

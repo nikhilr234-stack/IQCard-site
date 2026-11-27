@@ -199,19 +199,20 @@
 .vibesSlide { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; background: #111210; }
 .vibesSlide img { display: block; width: 100%; height: auto; }
 .vibesControls { position: relative; display: flex; justify-content: center; align-items: center; padding: 14px 24px 0; color: #e8eae4; }
-.vibesArrow, .vibesNavigation button, .vibesExpand, .vibesClose { border: 0; background: transparent; color: inherit; cursor: pointer; }
+.vibesArrow, .vibesNavigation button, .vibesExpand, .vibesPlayback, .vibesClose { border: 0; background: transparent; color: inherit; cursor: pointer; }
 .vibesArrow { display: grid; place-items: center; width: 42px; height: 42px; font-size: 19px; opacity: .8; }
 .vibesArrow:disabled { opacity: .25; cursor: default; }
 .vibesNavigation { display: flex; align-items: center; }
 .vibesNavigation button { display: grid; place-items: center; width: 27px; height: 42px; padding: 0; }
 .vibesNavigation button::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #777c70; transition: background .2s, transform .2s; }
 .vibesNavigation button[aria-current]::after { background: #e8eae4; transform: scale(1.35); }
+.vibesPlayback { position: absolute; left: clamp(16px, 5vw, 90px); display: grid; place-items: center; width: 42px; height: 42px; color: #d0d3c9; font-size: 16px; }
 .vibesExpand { position: absolute; right: clamp(16px, 5vw, 90px); display: inline-flex; align-items: center; gap: 8px; min-height: 42px; font-size: 12px; color: #d0d3c9; }
-.vibesArrow:focus-visible, .vibesNavigation button:focus-visible, .vibesExpand:focus-visible, .vibesClose:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.vibesArrow:focus-visible, .vibesNavigation button:focus-visible, .vibesExpand:focus-visible, .vibesPlayback:focus-visible, .vibesClose:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .vibesDialog { width: 100%; max-width: none; height: 100%; max-height: none; padding: 0; border: 0; background: #111210; color: white; }
 .vibesDialog::backdrop { background: rgba(0,0,0,.9); }
 .vibesClose { position: absolute; z-index: 2; top: 16px; right: 16px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: rgba(0,0,0,.6); font-size: 22px; }
 .vibesZoom { display: flex; align-items: center; width: 100%; height: 100%; overflow: auto; }
 .vibesZoom img { display: block; width: 100%; height: auto; flex: none; }
-@media(max-width: 700px) { .vibesExpand { right: 12px; } .vibesExpand span { display: none; } .vibesExpand svg { width: 19px; height: 19px; } .vibesNavigation button { width: 24px; } .vibesZoom img { width: 220%; } }
+@media(max-width: 700px) { .vibesPlayback { left: 12px; } .vibesExpand { right: 12px; } .vibesExpand span { display: none; } .vibesExpand svg { width: 19px; height: 19px; } .vibesNavigation button { width: 24px; } .vibesZoom img { width: 220%; } }
 @media(prefers-reduced-motion:reduce) { .vibesNavigation button::after { transition: none; } }
