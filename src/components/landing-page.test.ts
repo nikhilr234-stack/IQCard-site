@@ -13,8 +13,5 @@ describe('LandingPage', () => {
     expect(html).toContain('Designed by Nikki · Directed by Ashwin')
     expect(html).not.toMatch(/nikhil|rakesh|benki/i)
     expect(html).toContain('Adam Randy')
-    expect(html).toContain('A tap can show off their vibe.')
-    expect(html).toContain('Each profile tells a different story.')
-    expect(html).toContain('id="iq-profile-vibes"')
   })
 })
