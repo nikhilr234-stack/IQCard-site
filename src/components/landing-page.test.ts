@@ -14,4 +14,12 @@ describe('LandingPage', () => {
     expect(html).not.toMatch(/nikhil|rakesh|benki/i)
     expect(html).toContain('Adam Randy')
   })
+  it('shows six full profile images with navigation to each slide', () => {
+    const html = renderToStaticMarkup(createElement(LandingPage))
+    for (const name of ['theo', 'leela', 'maya', 'jordan', 'sofia', 'aria']) {
+      expect(html).toContain(`/homepage/vibes/${name}.webp`)
+      expect(html).toContain(`href="#profile-vibe-${name}"`)
+    }
+  })
+
 })
